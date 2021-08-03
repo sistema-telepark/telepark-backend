@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .serializers import DireccionSerializer, LocalidadSerializer, MunicipioSerializer, PersonaEPSerializer, PersonaSerializer, TipoParentescoSerializer
-from .models import Direccion, Localidad, Municipio, Persona, PersonaEP, TipoParentesco
+from .serializers import DireccionSerializer, LocalidadSerializer, MunicipioSerializer, OcupacionSerializer, PersonaEPSerializer, PersonaSerializer, TipoParentescoSerializer
+from .models import Direccion, Localidad, Municipio, Ocupacion, Persona, PersonaEP, TipoParentesco
 from .handlers import CRUDHandlerStrategies
 from .static import http_method
 # from .permission import has_permission
@@ -35,3 +35,8 @@ def localidad_list(request):
 @permission_classes([IsAuthenticated])
 def municipio_list(request):
     return CRUDHandlerStrategies.getStrategy(request.method).handle(request, Municipio, MunicipioSerializer)
+
+@api_view([http_method.GET])
+@permission_classes([IsAuthenticated])
+def municipio_list(request):
+    return CRUDHandlerStrategies.getStrategy(request.method).handle(request, Ocupacion, OcupacionSerializer)

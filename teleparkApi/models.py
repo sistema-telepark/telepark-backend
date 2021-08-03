@@ -121,6 +121,8 @@ class PersonaEP(Persona):
     tieneCuidador = models.BooleanField(default=False, null=False)
     viveSolo = models.BooleanField(default=False, null=False)
     idReferente = models.ForeignKey(Persona, related_name='personaEpReferente', on_delete=models.PROTECT, db_column='idReferente', null=False)
+    idOcupacionAnterior = models.ForeignKey(Persona, related_name='ocupacionAnterior', on_delete=models.PROTECT, db_column='idOcupacionAnterior', null=True)
+    idOcupacionActual = models.ForeignKey(Persona, related_name='ocupacionActual', on_delete=models.PROTECT, db_column='idOcupacionActual', null=True)
     
     class Meta:
         db_table = 'PersonaEP'
@@ -150,3 +152,10 @@ class TipoParentesco(models.Model):
     class Meta:
         db_table = 'TipoParentesco'
         unique_together = ('idPersona', 'idPersonaEP',)
+
+class Ocupacion(models.Model):
+    idOcupacion = models.AutoField(db_column='idOcupacion', primary_key=True)
+    nombre = models.CharField(max_length=45, blank=True, null=True)
+
+    class Meta:
+        db_table = 'Ocupacion'

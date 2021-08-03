@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Direccion, Evento, Localidad, Municipio, Persona, PersonaEP, TipoParentesco
+from .models import Direccion, Evento, Localidad, Municipio, Ocupacion, Persona, PersonaEP, TipoParentesco
 
 class DireccionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,6 +20,11 @@ class TipoParentescoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoParentesco
         fields = ('idPersona', 'idPersonaEP', 'nombre')
+
+class OcupacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ocupacion
+        fields = ('idOcupacion', 'nombre')
 
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
