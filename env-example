@@ -1,0 +1,6 @@
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=telepark
+DB_USER=user
+DB_PASSWORD=password
+SITE_URL=http://localhost:3000
