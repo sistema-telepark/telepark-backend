@@ -1,161 +1,287 @@
+# This is an auto-generated Django model module.
+# You'll have to do the following manually to clean this up:
+#   * Rearrange models' order
+#   * Make sure each model has one field with primary_key=True
+#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
+#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+# Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
-from django.db.models.expressions import F
 
-# Create your models here.
-class Diagnostico(models.Model):
-    idDiagnostico = models.AutoField(db_column='idDiagnostico', primary_key=True)
-    fecha = models.DateField()
-    idPersona = models.ForeignKey('personaEp', models.DO_NOTHING, db_column='idPersona')
-    idEnfermedad = models.ForeignKey('enfermedad', models.DO_NOTHING, db_column='idEnfermedad')
+
+class AuthGroup(models.Model):
+    name = models.CharField(unique=True, max_length=150)
 
     class Meta:
-        db_table = 'Diagnostico'
+        managed = False
+        db_table = 'auth_group'
+
+
+class AuthGroupPermissions(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
+    permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_group_permissions'
+        unique_together = (('group', 'permission'),)
+
+
+class AuthPermission(models.Model):
+    name = models.CharField(max_length=255)
+    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
+    codename = models.CharField(max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_permission'
+        unique_together = (('content_type', 'codename'),)
+
+
+class AuthUser(models.Model):
+    password = models.CharField(max_length=128)
+    last_login = models.DateTimeField(blank=True, null=True)
+    is_superuser = models.IntegerField()
+    username = models.CharField(unique=True, max_length=150)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
+    email = models.CharField(max_length=254)
+    is_staff = models.IntegerField()
+    is_active = models.IntegerField()
+    date_joined = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'auth_user'
+
+
+class AuthUserGroups(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
+    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_user_groups'
+        unique_together = (('user', 'group'),)
+
+
+class AuthUserUserPermissions(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
+    permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'auth_user_user_permissions'
+        unique_together = (('user', 'permission'),)
+
+
+class Diagnostico(models.Model):
+    iddiagnostico = models.AutoField(db_column='idDiagnostico', primary_key=True)  # Field name made lowercase.
+    fecha = models.DateField()
+    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
+    idenfermedad = models.ForeignKey('Enfermedad', models.DO_NOTHING, db_column='idEnfermedad')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'diagnostico'
+
 
 class Direccion(models.Model):
-    idDireccion = models.AutoField(db_column='idDireccion', primary_key=True)
+    iddireccion = models.AutoField(db_column='idDireccion', primary_key=True)  # Field name made lowercase.
     calle = models.CharField(max_length=45, blank=True, null=True)
     departamento = models.CharField(max_length=45, blank=True, null=True)
     numero = models.IntegerField(blank=True, null=True)
     piso = models.IntegerField(blank=True, null=True)
-    idLocalidad = models.ForeignKey('localidad', models.DO_NOTHING, db_column='idLocalidad', blank=True, null=True)
+    localidad_idlocalidad = models.ForeignKey('Localidad', models.DO_NOTHING, db_column='Localidad_idLocalidad', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        db_table = 'Direccion'
+        managed = False
+        db_table = 'direccion'
+
+
+class DjangoAdminLog(models.Model):
+    action_time = models.DateTimeField()
+    object_id = models.TextField(blank=True, null=True)
+    object_repr = models.CharField(max_length=200)
+    action_flag = models.PositiveSmallIntegerField()
+    change_message = models.TextField()
+    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
+    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'django_admin_log'
+
+
+class DjangoContentType(models.Model):
+    app_label = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'django_content_type'
+        unique_together = (('app_label', 'model'),)
+
+
+class DjangoMigrations(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    app = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    applied = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'django_migrations'
+
+
+class DjangoSession(models.Model):
+    session_key = models.CharField(primary_key=True, max_length=40)
+    session_data = models.TextField()
+    expire_date = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'django_session'
+
 
 class Enfermedad(models.Model):
-    idEnfermedad = models.IntegerField(db_column='idEnfermedad', primary_key=True)
+    idenfermedad = models.IntegerField(db_column='idEnfermedad', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
 
     class Meta:
-        db_table = 'Enfermedad'
+        managed = False
+        db_table = 'enfermedad'
+
+
+class Evento(models.Model):
+    idevento = models.AutoField(db_column='idEvento', primary_key=True)  # Field name made lowercase.
+    fecha = models.DateField(blank=True, null=True)
+    motivo = models.CharField(max_length=45, blank=True, null=True)
+    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
+    idtipoevento = models.ForeignKey('Tipoevento', models.DO_NOTHING, db_column='idTipoEvento')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'evento'
+
+
+class Evolucion(models.Model):
+    idevolucion = models.AutoField(db_column='idEvolucion', primary_key=True)  # Field name made lowercase.
+    escalaevolucion = models.IntegerField(db_column='escalaEvolucion')  # Field name made lowercase.
+    fecha = models.DateField(blank=True, null=True)
+    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'evolucion'
+
+
+class Indicacionmedicamento(models.Model):
+    idindicacion = models.AutoField(db_column='idIndicacion', primary_key=True)  # Field name made lowercase.
+    cantidadmiligramos = models.IntegerField(db_column='cantidadMiligramos', blank=True, null=True)  # Field name made lowercase.
+    estavigente = models.IntegerField(db_column='estaVigente', blank=True, null=True)  # Field name made lowercase.
+    fechaprescripcion = models.DateField(db_column='fechaPrescripcion', blank=True, null=True)  # Field name made lowercase.
+    horadetoma = models.TimeField(db_column='horaDeToma', blank=True, null=True)  # Field name made lowercase.
+    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
+    idmedicamento = models.ForeignKey('Medicamento', models.DO_NOTHING, db_column='idMedicamento')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'indicacionmedicamento'
+
 
 class Localidad(models.Model):
-    idLocalidad = models.AutoField(db_column='idLocalidad', primary_key=True)
+    idlocalidad = models.AutoField(db_column='idLocalidad', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
-    codigoPostal = models.IntegerField()
-    idMunicipio = models.ForeignKey('municipio', models.DO_NOTHING, db_column='idMunicipio', blank=True, null=True)
+    codigopostal = models.IntegerField(db_column='codigoPostal')  # Field name made lowercase.
+    municipio_idmunicipio = models.ForeignKey('Municipio', models.DO_NOTHING, db_column='Municipio_idMunicipio', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        db_table = 'Localidad'
+        managed = False
+        db_table = 'localidad'
+
+
+class Medicamento(models.Model):
+    idmedicamento = models.AutoField(db_column='idMedicamento', primary_key=True)  # Field name made lowercase.
+    nombre = models.CharField(max_length=45)
+    esantiparkinsoniano = models.IntegerField(db_column='esAntiparkinsoniano', blank=True, null=True)  # Field name made lowercase.
+    eslevodopa = models.IntegerField(db_column='esLevodopa', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'medicamento'
+
 
 class Municipio(models.Model):
-    idMunicipio = models.AutoField(db_column='idMunicipio', primary_key=True)
+    idmunicipio = models.AutoField(db_column='idMunicipio', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
     provincia = models.CharField(max_length=45)
 
     class Meta:
-        db_table = 'Municipio'
+        managed = False
+        db_table = 'municipio'
 
-class ObraSocial(models.Model):
-    idObraSocial = models.AutoField(db_column='idObraSocial', primary_key=True)
+
+class Obrasocial(models.Model):
+    idobrasocial = models.IntegerField(db_column='idObraSocial', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
-    esEstatal = models.BooleanField(db_column='esEstatal')
-    idPersonaEP = models.ForeignKey('personaEp', models.DO_NOTHING, db_column='idPersonaEP')
+    esestatal = models.IntegerField(db_column='esEstatal', blank=True, null=True)  # Field name made lowercase.
+    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='IdPersonaEP')  # Field name made lowercase.
 
     class Meta:
-        db_table = 'ObraSocial'
+        managed = False
+        db_table = 'obrasocial'
 
-class Medicamento(models.Model):
-    idMedicamento = models.AutoField(db_column='idMedicamento', primary_key=True)
-    nombre = models.CharField(max_length=45)
-    esAntiparkinsoniano = models.BooleanField(db_column='esAntiparkinsoniano')
-    esLevodopa = models.BooleanField(db_column='esLevodopa')
-
-    class Meta:
-        db_table = 'Medicamento'
-
-
-class Evolucion(models.Model):
-    idEvolucion = models.AutoField(db_column='idEvolucion', primary_key=True)
-    escalaEvolucion = models.BooleanField(db_column='escalaEvolucion')
-    fecha = models.DateField(blank=True, null=True)
-    idPersona = models.ForeignKey('personaEp', models.DO_NOTHING, db_column='idPersona')
-
-    class Meta:
-        db_table = 'Evolucion'
-
-
-class IndicacionMedicamento(models.Model):
-    idIndicacion = models.AutoField(db_column='idIndicacion', primary_key=True)
-    cantidadMiligramos = models.IntegerField()
-    estaVigente = models.BooleanField(null=True)
-    fechaPrescripcion = models.DateField()
-    horaDeToma = models.TimeField()
-    idPersonaEP = models.ForeignKey('personaEp', models.DO_NOTHING, db_column='idPersonaEP')
-    idMedicamento = models.ForeignKey('medicamento', models.DO_NOTHING, db_column='idMedicamento')
-
-    class Meta:
-        db_table = 'IndicacionMedicamento'
 
 class Persona(models.Model):
-    SEXO = [
-        ('M', 'Masculino'), 
-        ('F', 'Femenino'),
-        ('O', 'Otro')
-    ]
-
-    idPersona = models.AutoField(db_column='idPersona', primary_key=True)
-    apellido = models.CharField(max_length=50, null=False)
-    nombre = models.CharField(max_length=50, null=False)
-    sexo=models.CharField(max_length=1, choices=SEXO, default='M', null=False)
-    telefono=models.IntegerField(null=False)
-    idDireccion = models.ForeignKey(Direccion, models.DO_NOTHING, db_column='idDireccion', blank=True, null=True)
-    
-    class Meta:
-        db_table = 'Persona'
-
-class PersonaEP(Persona):
-    TIPO_ESCOLARIDAD = [
-        ('SIN_ESCOLARIDAD', 'Sin Escolaridad'),
-        ('PRIMARIO', 'Primario'),
-        ('SECUNDARIO', 'Secundario'),
-        ('TERCIARIO', 'Terciario'),
-        ('UNIVERSITARIO', 'Universitario')    
-    ]
-
-    idPersonaEP = models.AutoField(db_column='idPersonaEP', primary_key=True)
-    escolaridadCompleta = models.BooleanField(default=False)
-    fechaNacimiento = models.DateField(null=False)
-    maximaEscolaridadAlcanzada = models.CharField(max_length=16, choices=TIPO_ESCOLARIDAD, default='SIN_ESCOLARIDAD')
-    tieneAcompaniante = models.BooleanField(default=False, null=False)
-    tieneCuidador = models.BooleanField(default=False, null=False)
-    viveSolo = models.BooleanField(default=False, null=False)
-    idReferente = models.ForeignKey(Persona, related_name='personaEpReferente', on_delete=models.PROTECT, db_column='idReferente', null=False)
-    idOcupacionAnterior = models.ForeignKey(Persona, related_name='ocupacionAnterior', on_delete=models.PROTECT, db_column='idOcupacionAnterior', null=True)
-    idOcupacionActual = models.ForeignKey(Persona, related_name='ocupacionActual', on_delete=models.PROTECT, db_column='idOcupacionActual', null=True)
-    
-    class Meta:
-        db_table = 'PersonaEP'
-
-class Evento(models.Model):
-    fecha = models.DateField(null=False)
-    motivo = models.CharField(max_length=100)
-    idPersonaEP = models.ForeignKey(PersonaEP, related_name='eventoPersonaEP', db_column='idPersonaEP', on_delete=models.PROTECT, null=False)
+    idpersona = models.AutoField(db_column='idPersona', primary_key=True)  # Field name made lowercase.
+    nombre = models.CharField(max_length=45)
+    apellido = models.CharField(max_length=45)
+    telefono = models.CharField(max_length=35)
+    direccion_iddireccion = models.ForeignKey(Direccion, models.DO_NOTHING, db_column='Direccion_idDireccion', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        db_table = 'Evento'
+        managed = False
+        db_table = 'persona'
 
-class TipoEvento(models.Model):
-    idTipoEvento = models.AutoField(db_column='idTipoEvento', primary_key=True)
+
+class PersonaEp(models.Model):
+    escolaridadcompleta = models.IntegerField(db_column='escolaridadCompleta', blank=True, null=True)  # Field name made lowercase.
+    fechainicio = models.DateTimeField(db_column='fechaInicio')  # Field name made lowercase.
+    fechanacimiento = models.DateField(db_column='fechaNacimiento')  # Field name made lowercase.
+    maximaescolaridadalcanzada = models.CharField(db_column='maximaEscolaridadAlcanzada', max_length=45, blank=True, null=True)  # Field name made lowercase.
+    sexo = models.CharField(max_length=45)
+    tieneacompanante = models.IntegerField(db_column='tieneAcompanante')  # Field name made lowercase.
+    tienecuidador = models.IntegerField(db_column='tieneCuidador')  # Field name made lowercase.
+    vivesolo = models.IntegerField(db_column='viveSolo')  # Field name made lowercase.
+    ocupacionprevia = models.CharField(db_column='ocupacionPrevia', max_length=45)  # Field name made lowercase.
+    ocupacionactual = models.CharField(db_column='ocupacionActual', max_length=45)  # Field name made lowercase.
+    persona_idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='Persona_idPersona', primary_key=True)  # Field name made lowercase.
+    idreferente = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idReferente', related_name="+")  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'persona_ep'
+        unique_together = (('persona_idpersona', 'idreferente'),)
+
+
+class Tipoevento(models.Model):
+    idtipoevento = models.AutoField(db_column='idTipoEvento', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
-        db_table = 'TipoEvento'
+        managed = False
+        db_table = 'tipoevento'
 
 
-class TipoParentesco(models.Model):
-    idTipoParentesco = models.AutoField(db_column='idTipoParentesco', primary_key=True)
-    idPersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='idPersona', related_name='tipoParentescoPersona')
-    idPersonaEP = models.ForeignKey(PersonaEP, models.DO_NOTHING, db_column='idPersonaEP', related_name='tipoParentescoPersonaEP')
+class Tipoparentesco(models.Model):
+    idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='idPersona', primary_key=True)  # Field name made lowercase.
+    idpersonaep = models.ForeignKey(PersonaEp, models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
     nombre = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
-        db_table = 'TipoParentesco'
-        unique_together = ('idPersona', 'idPersonaEP',)
-
-class Ocupacion(models.Model):
-    idOcupacion = models.AutoField(db_column='idOcupacion', primary_key=True)
-    nombre = models.CharField(max_length=45, blank=True, null=True)
-
-    class Meta:
-        db_table = 'Ocupacion'
+        managed = False
+        db_table = 'tipoparentesco'
+        unique_together = (('idpersona', 'idpersonaep'),)
