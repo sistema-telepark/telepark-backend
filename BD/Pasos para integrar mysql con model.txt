@@ -1,0 +1,28 @@
+Hacer esto la primera vez
+
+1- En mysql workbrench, crear un BD con el nombre "pruebatelepark"
+
+2- Abrir el modelo de pruebatelepark, ir a la pestaña "database", 
+	y elegir la opcion "Shyncronize Model".
+
+3- Dar a "next" en todos los pasos hasta que se sincronice con la bd, 
+	podemos comprobarlo abriendo la bd y fijarse si estan todas las tablas
+
+4- Luego en el .env poner los datos de esta bd creada.
+
+5- Crear un superusuario con: python manage.py createsuperuser
+
+5- Correr el servidor con:  python manage.py runserver 8080
+-----------------------------------------------------------------------------
+En caso de hacer un cambio en la bd.
+
+1- Abro el modelo de pruebatelepark, cambio lo que tenga q cambiar, guardo los cambios.
+2- Repito el paso 2 y 3 de arriba para sincronizarlo de nuevo.
+3- En el cmd, entro al entorno virtual de mi backend, y pongo: 
+	python manage.py inspectdb > teleparkApi/models.py
+
+4- Este paso en caso de que salga error "related name" cuando intento correrlo: Me voy a models.py
+	en el campo idreferente en la clase PersonaEp, entre los parentesis despues
+	de db_column='idReferente' agregar , related_name="+"
+
+5- Correr el servidor con:  python manage.py runserver 8080
