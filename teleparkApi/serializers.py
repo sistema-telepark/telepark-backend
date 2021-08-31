@@ -1,6 +1,7 @@
 #from backDjango.backTelepark.models import PersonaEp
-from rest_framework import serializers 
-from .models import Persona, Direccion, PersonaEp, Localidad, Municipio, Tipoparentesco
+from rest_framework import serializers
+from rest_framework.utils import field_mapping 
+from .models import Evento, Persona, Direccion, PersonaEp, Localidad, Municipio, Tipoevento, Tipoparentesco
  
 class DireccionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,6 +19,8 @@ class PersonaSerializer(serializers.ModelSerializer):
         fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'direccion_iddireccion')
 
 class PersonaEpSerializer(serializers.ModelSerializer):
+    referente = PersonaSerializer()
+
     class Meta:
         model = PersonaEp
         fields = ('escolaridadcompleta',
@@ -47,3 +50,15 @@ class TipoparentescoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tipoparentesco
         fields = ('idpersona','idpersonaep','nombre')
+
+class TipoEventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tipoevento
+        fields = ('idtipoevento', 'nombre')
+
+class EventoSerializer(serializers.ModelSerializer):
+    tipoEvento = TipoEventoSerializer
+
+    class Meta:
+        model = Evento
+        fields = ('idevento','fecha','motivo')
