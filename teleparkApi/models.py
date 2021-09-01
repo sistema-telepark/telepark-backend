@@ -259,7 +259,7 @@ class PersonaEp(models.Model):
     ocupacionprevia = models.CharField(db_column='ocupacionPrevia', max_length=45)  # Field name made lowercase.
     ocupacionactual = models.CharField(db_column='ocupacionActual', max_length=45)  # Field name made lowercase.
     idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='idPersona', primary_key=True)  # Field name made lowercase.
-    idreferente = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idReferente')  # Field name made lowercase.
+    idreferente = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idReferente', related_name='+')  # Field name made lowercase.
 
     class Meta:
         managed = False
