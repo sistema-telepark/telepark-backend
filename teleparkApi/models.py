@@ -94,7 +94,7 @@ class Direccion(models.Model):
     departamento = models.CharField(max_length=45, blank=True, null=True)
     numero = models.IntegerField(blank=True, null=True)
     piso = models.IntegerField(blank=True, null=True)
-    localidad_idlocalidad = models.ForeignKey('Localidad', models.DO_NOTHING, db_column='Localidad_idLocalidad', blank=True, null=True)  # Field name made lowercase.
+    idlocalidad = models.ForeignKey('Localidad', models.DO_NOTHING, db_column='idLocalidad', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -196,7 +196,7 @@ class Localidad(models.Model):
     idlocalidad = models.AutoField(db_column='idLocalidad', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
     codigopostal = models.IntegerField(db_column='codigoPostal')  # Field name made lowercase.
-    municipio_idmunicipio = models.ForeignKey('Municipio', models.DO_NOTHING, db_column='Municipio_idMunicipio', blank=True, null=True)  # Field name made lowercase.
+    idmunicipio = models.ForeignKey('Municipio', models.DO_NOTHING, db_column='idMunicipio', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -228,7 +228,7 @@ class Obrasocial(models.Model):
     idobrasocial = models.IntegerField(db_column='idObraSocial', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
     esestatal = models.IntegerField(db_column='esEstatal', blank=True, null=True)  # Field name made lowercase.
-    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='IdPersonaEP')  # Field name made lowercase.
+    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -240,7 +240,7 @@ class Persona(models.Model):
     nombre = models.CharField(max_length=45)
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=35)
-    direccion_iddireccion = models.ForeignKey(Direccion, models.DO_NOTHING, db_column='Direccion_idDireccion', blank=True, null=True)  # Field name made lowercase.
+    iddireccion = models.ForeignKey(Direccion, models.DO_NOTHING, db_column='idDireccion', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -258,13 +258,13 @@ class PersonaEp(models.Model):
     vivesolo = models.IntegerField(db_column='viveSolo')  # Field name made lowercase.
     ocupacionprevia = models.CharField(db_column='ocupacionPrevia', max_length=45)  # Field name made lowercase.
     ocupacionactual = models.CharField(db_column='ocupacionActual', max_length=45)  # Field name made lowercase.
-    persona_idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='Persona_idPersona', primary_key=True)  # Field name made lowercase.
-    idreferente = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idReferente', related_name="+")  # Field name made lowercase.
+    idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='idPersona', primary_key=True)  # Field name made lowercase.
+    idreferente = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idReferente')  # Field name made lowercase.
 
     class Meta:
         managed = False
         db_table = 'persona_ep'
-        unique_together = (('persona_idpersona', 'idreferente'),)
+        unique_together = (('idpersona', 'idreferente'),)
 
 
 class Tipoevento(models.Model):
