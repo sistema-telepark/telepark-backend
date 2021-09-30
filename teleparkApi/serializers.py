@@ -1,8 +1,16 @@
 #from backDjango.backTelepark.models import PersonaEp
 from rest_framework import serializers
 from rest_framework.utils import field_mapping 
-from .models import Evento, Persona, Direccion, PersonaEp, Localidad, Municipio, Tipoevento, Tipoparentesco
- 
+from .models import Evento, Enfermedad, Persona, Diagnostico, Direccion, PersonaEp, Localidad, Municipio, Tipoevento, Tipoparentesco
+
+class DiagnosticoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Diagnostico
+        fields = ('iddiagnostico',
+                  'fecha',
+                  'idpersonaep',
+                  'idenfermedad')
+
 class DireccionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Direccion
@@ -11,16 +19,19 @@ class DireccionSerializer(serializers.ModelSerializer):
                   'departamento',
                   'numero',
                   'piso',
-                  'localidad_idlocalidad')
+                  'idlocalidad')
+
+class EnfermedadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enfermedad
+        fields = ('idenfermedad', 'nombre')
 
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
-        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'direccion_iddireccion')
+        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion')
 
 class PersonaEpSerializer(serializers.ModelSerializer):
-    referente = PersonaSerializer()
-
     class Meta:
         model = PersonaEp
         fields = ('escolaridadcompleta',
@@ -33,13 +44,13 @@ class PersonaEpSerializer(serializers.ModelSerializer):
                   'vivesolo',
                   'ocupacionprevia',
                   'ocupacionactual',
-                  'persona_idpersona',
+                  'idpersona',
                   'idreferente')
 
 class LocalidadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Localidad
-        fields = ('idlocalidad', 'nombre', 'codigopostal', 'municipio_idmunicipio')
+        fields = ('idlocalidad', 'nombre', 'codigopostal', 'idmunicipio')
 
 class MunicipioSerializer(serializers.ModelSerializer):
     class Meta:
