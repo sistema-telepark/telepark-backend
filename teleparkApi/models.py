@@ -225,7 +225,7 @@ class Municipio(models.Model):
 
 
 class Obrasocial(models.Model):
-    idobrasocial = models.IntegerField(db_column='idObraSocial', primary_key=True)  # Field name made lowercase.
+    idobrasocial = models.AutoField(db_column='idObraSocial', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
     esestatal = models.IntegerField(db_column='esEstatal', blank=True, null=True)  # Field name made lowercase.
     idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.

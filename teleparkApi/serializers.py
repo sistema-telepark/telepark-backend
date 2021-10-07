@@ -1,7 +1,26 @@
 #from backDjango.backTelepark.models import PersonaEp
 from rest_framework import serializers
 from rest_framework.utils import field_mapping 
-from .models import Evento, Enfermedad, Persona, Diagnostico, Direccion, PersonaEp, Localidad, Municipio, Tipoevento, Tipoparentesco
+from .models import Evento, Evolucion, Enfermedad, Indicacionmedicamento, Medicamento, Persona, Diagnostico, Direccion, PersonaEp, Localidad, Municipio, Tipoevento, Tipoparentesco, Obrasocial
+
+class EvolucionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Evolucion
+        fields = ('idevolucion', 'escalaevolucion', 'fecha', 'idpersonaep')
+
+class EnfermedadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enfermedad
+        fields = ('idenfermedad', 'nombre')
+
+class DiagnosticoEpSerializer(serializers.ModelSerializer):
+    idenfermedad = EnfermedadSerializer(many= False, read_only=True)
+    class Meta:
+        model = Diagnostico
+        fields = ('iddiagnostico',
+                  'fecha',
+                  'idpersonaep',
+                  'idenfermedad')
 
 class DiagnosticoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,6 +66,13 @@ class PersonaEpSerializer(serializers.ModelSerializer):
                   'idpersona',
                   'idreferente')
 
+
+class PersonaPSerializer(serializers.ModelSerializer):
+    idpersona = PersonaSerializer(many= False, read_only=True)
+    class Meta:
+        model = PersonaEp
+        fields = ('sexo','idpersona')
+
 class LocalidadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Localidad
@@ -73,3 +99,36 @@ class EventoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evento
         fields = ('idevento','fecha','motivo')
+
+class ObraSocialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Obrasocial
+        fields = ('idobrasocial', 'nombre', 'esestatal', 'idpersonaep')
+
+class MedicamentoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Medicamento
+        fields = ('idmedicamento', 'nombre', 'esantiparkinsoniano', 'eslevodopa')
+
+class IndicacionEpSerializer(serializers.ModelSerializer):
+    idmedicamento = MedicamentoSerializer(many= False, read_only=True)
+    class Meta:
+        model = Indicacionmedicamento
+        fields = ('idindicacion',
+                  'cantidadmiligramos',
+                  'estavigente',
+                  'fechaprescripcion',
+                  'horadetoma',
+                  'idpersonaep',
+                  'idmedicamento')
+
+class IndicacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Indicacionmedicamento
+        fields = ('idindicacion',
+                  'cantidadmiligramos',
+                  'estavigente',
+                  'fechaprescripcion',
+                  'horadetoma',
+                  'idpersonaep',
+                  'idmedicamento')

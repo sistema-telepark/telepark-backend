@@ -6,8 +6,8 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 
-from .models import Diagnostico, Direccion, Enfermedad, Evento, Localidad, Municipio, Persona, PersonaEp, Tipoevento, Tipoparentesco
-from .serializers import DiagnosticoSerializer, DireccionSerializer, EnfermedadSerializer, EventoSerializer, LocalidadSerializer, MunicipioSerializer, PersonaEpSerializer, PersonaSerializer, TipoEventoSerializer, TipoparentescoSerializer
+from .models import Evolucion, Diagnostico, Direccion, Enfermedad, Obrasocial, Indicacionmedicamento, Medicamento, Evento, Localidad, Municipio, Persona, PersonaEp, Tipoevento, Tipoparentesco
+from .serializers import EvolucionSerializer, DiagnosticoEpSerializer, DiagnosticoSerializer, DireccionSerializer, MedicamentoSerializer, IndicacionEpSerializer, IndicacionSerializer, EnfermedadSerializer, ObraSocialSerializer, EventoSerializer, LocalidadSerializer, MunicipioSerializer, PersonaEpSerializer, PersonaSerializer, PersonaPSerializer, TipoEventoSerializer, TipoparentescoSerializer
 
 class PersonaViewSet(viewsets.ModelViewSet):
     serializer_class = PersonaSerializer
@@ -19,6 +19,10 @@ class PersonaEPViewSet(viewsets.ModelViewSet):
     queryset = PersonaEp.objects.all()
     permission_classes = [IsAuthenticated]
 
+class PersonaPViewSet(viewsets.ModelViewSet):
+    serializer_class = PersonaPSerializer
+    queryset = PersonaEp.objects.all()
+    permission_classes = [IsAuthenticated]
 class LocalidadViewSet(viewsets.ModelViewSet):
     serializer_class = LocalidadSerializer
     queryset = Localidad.objects.all()
@@ -64,5 +68,49 @@ class DiagnosticoViewSet(viewsets.ModelViewSet):
     def list_diagnosticoP(self, request, pk):
         diagnostico = Diagnostico.objects.filter(idpersonaep=pk)
         if request.method == 'GET': 
-            diagnostico_serializer = DiagnosticoSerializer(diagnostico, many=True) 
-            return JsonResponse(diagnostico_serializer.data, safe=False) 
+            diagnostico_serializer = DiagnosticoEpSerializer(diagnostico, many=True) 
+            return JsonResponse(diagnostico_serializer.data, safe=False)
+
+class EvolucionViewSet(viewsets.ModelViewSet):
+    serializer_class = EvolucionSerializer
+    queryset = Evolucion.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
+            url_path='personaep', url_name='personaep')
+    def list_evolucionP(self, request, pk):
+        evolucion = Evolucion.objects.filter(idpersonaep=pk)
+        if request.method == 'GET': 
+            evolucion_serializer = EvolucionSerializer(evolucion, many=True) 
+            return JsonResponse(evolucion_serializer.data, safe=False)
+
+class ObraSocialViewSet(viewsets.ModelViewSet):
+    serializer_class = ObraSocialSerializer
+    queryset = Obrasocial.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
+            url_path='personaep', url_name='personaep')
+    def list_obrasocialP(self, request, pk):
+        obrasocial = Obrasocial.objects.filter(idpersonaep=pk)
+        if request.method == 'GET': 
+            obrasocial_serializer = ObraSocialSerializer(obrasocial, many=True) 
+            return JsonResponse(obrasocial_serializer.data, safe=False)
+
+class MedicamentoViewSet(viewsets.ModelViewSet):
+    serializer_class = MedicamentoSerializer
+    queryset = Medicamento.objects.all()
+    permission_classes = [IsAuthenticated]
+
+class IndicacionViewSet(viewsets.ModelViewSet):
+    serializer_class = IndicacionSerializer
+    queryset = Indicacionmedicamento.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
+            url_path='personaep', url_name='personaep')
+    def list_indicacionP(self, request, pk):
+        indicacion = Indicacionmedicamento.objects.filter(idpersonaep=pk)
+        if request.method == 'GET': 
+            indicacion_serializer = IndicacionEpSerializer(indicacion, many=True) 
+            return JsonResponse(indicacion_serializer.data, safe=False)
