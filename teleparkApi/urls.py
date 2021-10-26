@@ -25,7 +25,8 @@ router.register(r'api/medicamento', MedicamentoViewSet, basename = 'medicamento'
 router.register(r'api/indicacion', IndicacionViewSet, basename = 'indicacionmedicamento')
 
 urlpatterns = [ 
-    url(r'^api/auth$', authentication.auth_view)
+    url(r'^api/auth$', authentication.auth_view),
+    url(r'^api/create_user$', authentication.create_user)
 ]
 
 urlpatterns += router.urls
