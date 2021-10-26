@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.hashers import check_password
+from .permission import IsSuperuser
+from .helper import check_attributes
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,8 +12,7 @@ import json
 def auth_view(request):
     if(request.method != 'POST'):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    if ('user' not in request.POST or 'password' not in request.POST):
+    if (not check_attributes(request.POST, ['user', 'password'])):
         return Response('Datos incompletos', status=status.HTTP_401_UNAUTHORIZED)
 
     try:
@@ -30,12 +31,16 @@ def auth_view(request):
     return Response({ 'access_token': str(token.access_token), 'refresh_token': str(token) })
 
 @api_view(['POST'])
+@permission_classes([IsSuperuser])
 def create_user(request):
+    if(not request.user.is_superuser):
+        return Response('No posee los permisos requeridos', status.HTTP_401_UNAUTHORIZED)
+
     body = json.loads(request.body.decode('utf-8'))
     if (request.method != 'POST'):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    if ('user' not in body or 'password' not in body or 'is_superuser' not in body or 'is_staff' not in body or 'email' not in body):
+    if (not check_attributes(body, ['user', 'password', 'is_superuser', 'is_staff', 'email'])):
         return Response('Datos incompletos', status=status.HTTP_400_BAD_REQUEST)
 
     if (User.objects.filter(username=body['user']).exists()):
