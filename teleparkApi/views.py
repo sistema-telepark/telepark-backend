@@ -4,7 +4,6 @@ from .serializers import DireccionSerializer, EnfermedadSerializer, LocalidadSer
 from .models import Direccion, Enfermedad, Localidad, Municipio, Persona, PersonaEp, Tipoparentesco
 from .handlers import CRUDHandlerStrategies
 from .static import http_method
-# from .permission import has_permission
 
 @api_view([http_method.POST, http_method.GET])
 @permission_classes([IsAuthenticated])
