@@ -1,12 +1,12 @@
 #from backDjango.backTelepark.models import PersonaEp
 from rest_framework import serializers
 from rest_framework.utils import field_mapping 
-from .models import Evento, Evolucion, Enfermedad, Indicacionmedicamento, Medicamento, Persona, Diagnostico, Direccion, PersonaEp, Localidad, Municipio, Tipoevento, Tipoparentesco, Obrasocial
+from .models import Evento, Evolucion, Enfermedad, Indicacionmedicamento, Medicamento, Persona, Diagnostico, Direccion, PersonaEp, Localidad, Municipio, Tipoevento, Tipoparentesco, Obrasocial, Os
 
 class EvolucionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evolucion
-        fields = ('idevolucion', 'escalaevolucion', 'fecha', 'idpersonaep')
+        fields = ('idevolucion', 'escalaevolucion', 'fecha', 'idpersonaep', 'borrado')
 
 class EnfermedadSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,7 +20,8 @@ class DiagnosticoEpSerializer(serializers.ModelSerializer):
         fields = ('iddiagnostico',
                   'fecha',
                   'idpersonaep',
-                  'idenfermedad')
+                  'idenfermedad',
+                  'borrado')
 
 class DiagnosticoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,7 +29,8 @@ class DiagnosticoSerializer(serializers.ModelSerializer):
         fields = ('iddiagnostico',
                   'fecha',
                   'idpersonaep',
-                  'idenfermedad')
+                  'idenfermedad',
+                  'borrado')
 
 class DireccionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -103,7 +105,19 @@ class EventoSerializer(serializers.ModelSerializer):
 class ObraSocialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Obrasocial
-        fields = ('idobrasocial', 'nombre', 'esestatal', 'idpersonaep')
+        fields = ('idobrasocial', 'nombre', 'esestatal')
+
+
+class OSEpSerializer(serializers.ModelSerializer):
+    idobrasocial = ObraSocialSerializer(many= False, read_only=True)
+    class Meta:
+        model = Os
+        fields = ('idos', 'idpersonaep', 'idobrasocial', 'borrado')
+
+class OSSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Os
+        fields = ('idos', 'idpersonaep', 'idobrasocial', 'borrado')
 
 class MedicamentoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -120,7 +134,8 @@ class IndicacionEpSerializer(serializers.ModelSerializer):
                   'fechaprescripcion',
                   'horadetoma',
                   'idpersonaep',
-                  'idmedicamento')
+                  'idmedicamento',
+                  'borrado')
 
 class IndicacionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -131,4 +146,5 @@ class IndicacionSerializer(serializers.ModelSerializer):
                   'fechaprescripcion',
                   'horadetoma',
                   'idpersonaep',
-                  'idmedicamento')
+                  'idmedicamento',
+                  'borrado')

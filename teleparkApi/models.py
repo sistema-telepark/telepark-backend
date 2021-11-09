@@ -82,6 +82,7 @@ class Diagnostico(models.Model):
     fecha = models.DateField()
     idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
     idenfermedad = models.ForeignKey('Enfermedad', models.DO_NOTHING, db_column='idEnfermedad')  # Field name made lowercase.
+    borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -147,7 +148,7 @@ class DjangoSession(models.Model):
 
 
 class Enfermedad(models.Model):
-    idenfermedad = models.IntegerField(db_column='idEnfermedad', primary_key=True)  # Field name made lowercase.
+    idenfermedad = models.AutoField(db_column='idEnfermedad', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
 
     class Meta:
@@ -172,7 +173,7 @@ class Evolucion(models.Model):
     escalaevolucion = models.IntegerField(db_column='escalaEvolucion')  # Field name made lowercase.
     fecha = models.DateField(blank=True, null=True)
     idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
-
+    borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
     class Meta:
         managed = False
         db_table = 'evolucion'
@@ -186,6 +187,7 @@ class Indicacionmedicamento(models.Model):
     horadetoma = models.TimeField(db_column='horaDeToma', blank=True, null=True)  # Field name made lowercase.
     idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
     idmedicamento = models.ForeignKey('Medicamento', models.DO_NOTHING, db_column='idMedicamento')  # Field name made lowercase.
+    borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -228,11 +230,21 @@ class Obrasocial(models.Model):
     idobrasocial = models.AutoField(db_column='idObraSocial', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45)
     esestatal = models.IntegerField(db_column='esEstatal', blank=True, null=True)  # Field name made lowercase.
-    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
 
     class Meta:
         managed = False
         db_table = 'obrasocial'
+
+
+class Os(models.Model):
+    idos = models.AutoField(db_column='idOS', primary_key=True)  # Field name made lowercase.
+    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
+    idobrasocial = models.ForeignKey('Obrasocial', models.DO_NOTHING, db_column='idObraSocial')  # Field name made lowercase.
+    borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'os'
 
 
 class Persona(models.Model):
