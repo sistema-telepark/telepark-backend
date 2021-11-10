@@ -4,7 +4,7 @@ from django.db import models
 from django.http.response import JsonResponse
 from rest_framework import serializers, status
 from rest_framework.parsers import JSONParser
-from .static import http_method
+from .static import HTTP_METHOD
 
 class ICRUDStrategy(metaclass=ABCMeta):
     @abstractmethod
@@ -17,7 +17,7 @@ class ICRUDStrategy(metaclass=ABCMeta):
 
 class PostStrategy(ICRUDStrategy):
     def canHandle(self, method):
-        return method == http_method.POST
+        return method == HTTP_METHOD.POST
 
     def handle(self, request, Model: Type[models.Model], ModelSerializer: Type[serializers.ModelSerializer]):
         entity = JSONParser().parse(request)
@@ -29,7 +29,7 @@ class PostStrategy(ICRUDStrategy):
 
 class GetStrategy(ICRUDStrategy):
     def canHandle(self, method):
-        return method == http_method.GET
+        return method == HTTP_METHOD.GET
 
     def handle(self, request, Model: Type[models.Model], ModelSerializer: Type[serializers.ModelSerializer]):
         entities = Model.objects.all()

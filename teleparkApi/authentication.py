@@ -3,16 +3,16 @@ from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.hashers import check_password
 from .permission import IsSuperuser
 from .helpers import check_attributes
-from .static import http_method
+from .static import HTTP_METHOD
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 import json
 
 
-@api_view([http_method.POST])
+@api_view([HTTP_METHOD.POST])
 def auth_view(request):
-    if(request.method != http_method.POST):
+    if(request.method != HTTP_METHOD.POST):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     if (not check_attributes(request.POST, ['user', 'password'])):
         return Response('Datos incompletos', status=status.HTTP_401_UNAUTHORIZED)
@@ -33,14 +33,14 @@ def auth_view(request):
     return Response({'access_token': str(token.access_token), 'refresh_token': str(token)})
 
 
-@api_view([http_method.POST])
+@api_view([HTTP_METHOD.POST])
 @permission_classes([IsSuperuser])
 def create_user(request):
     if(not request.user.is_superuser):
         return Response('No posee los permisos requeridos', status.HTTP_401_UNAUTHORIZED)
 
     body = json.loads(request.body.decode('utf-8'))
-    if (request.method != http_method.POST):
+    if (request.method != HTTP_METHOD.POST):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     if (not check_attributes(body, ['user', 'password', 'is_superuser', 'is_staff', 'email'])):
