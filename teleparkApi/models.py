@@ -8,6 +8,38 @@
 from django.db import models
 
 
+class Actividad(models.Model):
+    idactividad = models.AutoField(db_column='idActividad', primary_key=True)  # Field name made lowercase.
+    nombre = models.CharField(max_length=45)
+    idtaller = models.ForeignKey('Taller', models.DO_NOTHING, db_column='idTaller')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'actividad'
+
+
+class Actividadrealizada(models.Model):
+    idactividad = models.OneToOneField(Actividad, models.DO_NOTHING, db_column='idActividad', primary_key=True)  # Field name made lowercase.
+    idclasetaller = models.ForeignKey('Clasetaller', models.DO_NOTHING, db_column='idClaseTaller')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'actividadrealizada'
+        unique_together = (('idactividad', 'idclasetaller'),)
+
+
+class Asistenciataller(models.Model):
+    idasistenciataller = models.AutoField(db_column='idAsistenciaTaller', primary_key=True)  # Field name made lowercase.
+    estado = models.CharField(max_length=45)
+    idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
+    idclasetaller = models.ForeignKey('Clasetaller', models.DO_NOTHING, db_column='idClaseTaller')  # Field name made lowercase.
+    idcomportamiento = models.ForeignKey('Comportamiento', models.DO_NOTHING, db_column='idComportamiento', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'asistenciataller'
+
+
 class AuthGroup(models.Model):
     name = models.CharField(unique=True, max_length=150)
 
@@ -75,6 +107,26 @@ class AuthUserUserPermissions(models.Model):
         managed = False
         db_table = 'auth_user_user_permissions'
         unique_together = (('user', 'permission'),)
+
+
+class Clasetaller(models.Model):
+    idclasetaller = models.AutoField(db_column='idClaseTaller', primary_key=True)  # Field name made lowercase.
+    fecha = models.DateField()
+    virtual = models.IntegerField()
+    idtaller = models.ForeignKey('Taller', models.DO_NOTHING, db_column='idTaller')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'clasetaller'
+
+
+class Comportamiento(models.Model):
+    idcomportamiento = models.AutoField(db_column='idComportamiento', primary_key=True)  # Field name made lowercase.
+    comentario = models.CharField(max_length=45)
+
+    class Meta:
+        managed = False
+        db_table = 'comportamiento'
 
 
 class Diagnostico(models.Model):
@@ -179,6 +231,25 @@ class Evolucion(models.Model):
         db_table = 'evolucion'
 
 
+class Factorclase(models.Model):
+    idclasetaller = models.OneToOneField(Clasetaller, models.DO_NOTHING, db_column='idClaseTaller', primary_key=True)  # Field name made lowercase.
+    idfactorglobal = models.ForeignKey('Factorglobal', models.DO_NOTHING, db_column='idFactorGlobal')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'factorclase'
+        unique_together = (('idclasetaller', 'idfactorglobal'),)
+
+
+class Factorglobal(models.Model):
+    idfactorglobal = models.AutoField(db_column='idFactorGlobal', primary_key=True)  # Field name made lowercase.
+    nombre = models.CharField(max_length=45)
+
+    class Meta:
+        managed = False
+        db_table = 'factorglobal'
+
+
 class Indicacionmedicamento(models.Model):
     idindicacion = models.AutoField(db_column='idIndicacion', primary_key=True)  # Field name made lowercase.
     cantidadmiligramos = models.IntegerField(db_column='cantidadMiligramos', blank=True, null=True)  # Field name made lowercase.
@@ -279,6 +350,15 @@ class PersonaEp(models.Model):
         unique_together = (('idpersona', 'idreferente'),)
 
 
+class Taller(models.Model):
+    idtaller = models.AutoField(db_column='idTaller', primary_key=True)  # Field name made lowercase.
+    tipotaller = models.CharField(db_column='tipoTaller', max_length=45)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'taller'
+
+
 class Tipoevento(models.Model):
     idtipoevento = models.AutoField(db_column='idTipoEvento', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45, blank=True, null=True)
@@ -297,3 +377,33 @@ class Tipoparentesco(models.Model):
         managed = False
         db_table = 'tipoparentesco'
         unique_together = (('idpersona', 'idpersonaep'),)
+
+
+class Unidadobservacion(models.Model):
+    idunidadobservacion = models.AutoField(db_column='idUnidadObservacion', primary_key=True)  # Field name made lowercase.
+    nombre = models.CharField(max_length=45)
+
+    class Meta:
+        managed = False
+        db_table = 'unidadobservacion'
+
+
+class Valorvariableuo(models.Model):
+    idvalorvariableuo = models.AutoField(db_column='idValorVariableUO', primary_key=True)  # Field name made lowercase.
+    valor = models.CharField(max_length=45)
+    idvariableuo = models.ForeignKey('Variableuo', models.DO_NOTHING, db_column='idVariableUO')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'valorvariableuo'
+
+
+class Variableuo(models.Model):
+    idvariableuo = models.AutoField(db_column='idVariableUO', primary_key=True)  # Field name made lowercase.
+    nombre = models.CharField(max_length=45)
+    idcomportamiento = models.ForeignKey(Comportamiento, models.DO_NOTHING, db_column='idComportamiento')  # Field name made lowercase.
+    idunidadobservacion = models.ForeignKey(Unidadobservacion, models.DO_NOTHING, db_column='idUnidadObservacion')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'variableuo'
