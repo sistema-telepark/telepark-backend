@@ -6,8 +6,8 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 
-from .models import Evolucion, Diagnostico, Direccion, Enfermedad, Obrasocial, Indicacionmedicamento, Medicamento, Evento, Localidad, Municipio, Persona, PersonaEp, Tipoevento, Tipoparentesco
-from .serializers import EvolucionSerializer, DiagnosticoEpSerializer, DiagnosticoSerializer, DireccionSerializer, MedicamentoSerializer, IndicacionEpSerializer, IndicacionSerializer, EnfermedadSerializer, ObraSocialSerializer, EventoSerializer, LocalidadSerializer, MunicipioSerializer, PersonaEpSerializer, PersonaSerializer, PersonaPSerializer, TipoEventoSerializer, TipoparentescoSerializer
+from .models import Evolucion, Diagnostico, Direccion, Enfermedad, Obrasocial, Os, Indicacionmedicamento, Medicamento, Evento, Localidad, Municipio, Persona, PersonaEp, Tipoevento, Tipoparentesco
+from .serializers import EvolucionSerializer, DiagnosticoEpSerializer, DiagnosticoSerializer, DireccionSerializer, MedicamentoSerializer, IndicacionEpSerializer, IndicacionSerializer, EnfermedadSerializer, ObraSocialSerializer, OSEpSerializer, OSSerializer, EventoSerializer, LocalidadSerializer, MunicipioSerializer, PersonaEpSerializer, PersonaSerializer, PersonaPSerializer, TipoEventoSerializer, TipoparentescoSerializer
 
 class PersonaViewSet(viewsets.ModelViewSet):
     serializer_class = PersonaSerializer
@@ -89,12 +89,17 @@ class ObraSocialViewSet(viewsets.ModelViewSet):
     queryset = Obrasocial.objects.all()
     permission_classes = [IsAuthenticated]
 
+class OSViewSet(viewsets.ModelViewSet):
+    serializer_class = OSSerializer
+    queryset = Os.objects.all()
+    permission_classes = [IsAuthenticated]
+
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='personaep', url_name='personaep')
     def list_obrasocialP(self, request, pk):
-        obrasocial = Obrasocial.objects.filter(idpersonaep=pk)
+        obrasocial = Os.objects.filter(idpersonaep=pk)
         if request.method == 'GET': 
-            obrasocial_serializer = ObraSocialSerializer(obrasocial, many=True) 
+            obrasocial_serializer = OSEpSerializer(obrasocial, many=True) 
             return JsonResponse(obrasocial_serializer.data, safe=False)
 
 class MedicamentoViewSet(viewsets.ModelViewSet):
