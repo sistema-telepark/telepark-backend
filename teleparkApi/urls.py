@@ -1,6 +1,6 @@
 from teleparkApi.serializers import EventoSerializer
 from rest_framework.routers import DefaultRouter
-from django.conf.urls import url 
+from django.urls import re_path
 from . import authentication
 from .api import EvolucionViewSet, DiagnosticoViewSet, DireccionViewSet, EnfermedadViewSet, OSViewSet, ObraSocialViewSet, MedicamentoViewSet, IndicacionViewSet, EventoViewSet, LocalidadViewSet, MunicipioViewSet, PersonaEPViewSet, PersonaViewSet, PersonaPViewSet, TipoEventoViewSet, TipoParentescoViewSet
 
@@ -26,8 +26,8 @@ router.register(r'api/medicamento', MedicamentoViewSet, basename = 'medicamento'
 router.register(r'api/indicacion', IndicacionViewSet, basename = 'indicacionmedicamento')
 
 urlpatterns = [ 
-    url(r'^api/auth$', authentication.auth_view),
-    url(r'^api/create_user$', authentication.create_user)
+    re_path(r'^api/auth$', authentication.auth_view),
+    re_path(r'^api/create_user$', authentication.create_user)
 ]
 
 urlpatterns += router.urls
