@@ -40,11 +40,11 @@ STATICFILES_DIRS = (
 SECRET_KEY = 'django-insecure-5@j$75afof+#p%ft9d4e!)x7%_8na_3arrrb19k1enrjz*g+%u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG")
 
 ALLOWED_HOSTS = ['*']
 
-
+CSRF_TRUSTED_ORIGINS = [os.getenv("CSRF_TRUSTED_ORIGINS")]
 # Application definition
 
 INSTALLED_APPS = [
