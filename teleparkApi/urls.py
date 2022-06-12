@@ -30,9 +30,8 @@ router.register(r'api/medicamento', MedicamentoViewSet, basename = 'medicamento'
 router.register(r'api/indicacion', IndicacionViewSet, basename = 'indicacionmedicamento')
 
 urlpatterns = [ 
-    re_path(r'^api/auth$', authentication.auth_view),
+    re_path(r'^api/login$', authentication.auth_view),
     re_path(r'^api/create_user$', authentication.create_user),
-    re_path('api/login', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     re_path('api/refresh_token', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 

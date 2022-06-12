@@ -12,17 +12,18 @@ import json
 
 @api_view([HTTP_METHOD.POST])
 def auth_view(request):
+    body = json.loads(request.body.decode('utf-8'))
     if(request.method != HTTP_METHOD.POST):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-    if (not check_attributes(request.POST, ['user', 'password'])):
+    if (not check_attributes(body, ['username', 'password'])):
         return Response('Datos incompletos', status=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        user = User.objects.get(username=request.POST['user'])
+        user = User.objects.get(username=body['username'])
     except User.DoesNotExist:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if (not check_password(request.POST['password'], user.password)):
+    if (not check_password(body['password'], user.password)):
         return Response('Los datos ingresados son invalidos', status=status.HTTP_401_UNAUTHORIZED)
 
     if (not user.is_active):
@@ -30,7 +31,7 @@ def auth_view(request):
 
     token = RefreshToken.for_user(user)
 
-    return Response({'access_token': str(token.access_token), 'refresh_token': str(token)})
+    return Response({'access': str(token.access_token), 'refresh': str(token), 'is_superuser': user.is_superuser, 'username': user.username, 'name': user.get_full_name()}, status=status.HTTP_200_OK)
 
 
 @api_view([HTTP_METHOD.POST])
