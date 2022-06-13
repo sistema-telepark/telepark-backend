@@ -33,6 +33,8 @@ urlpatterns = [
     re_path(r'^api/login$', authentication.auth_view),
     re_path(r'^api/create_user$', authentication.create_user),
     re_path('api/refresh_token', TokenRefreshView.as_view(), name='token_refresh'),
+    re_path(r'^api/users$', authentication.get_users),
+    re_path(r'^api/update_user$', authentication.update_user),
 ]
 
 urlpatterns += router.urls
