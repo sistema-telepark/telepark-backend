@@ -46,14 +46,13 @@ def create_user(request):
     if (request.method != HTTP_METHOD.POST):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    if (not check_attributes(body, ['user', 'password', 'is_superuser', 'is_staff', 'email'])):
+    if (not check_attributes(body, ['user', 'first_name', 'last_name', 'password', 'is_superuser', 'is_staff', 'is_active'])):
         return Response('Datos incompletos', status=status.HTTP_400_BAD_REQUEST)
 
     if (User.objects.filter(username=body['user']).exists()):
         return Response('El usuario ya existe', status=status.HTTP_400_BAD_REQUEST)
 
-    User.objects.create_user(username=body['user'], password=body['password'],
-                             is_superuser=body['is_superuser'], is_staff=body['is_staff'], email=body['email'])
+    User.objects.create_user(username=body['user'], first_name=body['first_name'], last_name=body['last_name'], password=body['password'], is_superuser=body['is_superuser'], is_staff=body['is_staff'], is_active=body['is_active'])
 
     return Response('OK', status=status.HTTP_201_CREATED)
 
