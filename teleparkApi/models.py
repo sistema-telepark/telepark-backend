@@ -210,7 +210,8 @@ class Enfermedad(models.Model):
 
 class Evento(models.Model):
     idevento = models.AutoField(db_column='idEvento', primary_key=True)  # Field name made lowercase.
-    fecha = models.DateField(blank=True, null=True)
+    fechadesde = models.DateField(db_column='fechaDesde', blank=True, null=True)
+    fechahasta = models.DateField(db_column='fechaHasta', blank=True, null=True)
     motivo = models.CharField(max_length=45, blank=True, null=True)
     idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
     idtipoevento = models.ForeignKey('Tipoevento', models.DO_NOTHING, db_column='idTipoEvento')  # Field name made lowercase.
@@ -331,6 +332,7 @@ class Persona(models.Model):
 
 
 class PersonaEp(models.Model):
+    activataller = models.IntegerField(db_column='activaTaller', blank=True, null=True)  # Field name made lowercase.
     escolaridadcompleta = models.IntegerField(db_column='escolaridadCompleta', blank=True, null=True)  # Field name made lowercase.
     fechainicio = models.DateTimeField(db_column='fechaInicio')  # Field name made lowercase.
     fechanacimiento = models.DateField(db_column='fechaNacimiento')  # Field name made lowercase.
@@ -362,6 +364,7 @@ class Taller(models.Model):
 class Tipoevento(models.Model):
     idtipoevento = models.AutoField(db_column='idTipoEvento', primary_key=True)  # Field name made lowercase.
     nombre = models.CharField(max_length=45, blank=True, null=True)
+    desactivataller = models.IntegerField(db_column='desactivaTaller', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
