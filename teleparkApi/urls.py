@@ -2,6 +2,10 @@ from teleparkApi.serializers import EventoSerializer
 from rest_framework.routers import DefaultRouter
 from django.urls import re_path
 from . import authentication
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from .api import EvolucionViewSet, DiagnosticoViewSet, DireccionViewSet, EnfermedadViewSet, OSViewSet, ObraSocialViewSet, MedicamentoViewSet, IndicacionViewSet, EventoViewSet, LocalidadViewSet, MunicipioViewSet, PersonaEPViewSet, PersonaViewSet, PersonaPViewSet, TipoEventoViewSet, TipoParentescoViewSet
 
 app_name = 'teleparkApi'
@@ -26,8 +30,11 @@ router.register(r'api/medicamento', MedicamentoViewSet, basename = 'medicamento'
 router.register(r'api/indicacion', IndicacionViewSet, basename = 'indicacionmedicamento')
 
 urlpatterns = [ 
-    re_path(r'^api/auth$', authentication.auth_view),
-    re_path(r'^api/create_user$', authentication.create_user)
+    re_path(r'^api/login$', authentication.auth_view),
+    re_path(r'^api/create_user$', authentication.create_user),
+    re_path('api/refresh_token', TokenRefreshView.as_view(), name='token_refresh'),
+    re_path(r'^api/users$', authentication.get_users),
+    re_path(r'^api/update_user$', authentication.update_user),
 ]
 
 urlpatterns += router.urls
