@@ -326,6 +326,7 @@ class Persona(models.Model):
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=35)
     iddireccion = models.ForeignKey(Direccion, models.DO_NOTHING, db_column='idDireccion', blank=True, null=True)  # Field name made lowercase.
+    borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
 
     class Meta:
         managed = False
