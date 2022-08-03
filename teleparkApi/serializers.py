@@ -50,7 +50,7 @@ class EnfermedadSerializer(serializers.ModelSerializer):
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
-        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado')
+        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado', 'espaciente')
 
 class PersonaEpSerializer(serializers.ModelSerializer):
     class Meta:
