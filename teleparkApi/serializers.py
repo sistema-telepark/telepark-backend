@@ -50,12 +50,12 @@ class EnfermedadSerializer(serializers.ModelSerializer):
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
-        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion')
+        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado', 'espaciente')
 
 class PersonaEpSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonaEp
-        fields = ('activataller'
+        fields = ('activataller',
                   'escolaridadcompleta',
                   'fechainicio',
                   'fechanacimiento',
@@ -94,14 +94,14 @@ class TipoparentescoSerializer(serializers.ModelSerializer):
 class TipoEventoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tipoevento
-        fields = ('idtipoevento', 'nombre', 'desactivataller')
+        fields = ('idtipoevento', 'nombre', 'desactivataller', 'borrado')
 
 class EventoSerializer(serializers.ModelSerializer):
     tipoEvento = TipoEventoSerializer
 
     class Meta:
         model = Evento
-        fields = ('idevento','fechadesde', 'fechahasta', 'motivo', 'idpersonaep', 'idtipoevento')
+        fields = ('idevento','fechadesde', 'fechahasta', 'motivo', 'idpersonaep', 'idtipoevento', 'borrado')
 
 class ObraSocialSerializer(serializers.ModelSerializer):
     class Meta:
