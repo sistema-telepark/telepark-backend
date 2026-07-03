@@ -14,7 +14,7 @@ router = DefaultRouter(trailing_slash=False)
 
 router.register(r'api/persona', PersonaViewSet, basename = 'persona')
 router.register(r'api/personaEp', PersonaEPViewSet, basename = 'personaEp')
-router.register(r'api/personaP', PersonaPViewSet, basename = 'personaEp')
+router.register(r'api/personaP', PersonaPViewSet, basename = 'personaP')
 router.register(r'api/direccion', DireccionViewSet, basename = 'direccion')
 router.register(r'api/tipoparentesco', TipoParentescoViewSet, basename = 'tipoparentesco')
 router.register(r'api/localidad', LocalidadViewSet, basename = 'localidad')
