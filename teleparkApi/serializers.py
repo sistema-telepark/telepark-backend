@@ -42,11 +42,6 @@ class DireccionSerializer(serializers.ModelSerializer):
                   'piso',
                   'idlocalidad')
 
-class EnfermedadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Enfermedad
-        fields = ('idenfermedad', 'nombre')
-
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
