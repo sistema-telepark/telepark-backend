@@ -1,102 +1,108 @@
-# ESTADO DEL SISTEMA — Telepark Backend
+# ESTADO.md — Estado Persistente del Pipeline
 
-## Identificador de Ciclo
-- **ID:** CICLO-20260702-001
-- **Fecha:** 2026-07-02
-- **Modo:** BROWNFIELD
-- **Tipo:** Refactorización / Estabilización de Entorno
-
----
-
-## Fase Actual
+## Metadatos del Ciclo
 | Campo | Valor |
 |-------|-------|
-| **Fase** | `DESARROLLO` |
-| **Paso** | Contrato arquitectónico aprobado por gatekeeper — invocando al Desarrollador |
-| **siguiente_agente** | `Desarrollador` |
+| **Ciclo ID** | `CICLO-20260703-001` |
+| **Modo** | `BROWNFIELD` |
+| **Fecha Inicio** | 2026-07-03 |
+| **Fase Actual** | `COMPLETADO` |
+| **siguiente_agente** | `NONE` |
+| **intentos_fase_actual** | 0 |
 
----
-
-## Patrón Arquitectónico
-| Aspecto | Valor |
-|---------|-------|
-| **Patrón** | REST API con ViewSets + Routers (DRF) |
-| **Estilo** | Resource-oriented (cada modelo = un ViewSet) |
-| **Autenticación** | JWT Bearer Token (simplejwt 5.5.1) |
-| **Autorización** | IsAuthenticated global + IsSuperuser |
-| **Base de datos** | MySQL — modelos managed=False |
-| **Configuración** | python-dotenv + variables de entorno |
-
-## Stack Tecnológico Post-Estabilización (objetivo — versiones verificadas con Context7 + PyPI)
-| Componente | Versión Actual | Versión Objetivo | Fuente |
-|-----------|---------------|-------------------|--------|
-| Django | 3.2.5 (EOL) | **5.2.x LTS** ⚠️ | docs.djangoproject.com |
-| DRF | 3.12.4 | **3.17.1** | pypi.org |
-| simplejwt | 4.7.2 | **5.5.1** | pypi.org |
-| django-cors-headers | 3.10.1 | **4.9.0** | pypi.org |
-| django-rest-swagger | 2.2.0 | ❌ ELIMINAR | No importado |
-| python-dotenv | 0.18.0 | **1.2.2** | pypi.org |
-| mysqlclient | 2.1.0 | **2.2.8** | pypi.org (cp314 wheels) |
-| PyJWT | 2.1.0 | **2.13.0** | pypi.org |
-| urllib3 | 1.26.6 | **2.7.0** | pypi.org |
-| requests | 2.26.0 | **2.34.2** | pypi.org |
-| certifi | 2021.5.30 | **2026.05.20** | pypi.org |
-| sqlparse | 0.4.1 | **0.5.4** | pypi.org |
-| setuptools | 41.2.0 | **82.0.1** | pypi.org |
-| asgiref | 3.4.1 | **3.11.1** | pypi.org |
-| Jinja2 | 3.0.1 | **3.1.6** | pypi.org |
-
-> 🔴 **Nota crítica:** Python 3.14.2 está instalado. Django 4.2 LTS NO es compatible (solo Python ≤3.12).  
-> La versión mínima viable es **Django 5.2 LTS** (soporta Python 3.10-3.14) o **Django 6.0.6** (soporta Python 3.12-3.14).
-
----
-
-## Archivos Generados en este Ciclo
-| Archivo | Estado | Propósito |
-|---------|--------|-----------|
-| `.specs/ESTADO.md` | ✅ Creado | Estado persistente del ciclo |
-| `.specs/BASELINE.md` | ✅ Creado | Fotografía del código pre-refactorización |
-| `.specs/REQUERIMIENTOS.md` | ✅ Creado | User stories + criterios EARS |
-| `.specs/ARQUITECTURA.md` | ✅ Creado | Contrato arquitectónico vinculante (10 fases, 617 líneas) |
-| `.specs/CAMBIOS.md` | ⏳ Pendiente | Se creará durante desarrollo |
-
----
-
-## Contador de Intentos
-- **Intentos acumulados (ciclo actual):** 0
-- **Categorías de rechazo:** Ninguna
-- **Circuit Breaker:** INACTIVO
-
----
-
-## Requerimientos en Curso
+## Requerimientos Completados
 | ID | User Story | Estado |
 |----|-----------|--------|
-| US-01 | Actualizar Django y dependencias a versiones estables/seguras | ✅ Plan arquitectónico listo — enviando a Desarrollador |
-| US-02 | Eliminar código muerto (views.py, admin.py stub, tests.py stub, serializador duplicado) | ✅ Plan arquitectónico listo — enviando a Desarrollador |
-| US-03 | Eliminar librerías sin uso (django-rest-swagger + 5 transitivas) | ✅ Plan arquitectónico listo — enviando a Desarrollador |
-| US-04 | Garantizar compilación y tests pasantes sin regresiones | ✅ Plan arquitectónico listo — enviando a Desarrollador |
+| US-01 | Crear capa `services/` con clases Python puras para lógica de negocio | ✅ COMPLETADO — 9 módulos + BaseService, 15 clases |
+| US-02 | Migrar `api.py` → `views.py` y ViewSets como adaptadores HTTP | ✅ COMPLETADO — 16 ViewSets refactorizados, api.py eliminado |
+| US-03 | Acciones `@action` delegar filtrados ORM a Servicios | ✅ COMPLETADO — Diagnostico, Evolucion, OS, Indicacion |
+| US-04 | Eliminar `handlers.py` (100% código muerto) | ✅ COMPLETADO — handlers.py eliminado |
+| US-05 | QA post-refactorización sin regresiones | ✅ COMPLETADO — 0 regresiones, 0 errores check |
 
 ## Veredicto de Seguridad Global
 | Indicador | Estado |
 |-----------|--------|
-| **Seguridad Global** | `PENDING` |
-| **OWASP Compliance** | `PENDING` |
-| **Cumplimiento REQ-04 (sin CVEs)** | `PENDING` |
+| **Seguridad Global** | ✅ `COMPLIANT` |
+| **OWASP Compliance** | ✅ `COMPLIANT` (Revisor) |
+| **Veredicto de Seguridad** | ✅ `PASSED` (QA) |
 
----
+## Trazabilidad EARS
+| ID | Criterio | Estado |
+|----|----------|--------|
+| REQ-01 | Carpeta `services/` con `__init__.py` y módulos | ✅ PASS |
+| REQ-02 | `api.py` migrado a `views.py` | ✅ PASS |
+| REQ-03 | ViewSets delegan TODAS las operaciones en Servicios | ✅ PASS |
+| REQ-04 | ViewSets limitados a request → service → response | ✅ PASS |
+| REQ-05 | `handlers.py` eliminado | ✅ PASS |
+| REQ-06 | Servicios usan Modelos directamente (no serializadores) | ✅ PASS |
+| REQ-07 | Servicios son clases Python puras (sin DRF) | ✅ PASS |
+| REQ-08 | DiagnosticoViewSet @action → Service.filtrar_por_persona() | ✅ PASS |
+| REQ-09 | EvolucionViewSet @action → Service.filtrar_por_persona() | ✅ PASS |
+| REQ-10 | OSViewSet @action → Service.filtrar_por_persona() | ✅ PASS |
+| REQ-11 | IndicacionViewSet @action → Service.filtrar_por_persona() | ✅ PASS |
+| REQ-12 | `python manage.py check` → 0 errores | ✅ PASS |
+| REQ-13 | `python manage.py test` → sin errores de importación | ✅ PASS |
+| REQ-14 | ModelViewSet configurado vía servicios | ✅ PASS |
+| REQ-15 | ORM de Django exclusivamente (sin raw SQL) | ✅ PASS |
+| REQ-16 | Excepciones de dominio (NotFoundException) | ✅ PASS |
+| REQ-17 | Sin regresiones en endpoints existentes | ✅ PASS |
+| REQ-18 | B002 corregido (EventoSerializer.tipoEvento) | ✅ PASS |
+| REQ-19 | BaseService creado para reducir duplicación | ✅ PASS |
 
 ## Resumen Ejecutivo
-Ciclo de refactorización Brownfield avanzado a fase **DESARROLLO**. Se ha completado:
 
-1. ✅ **Precondición verificada:** `.specs/GLOBAL_RULES.md` presente y no vacío.
-2. ✅ **Baseline generado:** `.specs/BASELINE.md` con fotografía completa del código en commit `7c3eb7c`.
-3. ✅ **Análisis de código muerto:** `views.py` (100% no enrutado), `admin.py` stub, `tests.py` stub, `EnfermedadSerializer` duplicado.
-4. ✅ **Análisis de dependencias:** 22/25 desactualizadas, 13 eliminables, 5 con CVEs.
-5. ✅ **Requerimientos redactados:** 4 user stories con 15 criterios EARS.
-6. ✅ **Aprobación humana obtenida:** Requerimientos aprobados.
-7. ✅ **Versiones verificadas con Context7 + PyPI:** Stack objetivo confirmado.
-8. ✅ **Contrato arquitectónico generado:** `.specs/ARQUITECTURA.md` (617 líneas, 10 fases, 10 riesgos).
-9. ✅ **Gatekeeper DISEÑO aprobado:** Documento completo y vinculante.
+### Pipeline completo
+| Fase | Agente | Resultado |
+|------|--------|-----------|
+| `DISCOVERY` | Analista | ✅ BASELINE.md regenerado (236 líneas, post-ciclos anteriores) |
+| `REQUERIMIENTOS` | Orquestador | ✅ 5 US + 19 EARS, aprobado por humano |
+| `DISEÑO` | Gatekeeper (Regla 4) | ✅ Salteado — stack+patrón+ARQUITECTURA.md existen |
+| `DESARROLLO` | Desarrollador | ✅ 10 archivos creados, 2 modificados, 3 eliminados. 0 errores check |
+| `REVISION` | Revisor | ✅ APPROVED + OWASP COMPLIANT (3 hallazgos WARNING/INFO) |
+| `QA` | QA | ✅ PASSED + Security PASSED (19/19 EARS) |
 
-**Próximo paso:** El Desarrollador ejecutará las 10 fases del plan arquitectónico secuencialmente.
+### Decisiones Humanas
+- **B001 (PersonaPViewSet):** A-1 — Mantener como está, vista reducida intencional de PersonaEp.
+
+### Logros cuantitativos
+| Métrica | Antes | Después |
+|---------|-------|---------|
+| Capa de Servicios | ❌ No existía | ✅ 9 módulos + BaseService, 15 clases |
+| ViewSets con lógica ORM directa | 16 (100%) | 0 (0%) |
+| Lógica de negocio en capa HTTP | 🔴 Crítico (A001) | ✅ Toda en services/ |
+| Código muerto (handlers.py) | 50 líneas | ✅ Eliminado |
+| `python manage.py check` | 0 errores | ✅ 0 errores (sin regresión) |
+| Acoplamiento Views→Models | 🔴 Directo | ✅ Vía Services (desacoplado) |
+
+### Observaciones post-ciclo
+1. **Corrección B002**: `EventoSerializer.tipoEvento` ahora serializa nested — cambio aditivo backward-compatible.
+2. **A003 persistente**: `authentication.py` aún contiene lógica de negocio directa (fuera de alcance).
+3. **B004 persistente**: Doble verificación de permisos en authentication.py (fuera de alcance).
+4. **S004 persistente**: `CSRF_TRUSTED_ORIGINS` sin fallback seguro.
+
+## Circuit Breaker
+- **Intentos acumulados:** 0
+- **Categoría de rechazo:** N/A
+- **Estado actual:** INACTIVO — ciclo completado exitosamente
+
+## Archivos Creados/Modificados/Eliminados
+| Archivo | Acción | Propósito |
+|---------|--------|-----------|
+| `.specs/BASELINE.md` | 🔄 Regenerado | Rediscovery post-ciclos anteriores (236 líneas) |
+| `.specs/REQUERIMIENTOS.md` | 🆕 Creado | 5 US + 19 criterios EARS |
+| `teleparkApi/services/__init__.py` | 🆕 Creado | Paquete de servicios |
+| `teleparkApi/services/base_service.py` | 🆕 Creado | BaseService + NotFoundException + ServiceException |
+| `teleparkApi/services/persona_service.py` | 🆕 Creado | PersonaService, PersonaEpService, DireccionService, TipoParentescoService, LocalidadService, MunicipioService |
+| `teleparkApi/services/diagnostico_service.py` | 🆕 Creado | DiagnosticoService + filtrar_por_persona() |
+| `teleparkApi/services/evolucion_service.py` | 🆕 Creado | EvolucionService + filtrar_por_persona() |
+| `teleparkApi/services/os_service.py` | 🆕 Creado | ObraSocialService, OsService + filtrar_por_persona() |
+| `teleparkApi/services/indicacion_service.py` | 🆕 Creado | IndicacionService + filtrar_por_persona() |
+| `teleparkApi/services/medicamento_service.py` | 🆕 Creado | MedicamentoService |
+| `teleparkApi/services/evento_service.py` | 🆕 Creado | EventoService, TipoEventoService |
+| `teleparkApi/services/enfermedad_service.py` | 🆕 Creado | EnfermedadService |
+| `teleparkApi/views.py` | 🆕 Creado | 16 ViewSets refactorizados + health_check (199 líneas) |
+| `teleparkApi/urls.py` | ✏️ Modificado | Importaciones actualizadas de `.api` a `.views` |
+| `teleparkApi/serializers.py` | ✏️ Modificado | B002 corregido (tipoEvento nested) |
+| `teleparkApi/api.py` | 🗑️ Eliminado | Migrado a views.py |
+| `teleparkApi/handlers.py` | 🗑️ Eliminado | Código muerto (D001) |
+| `teleparkApi/views/` (directorio) | 🗑️ Eliminado | Contenido fusionado en views.py |

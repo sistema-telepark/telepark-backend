@@ -92,11 +92,11 @@ class TipoEventoSerializer(serializers.ModelSerializer):
         fields = ('idtipoevento', 'nombre', 'desactivataller', 'borrado')
 
 class EventoSerializer(serializers.ModelSerializer):
-    tipoEvento = TipoEventoSerializer
+    tipoEvento = TipoEventoSerializer(many=False, read_only=True)
 
     class Meta:
         model = Evento
-        fields = ('idevento','fechadesde', 'fechahasta', 'motivo', 'idpersonaep', 'idtipoevento', 'borrado')
+        fields = ('idevento','fechadesde', 'fechahasta', 'motivo', 'idpersonaep', 'idtipoevento', 'tipoEvento', 'borrado')
 
 class ObraSocialSerializer(serializers.ModelSerializer):
     class Meta:

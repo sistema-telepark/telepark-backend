@@ -1,610 +1,930 @@
-# ARQUITECTURA — Contrato Arquitectónico de Estabilización
+# ARQUITECTURA — Contrato Arquitectónico de Dockerización y Migración `managed`
 
-> **Ciclo:** CICLO-20260702-001  
+> **Ciclo:** CICLO-20260702-002  
 > **Fecha:** 2026-07-02  
 > **Modo:** BROWNFIELD  
-> **Artefacto:** Contrato vinculante para el plan de estabilización del entorno  
+> **Artefacto:** Contrato vinculante para dockerización y cambio de `managed=False` → `managed=True`  
 > **Precedencia:** Este documento tiene precedencia sobre decisiones técnicas ad-hoc. Solo puede ser modificado mediante aprobación explícita del orquestador.
 
 ---
 
 ## Índice
 
-1. [Orden de Ejecución (Roadmap en Fases)](#1-orden-de-ejecución-roadmap-en-fases)
-2. [Estrategia de Rollback](#2-estrategia-de-rollback)
-3. [SECRET_KEY y settings.py](#3-secret_key-y-settingspy)
-4. [pytz → zoneinfo](#4-pytz--zoneinfo)
-5. [Verificación de compatibilidad simplejwt + Python 3.14](#5-verificación-de-compatibilidad-simplejwt--python-314)
-6. [Análisis de Breaking Changes](#6-análisis-de-breaking-changes)
-7. [Diagrama de Arquitectura Post-Estabilización](#7-diagrama-de-arquitectura-post-estabilización)
-8. [Matriz de Riesgos](#8-matriz-de-riesgos)
-9. [Contrato Vinculante](#9-contrato-vinculante)
-10. [Aprobación](#10-aprobación)
+1. [Stack Tecnológico](#1-stack-tecnológico)
+2. [Patrón Arquitectónico](#2-patrón-arquitectónico)
+3. [Diseño de Componentes](#3-diseño-de-componentes)
+4. [Plan de Migración de Datos](#4-plan-de-migración-de-datos)
+5. [Variables de Entorno](#5-variables-de-entorno)
+6. [Riesgos y Mitigaciones](#6-riesgos-y-mitigaciones)
+7. [Contrato de Interfaces](#7-contrato-de-interfaces)
+8. [Contrato Vinculante](#8-contrato-vinculante)
 
 ---
 
-## 1. Orden de Ejecución (Roadmap en Fases)
+## 1. Stack Tecnológico
 
-El orden propuesto minimiza superficie de error al **eliminar dead code y dependencias muertas primero**, antes de tocar cualquier actualización de paquetes. Esto reduce las variables en juego durante la actualización de Django/DRF.
+### 1.1. Stack Confirmado (post-CICLO-20260702-001)
 
-### Fase 0: Preparación y Snapshot
+| Componente | Versión | Estado |
+|-----------|---------|--------|
+| **Python** | 3.14.2 | ✅ Verificado en ciclo anterior |
+| **Django** | 6.0.6 | ✅ Resuelto por pip en ciclo anterior |
+| **djangorestframework** | 3.17.1 | ✅ Verificado |
+| **djangorestframework-simplejwt** | 5.5.1 | ✅ Verificado |
+| **mysqlclient** | 2.2.8 | ✅ Verificado (wheel disponible para cp314) |
+| **PyMySQL** | 1.0.2 | 🟡 Fallback si mysqlclient falla en Docker |
+| **django-cors-headers** | 4.9.0 | ✅ Verificado |
+| **python-dotenv** | 1.2.2 | ✅ Verificado |
+| **MySQL Server** | 8.0.x (imagen `mysql:8.0`) | 🆕 Se agrega para Docker |
+| **Docker** | ≥ 24.0 | Requisito de entorno |
+| **Docker Compose** | ≥ 2.20 | Requisito de entorno |
 
-| # | Acción | Comando / Detalle | Justificación |
-|---|--------|-------------------|---------------|
-| 0.1 | Verificar Python 3.14.2 | `python --version` | Precondición: el intérprete debe ser 3.14.2 |
-| 0.2 | Snapshot de dependencias actuales | `pip freeze > .specs/requirements-baseline.txt` | Línea base para rollback de pip |
-| 0.3 | Snapshot de git | `git stash push -m "PRE-REFACTOR-$(date +%Y%m%d)"` (opcional) | Preservar cambios no commiteados |
-| 0.4 | Verificar git status limpio | `git status` | Asegurar que partimos del commit `7c3eb7c` |
-| 0.5 | Crear rama de trabajo | `git checkout -b refactor/ciclo-20260702-001` | Aislar cambios |
+### 1.2. Dependencias Python (requirements.txt — 20 paquetes)
 
-### Fase 1: Limpieza de Código Muerto (US-02, US-03)
+```
+asgiref==3.11.1
+certifi==2026.5.20
+charset-normalizer==3.4.1
+Django==6.0.6
+django-cors-headers==4.9.0
+djangorestframework==3.17.1
+djangorestframework_simplejwt==5.5.1
+idna==3.10
+Jinja2==3.1.6
+MarkupSafe==3.0.2
+mysqlclient==2.2.8
+PyJWT==2.13.0
+PyMySQL==1.0.2          # Fallback driver
+python-dotenv==1.2.2
+requests==2.34.2
+setuptools==82.0.1
+simplejson==3.19.2
+sqlparse==0.5.4
+tzdata==2026.2
+urllib3==2.7.0
+```
 
-| # | Archivo | Acción | Comando / Detalle |
-|---|---------|--------|-------------------|
-| 1.1 | `teleparkApi/views.py` | **ELIMINAR** archivo completo (42 líneas, 100% no enrutado) | `git rm teleparkApi/views.py` |
-| 1.2 | `teleparkApi/admin.py` | **ELIMINAR** archivo (stub sin registros) | `git rm teleparkApi/admin.py` |
-| 1.3 | `teleparkApi/tests.py` | **ELIMINAR** archivo (stub sin tests) | `git rm teleparkApi/tests.py` |
-| 1.4 | `teleparkApi/serializers.py` | **ELIMINAR** duplicado `EnfermedadSerializer` (líneas 45-48) | Eliminar segunda definición (conservar líneas 11-14) |
-| 1.5 | Remover dependencias muertas de `requirements.txt` | **ELIMINAR** 6 líneas: `django-rest-swagger`, `coreapi`, `coreschema`, `openapi-codec`, `uritemplate`, `itypes` | Editar `requirements.txt` |
-| 1.6 | Verificar imports no rotos | `python -c "import teleparkApi"` o `python manage.py check` | Confirmar que nada importaba estos módulos |
+### 1.3. Decisiones de Stack
 
-**Criterio de éxito Fase 1:** `python manage.py check` debe ejecutarse sin errores de importación.
-
-### Fase 2: Migración de SECRET_KEY a variable de entorno (REQ-05)
-
-| # | Acción | Detalle |
-|---|--------|---------|
-| 2.1 | En `settings.py`: reemplazar `SECRET_KEY = 'django-insecure-...'` por `SECRET_KEY = os.getenv("SECRET_KEY")` | Acepta el valor desde `.env` |
-| 2.2 | En `settings.py`: reemplazar `ALLOWED_HOSTS = ['*']` por `ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")` | Restringir hosts |
-| 2.3 | Verificar que `example.env` ya contiene `SECRET_KEY=` (línea 8) | Ya existe — solo asegurar visibilidad en README/docs |
-| 2.4 | Verificar `CSRF_TRUSTED_ORIGINS` de lista unitaria | Actualmente `[os.getenv("CSRF_TRUSTED_ORIGINS")]` — OK para este ciclo |
-
-**Criterio de éxito Fase 2:** `python manage.py check --deploy` reporta CERO errores de seguridad críticos.
-
-### Fase 3: actualizar dependencias de infraestructura (no Django)
-
-Actualizar paquetes que NO son Django/DRF primero, para aislar problemas.
-
-| # | Paquete | Versión objetivo | Comando |
-|---|---------|-----------------|---------|
-| 3.1 | setuptools | 82.0.1 | `pip install setuptools==82.0.1` |
-| 3.2 | python-dotenv | 1.2.2 | `pip install python-dotenv==1.2.2` |
-| 3.3 | mysqlclient | 2.2.8 | `pip install mysqlclient==2.2.8` |
-| 3.4 | PyJWT | 2.13.0 | `pip install PyJWT==2.13.0` |
-| 3.5 | urllib3 | 2.7.0 | `pip install urllib3==2.7.0` |
-| 3.6 | requests | 2.34.2 | `pip install requests==2.34.2` |
-| 3.7 | certifi | 2026.05.20 | `pip install certifi==2026.05.20` |
-| 3.8 | sqlparse | 0.5.4 | `pip install sqlparse==0.5.4` |
-| 3.9 | asgiref | 3.11.1 | `pip install asgiref==3.11.1` |
-| 3.10 | Jinja2 | 3.1.6 | `pip install Jinja2==3.1.6` |
-| 3.11 | simplejson | 3.19.x (última compatible) | `pip install simplejson==3.19.x` |
-| 3.12 | MarkupSafe | junto con Jinja2 | se actualiza automáticamente |
-| 3.13 | charset-normalizer | junto con requests | se actualiza automáticamente |
-| 3.14 | idna | junto con requests | se actualiza automáticamente |
-| 3.15 | pytz | **ELIMINAR** | `pip uninstall pytz -y` |
-
-**Criterio de éxito Fase 3:** `pip freeze` muestra todas las versiones objetivo. `python manage.py check` sin errores.
-
-### Fase 4: Verificar simplejwt + Python 3.14 (pre-actualización Django)
-
-**Ver sección 5** — esta fase es un checkpoint previo a la actualización de Django.
-
-- Instalar simplejwt 5.5.1 de forma aislada
-- Probar importación y configuración básica
-- Si falla → ejecutar plan de contingencia (sección 5.2)
-
-### Fase 5: Actualizar Django + DRF + dependencias asociadas
-
-| # | Acción | Comando | Notas |
-|---|--------|---------|-------|
-| 5.1 | Instalar Django 5.2 LTS | `pip install Django==5.2` | Puede resolver sqlparse, asgiref automáticamente |
-| 5.2 | Modificar `settings.py` para Django 5.2 | Ver sección 3 | `DEFAULT_AUTO_FIELD`, `MIDDLEWARE`, etc. |
-| 5.3 | Instalar DRF 3.17.1 | `pip install djangorestframework==3.17.1` | Soporta Django 4.2-6.0 |
-| 5.4 | Instalar simplejwt 5.5.1 | `pip install djangorestframework-simplejwt==5.5.1` | Requiere DRF ≥3.14 |
-| 5.5 | Instalar django-cors-headers 4.9.0 | `pip install django-cors-headers==4.9.0` | Compatible Django 4.2-6.0 |
-| 5.6 | Ejecutar `python manage.py check` | Verificar sin errores | |
-| 5.7 | Ejecutar `python manage.py check --deploy` | Verificar REQ-05 | |
-
-### Fase 6: Actualizar `telepark/urls.py` — `re_path` → `path` (REQ-13, B003)
-
-| # | Acción | Detalle |
-|---|--------|---------|
-| 6.1 | Reemplazar `re_path(r'^', include('teleparkApi.urls'))` por `path('', include('teleparkApi.urls'))` | No requiere regex. Django 5.2 acepta `path` con string vacío como raíz |
-
-**Nota:** El bug B003 (`re_path(r'^', ...)` captura todo incluyendo `/admin/`) **NO se corrige** funcionalmente — solo se migra la sintaxis a `path()` que es semánticamente equivalente. La corrección del bug (orden de urlpatterns) queda fuera de alcance.
-
-### Fase 7: Actualizar `teleparkApi/urls.py` — `re_path` → `path`
-
-| # | Ruta actual (`re_path`) | Ruta nueva (`path`) |
-|---|------------------------|---------------------|
-| 7.1 | `re_path(r'^api/login$', ...)` | `path('api/login', ...)` |
-| 7.2 | `re_path(r'^api/create_user$', ...)` | `path('api/create_user', ...)` |
-| 7.3 | `re_path(r'^api/users$', ...)` | `path('api/users', ...)` |
-| 7.4 | `re_path(r'^api/update_user$', ...)` | `path('api/update_user', ...)` |
-| 7.5 | `re_path('api/refresh_token', ...)` | `path('api/refresh_token', ...)` (mantener name='token_refresh') |
-
-**Importante:** En Django 5.2, `re_path` NO está obsoleto, pero se migra a `path` por claridad y consistencia. Las rutas exactas (`$`) se convierten a `path()` sin el `$` — Django 5.2 trata `path('api/login', ...)` como coincidencia exacta por defecto (no se requiere `$`).
-
-### Fase 8: Corrección de B001 (basename duplicado — REQ-13)
-
-| # | Acción | Archivo: línea | Cambio |
-|---|--------|---------------|--------|
-| 8.1 | Cambiar basename de `PersonaPViewSet` | `teleparkApi/urls.py:17` | `basename = 'personaEp'` → `basename = 'personaP'` |
-
-**Justificación:** REQ-13 exige corrección si B001 causa conflicto post-actualización. Django 5.2 + DRF 3.17 rechazan `basename` duplicados con error explícito en `check`. Es sintácticamente inválido.
-
-### Fase 9: `pytz` → `zoneinfo` (settings.py)
-
-**Ver sección 4.**
-
-### Fase 10: Verificación final y freeze
-
-| # | Acción | Comando |
-|---|--------|---------|
-| 10.1 | Compilación | `python manage.py check` |
-| 10.2 | Seguridad | `python manage.py check --deploy` |
-| 10.3 | Freeze final | `pip freeze > requirements.txt` |
-| 10.4 | Commit | `git add -A && git commit -m "[CICLO-20260702-001] Estabilización de entorno - Fase completa"` |
+| Decisión | Justificación |
+|----------|---------------|
+| **MySQL 8.0** en lugar de 8.4 o 9.x | `mysql:8.0` es la imagen más probada, estable, y compatible con `mysqlclient 2.2.8`. MySQL 8.4+ introduce cambios que podrían afectar la compatibilidad. |
+| **`python:3.14-slim`** como base image | Python 3.14.2 es la versión del host. La variante `slim` reduce tamaño de imagen (~120 MB vs ~340 MB de `python:3.14`). |
+| **PyMySQL 1.0.2 como fallback** | `mysqlclient` requiere compilar con librerías C nativas. Si la compilación falla en `python:3.14-slim` (por cambios en las cabeceras de MySQL 8.0), PyMySQL es un reemplazo directo sin dependencias nativas. |
+| **Sin Gunicorn/uWSGI en desarrollo** | Para este ciclo, el servidor de desarrollo de Django (`manage.py runserver 0.0.0.0:8000`) es suficiente para QA. Gunicorn se agregará en un ciclo futuro si es necesario para producción. |
 
 ---
 
-## 2. Estrategia de Rollback
+## 2. Patrón Arquitectónico
 
-### 2.1. Rollback por Fase
+### 2.1. Estrategia de Migración `managed=False` → `managed=True`
 
-Cada fase es autocontenida y reversible mediante `git revert` del commit correspondiente.
+#### 2.1.1. Análisis de Modelos Afectados
 
-| Fase | Estrategia de revert | Comando |
-|------|---------------------|---------|
-| Fase 1 (dead code) | `git revert <commit>` o `git checkout baseline -- <files>` | Restaurar archivos eliminados y dependencias muertas |
-| Fase 2 (SECRET_KEY) | `git revert <commit>` | Volver a SECRET_KEY hardcodeada |
-| Fase 3 (deps infra) | `pip install -r .specs/requirements-baseline.txt` | Reinstalar versiones originales |
-| Fase 4 (simplejwt test) | `pip install djangorestframework-simplejwt==4.7.2` | Volver a versión anterior |
-| Fase 5 (Django+DRF) | `pip install -r .specs/requirements-baseline.txt` | Revertir todo el requirements |
-| Fase 6-8 (urls) | `git revert <commit>` | Restaurar urlpatterns originales |
-| Fase 9 (zoneinfo) | `git revert <commit>`; `pip install pytz==2021.1` | Restaurar pytz |
+El archivo `teleparkApi/models.py` contiene **36 clases de modelos**, cada una con `managed = False` en su `class Meta`. Se clasifican en dos categorías:
 
-### 2.2. Rollback Total
+| Categoría | Modelos | Cantidad | Estrategia |
+|-----------|---------|----------|-----------|
+| **A — Modelos de negocio** | Actividad, Actividadrealizada, Asistenciataller, Clasetaller, Comportamiento, Diagnostico, Direccion, Enfermedad, Evento, Evolucion, Factorclase, Factorglobal, Indicacionmedicamento, Localidad, Medicamento, Municipio, Obrasocial, Os, Persona, PersonaEp, Taller, Tipoevento, Tipoparentesco, Unidadobservacion, Valorvariableuo, Variableuo | **26** | Eliminar `managed = False` → Django asume `managed = True` (por defecto) |
+| **B — Modelos del framework Django** | AuthGroup, AuthGroupPermissions, AuthPermission, AuthUser, AuthUserGroups, AuthUserUserPermissions, DjangoAdminLog, DjangoContentType, DjangoMigrations, DjangoSession | **10** | **Conflictivos** — ver sección 2.1.3 |
+
+#### 2.1.2. Estrategia para Modelos de Negocio (Categoría A)
+
+**Acción:** Eliminar la línea `managed = False` de la clase `Meta` en los 26 modelos de negocio.
+
+```python
+# ANTES
+class Persona(models.Model):
+    ...
+    class Meta:
+        managed = False
+        db_table = 'persona'
+
+# DESPUÉS
+class Persona(models.Model):
+    ...
+    class Meta:
+        db_table = 'persona'
+        # managed = True  (implícito, no se agrega)
+```
+
+**Justificación:** Django usa `managed = True` como valor por defecto. No se agrega explícitamente para no ensuciar el código. La ausencia de `managed = False` es equivalente a `managed = True`.
+
+**Efecto en migraciones:** Al ejecutar `makemigrations`, Django detectará que estos modelos ahora son "managed" y generará operaciones `CreateModel` en una nueva migración. Al ejecutar `migrate`, Django creará las tablas en la base de datos.
+
+#### 2.1.3. Estrategia para Modelos del Framework Django (Categoría B)
+
+**Problema:** Los modelos AuthGroup, AuthUser, DjangoContentType, etc. son tablas internas de Django que ya son creadas y administradas por las aplicaciones `django.contrib.auth`, `django.contrib.contenttypes`, etc. Si se cambian a `managed = True` en `teleparkApi`, habrá **conflicto de migraciones**: dos aplicaciones distintas (`django.contrib.auth` y `teleparkApi`) intentarán administrar las mismas tablas.
+
+**Alternativas evaluadas:**
+
+| Alternativa | Descripción | Pros | Contras |
+|-------------|-------------|------|---------|
+| **A-1 (Recomendada)** | Eliminar los 10 modelos Django de `teleparkApi/models.py` | ✅ Elimina el conflicto raíz. Django ya los gestiona. Limpia 166 líneas de código muerto. | ⚠️ Fuera de alcance según REQUERIMIENTOS.md ("No se tocan los modelos") |
+| **A-2** | Mantener `managed = False` solo en los 10 modelos Django | ✅ Mínimo cambio. Sin conflicto. | ❌ Incumple REQ-01 ("Todos los modelos DEBEN tener managed=True") |
+| **A-3** | Mantener `managed = False` en los 10 modelos Django + documentar como excepción técnica justificada | ✅ Práctico. Sin riesgo de migración. | ❌ Incumple REQ-01 textualmente |
+| **A-4** | Cambiar a `managed = True` y forzar orden de migraciones con `migration_depends_on` | ✅ Cumple REQ-01 al pie de la letra | ❌ Alto riesgo: conflictos difíciles de debuggear en `migrate`. Las tablas se crearían dos veces. |
+
+**Decisión arquitectónica:** Se recomienda **Alternativa A-1** (eliminar modelos Django de models.py) como la solución más limpia y correcta desde el punto de vista arquitectónico. Sin embargo, dado que el alcance del ciclo dice explícitamente "Solo cambios de managed + dockerización", se adopta la **Alternativa A-3 como plan primario** y **A-1 como contingencia** si surgen conflictos.
+
+**Plan primario (A-3):**
+- En los 26 modelos de negocio: eliminar `managed = False`
+- En los 10 modelos Django: mantener `managed = False` (no se modifica su clase Meta)
+- Se documenta en `CAMBIOS.md` que estos 10 modelos se excluyen por ser tablas gestionadas por Django internamente
+
+**Plan de contingencia (A-1):** Si al ejecutar `makemigrations` Django genera migraciones conflictivas para las tablas del framework, se procederá a eliminar los 10 modelos Django de `models.py`.
+
+### 2.2. Estrategia de Dockerización
+
+#### 2.2.1. Topología
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        DOCKER COMPOSE ENVIRONMENT                           │
+│                                                                             │
+│  ┌──────────────────────────┐     ┌──────────────────────────┐             │
+│  │  Servicio: db            │     │  Servicio: app           │             │
+│  │  Imagen: mysql:8.0       │     │  Imagen: python:3.14-slim│             │
+│  │  Puerto: 3306 (interno)  │◀────│  Puerto: 8000 (host)     │             │
+│  │  Volumen: mysql_data     │     │  depends_on: db (health) │             │
+│  │  Healthcheck: ✓          │     │  Entrypoint: wait+ migrate │           │
+│  └──────────────────────────┘     └──────────────────────────┘             │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  Red: telepark-network (bridge)                                      │   │
+│  │  Servicios se descubren como: db:3306, app:8000                      │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### 2.2.2. Flujo de Inicio
+
+```
+docker-compose up
+    │
+    ├──▶ Servicio db: mysql:8.0
+    │       │
+    │       ├──▶ Crea volumen mysql_data (si no existe)
+    │       ├──▶ Inicializa BD con variables de entorno
+    │       ├──▶ Healthcheck: mysqladmin ping (cada 10s)
+    │       └──▶ Estado: healthy
+    │
+    └──▶ Servicio app: python:3.14-slim
+            │
+            ├──▶ Build: Dockerfile
+            ├──▶ Entrypoint: entrypoint.sh
+            │       │
+            │       ├──▶ Wait-for-it: loop hasta que db:3306 responda
+            │       │      (timeout: 60s, retry cada 3s)
+            │       │
+            │       ├──▶ python manage.py makemigrations teleparkApi
+            │       │      (genera migraciones para modelos con managed=True)
+            │       │
+            │       ├──▶ python manage.py migrate
+            │       │      (aplica migraciones → crea tablas en MySQL)
+            │       │
+            │       └──▶ python manage.py runserver 0.0.0.0:8000
+            │
+            └──▶ Servidor Django escuchando en :8000
+```
+
+#### 2.2.3. Gestión de Migraciones Existentes
+
+Actualmente existen migraciones en `teleparkApi/migrations/`:
+- `0001_initial.py` (187 líneas)
+- `0002_authgroup_authgrouppermissions_...py` (133 líneas)
+
+Estas migraciones fueron generadas con `managed = False` y su estado de aplicación es incierto (el proyecto nunca tuvo una base de datos local). Para el entorno dockerizado:
+
+**Estrategia:** Eliminar las migraciones existentes y regenerarlas desde cero. Esto asegura que:
+1. Las nuevas migraciones reflejen el estado actual de los modelos (sin `managed = False`)
+2. No haya conflictos de migraciones previas con la base de datos limpia
+3. La migración inicial contenga operaciones `CreateModel` que Django ejecutará al hacer `migrate`
+
+**Acción en entrypoint.sh:**
+```bash
+# Las migraciones viejas se eliminan en el Dockerfile
+# entrypoint solo ejecuta makemigrations y migrate
+python manage.py makemigrations teleparkApi
+python manage.py migrate
+```
+
+> **Nota:** Si en el futuro se conecta a una base de datos existente (no dockerizada), las tablas ya existen en MySQL. Django detectará el estado y no intentará recrearlas si detecta que la estructura coincide (operación idempotente). Si hay diferencias, Django creará migraciones de alteración.
+
+---
+
+## 3. Diseño de Componentes
+
+### 3.1. Capa de Modelos (models.py)
+
+#### 3.1.1. Plan de Modificación
+
+| Archivo | Acción | Detalle |
+|---------|--------|---------|
+| `teleparkApi/models.py` | **ELIMINAR** `managed = False` | En las 26 clases `Meta` de modelos de negocio |
+| `teleparkApi/models.py` | **MANTENER** `managed = False` | En las 10 clases `Meta` de modelos del framework Django |
+
+**Cambio exacto por modelo (26 ocurrencias):**
+
+```python
+# Patrón de cambio para cada modelo de negocio:
+# De:
+    class Meta:
+        managed = False
+        db_table = 'nombre_tabla'
+
+# A:
+    class Meta:
+        db_table = 'nombre_tabla'
+```
+
+**Modelos afectados (26):**
+
+| # | Modelo | db_table |
+|---|--------|----------|
+| 1 | Actividad | actividad |
+| 2 | Actividadrealizada | actividadrealizada |
+| 3 | Asistenciataller | asistenciataller |
+| 4 | Clasetaller | clasetaller |
+| 5 | Comportamiento | comportamiento |
+| 6 | Diagnostico | diagnostico |
+| 7 | Direccion | direccion |
+| 8 | Enfermedad | enfermedad |
+| 9 | Evento | evento |
+| 10 | Evolucion | evolucion |
+| 11 | Factorclase | factorclase |
+| 12 | Factorglobal | factorglobal |
+| 13 | Indicacionmedicamento | indicacionmedicamento |
+| 14 | Localidad | localidad |
+| 15 | Medicamento | medicamento |
+| 16 | Municipio | municipio |
+| 17 | Obrasocial | obrasocial |
+| 18 | Os | os |
+| 19 | Persona | persona |
+| 20 | PersonaEp | personaep |
+| 21 | Taller | taller |
+| 22 | Tipoevento | tipoevento |
+| 23 | Tipoparentesco | tipoparentesco |
+| 24 | Unidadobservacion | unidadobservacion |
+| 25 | Valorvariableuo | valorvariableuo |
+| 26 | Variableuo | variableuo |
+
+**Modelos NO modificados (10) — mantienen `managed = False`:**
+
+| # | Modelo | Razón |
+|---|--------|-------|
+| 1 | AuthGroup | Gestionado por `django.contrib.auth` |
+| 2 | AuthGroupPermissions | Gestionado por `django.contrib.auth` |
+| 3 | AuthPermission | Gestionado por `django.contrib.auth` |
+| 4 | AuthUser | Gestionado por `django.contrib.auth` |
+| 5 | AuthUserGroups | Gestionado por `django.contrib.auth` |
+| 6 | AuthUserUserPermissions | Gestionado por `django.contrib.auth` |
+| 7 | DjangoAdminLog | Gestionado por `django.contrib.admin` |
+| 8 | DjangoContentType | Gestionado por `django.contrib.contenttypes` |
+| 9 | DjangoMigrations | Gestionado por Django internamente |
+| 10 | DjangoSession | Gestionado por `django.contrib.sessions` |
+
+#### 3.1.2. Estrategia para Migraciones Iniciales (CreateModel)
+
+Las migraciones existentes (`0001_initial.py`, `0002_authgroup_...py`) serán **eliminadas** como parte de la dockerización. El entrypoint ejecutará:
 
 ```bash
-# Si todo falla:
-git checkout -- .                        # Descartar cambios locales
-git stash drop                           # (si se hizo stash)
-pip install -r .specs/requirements-baseline.txt  # Reinstalar dependencias originales
+# Paso 1: Eliminar migraciones antiguas del contenedor
+# (se hace en Dockerfile: RUN rm -f teleparkApi/migrations/0*.py)
+
+# Paso 2: Generar nuevas migraciones
+python manage.py makemigrations teleparkApi
+# → Crea: teleparkApi/migrations/0001_initial.py con CreateModel para los 26 modelos
+
+# Paso 3: Aplicar migraciones (crea tablas en MySQL)
+python manage.py migrate
+# → Crea: auth_user, auth_group, ..., luego actividad, persona, etc.
 ```
 
-### 2.3. Snapshot de Seguridad
+**Comportamiento esperado de `makemigrations`:**
+- Django analiza `teleparkApi/models.py`
+- Detecta modelos con `db_table` definido y `managed = True` (por defecto)
+- Genera operaciones `migrations.CreateModel` con `options={'db_table': 'nombre'}`
+- La migración generada NO incluye `managed = False` en las opciones de CreateModel
 
-Antes de cada `pip install` que actualice un paquete mayor, ejecutar:
+**Comportamiento esperado de `migrate`:**
+- Django aplica primero sus migraciones internas (auth, contenttypes, admin, sessions)
+- Django aplica migraciones de terceros (si las hubiera)
+- Django aplica `0001_initial` de `teleparkApi`
+- Para cada `CreateModel`, Django ejecuta `CREATE TABLE ...` con el schema definido en el modelo
+
+#### 3.1.3. Verificación Post-Migración
+
+```sql
+-- Conectarse al contenedor MySQL:
+docker exec -it telepark-db-1 mysql -uteleparkUser -pteleparkUser teleparkbackend
+
+-- Verificar tablas creadas:
+SHOW TABLES;
+
+-- Deberían aparecer:
+-- | actividad              |
+-- | actividadrealizada     |
+-- | asistenciataller       |
+-- | ... (26 tablas de negocio)
+-- | auth_group             |
+-- | auth_user              |
+-- | ... (tablas del framework)
+```
+
+### 3.2. Dockerización
+
+#### 3.2.1. Dockerfile
+
+**Ubicación:** `D:\TELEPARK\backend\telepark-backend\Dockerfile`
+
+**Especificación:**
+
+```dockerfile
+# ============================================================
+# Dockerfile — Telepark Backend
+# Base: python:3.14-slim
+# Django 6.0.6 + DRF 3.17.1 + MySQL 8.0
+# ============================================================
+
+FROM python:3.14-slim AS builder
+
+# Variables de entorno para Python
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Instalar dependencias de compilación para mysqlclient
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libc6-dev \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar requirements primero (caching de capas)
+COPY requirements.txt .
+
+# Instalar dependencias Python
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install -r requirements.txt
+
+# ============================================================
+# Imagen final (más liviana)
+# ============================================================
+FROM python:3.14-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Solo runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-libmysqlclient-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copiar Python instalado desde builder
+COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copiar proyecto
+COPY . .
+
+# Eliminar migraciones antiguas (se regenerarán en entrypoint)
+RUN rm -f teleparkApi/migrations/0*.py
+
+# Crear directorio static si no existe (evita warning de Django)
+RUN mkdir -p static
+
+# Puerto de exposición
+EXPOSE 8000
+
+# Entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+**Versión simplificada (sin multi-stage, más simple de mantener):**
+
+```dockerfile
+# Alternativa: Dockerfile de una sola etapa
+FROM python:3.14-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Instalar dependencias de compilación y runtime para mysqlclient
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libc6-dev \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install -r requirements.txt
+
+COPY . .
+
+# Eliminar migraciones antiguas para regenerar desde cero
+RUN rm -f teleparkApi/migrations/0*.py
+RUN mkdir -p static
+
+EXPOSE 8000
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+```
+
+> **Decisión:** Se prefiere el Dockerfile de una sola etapa para este ciclo por simplicidad. La versión multi-stage se puede adoptar en un ciclo futuro si el tamaño de la imagen es una preocupación.
+
+#### 3.2.2. docker-compose.yml
+
+**Ubicación:** `D:\TELEPARK\backend\telepark-backend\docker-compose.yml`
+
+**Especificación:**
+
+```yaml
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: telepark-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-teleparkbackend}
+      MYSQL_USER: ${DB_USER:-teleparkUser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-teleparkUser}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+    ports:
+      - "3307:3306"   # Puerto host diferente para no conflictuar con MySQL local
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - telepark-network
+
+  app:
+    build: .
+    container_name: telepark-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE:-teleparkbackend}
+      DB_USER: ${DB_USER:-teleparkUser}
+      DB_PASSWORD: ${DB_PASSWORD:-teleparkUser}
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-dev-key-not-for-production}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:8000}
+      SITE_URL: ${SITE_URL:-http://localhost:8000}
+      ENV: ${ENV:-dev}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app          # Monta el código para desarrollo hot-reload
+    networks:
+      - telepark-network
+
+volumes:
+  mysql_data:
+    name: telepark_mysql_data
+
+networks:
+  telepark-network:
+    name: telepark-network
+    driver: bridge
+```
+
+**Detalles de diseño:**
+
+| Elemento | Decisión | Justificación |
+|----------|----------|---------------|
+| `container_name` explícito | Sí | Facilita identificación en `docker ps` |
+| Puerto MySQL host: `3307` | 3307 (no 3306) | Evita conflictos con MySQL local del desarrollador |
+| `depends_on` con `condition: service_healthy` | Sí | Asegura que MySQL esté listo antes de iniciar Django |
+| Volumen `mysql_data` con nombre | `telepark_mysql_data` | Persistencia de datos entre reinicios |
+| Red `telepark-network` driver bridge | Sí | Aislamiento de red. Servicios se descubren por nombre de servicio |
+| `volumes: .:/app` en app | Sí | Hot-reload durante desarrollo |
+
+#### 3.2.3. entrypoint.sh
+
+**Ubicación:** `D:\TELEPARK\backend\telepark-backend\entrypoint.sh`
+
+**Especificación:**
 
 ```bash
-pip freeze > .specs/requirements-punto-control-{FASE}.txt
+#!/bin/bash
+# entrypoint.sh — Telepark Backend
+# Espera a MySQL, ejecuta migraciones, inicia Django
+
+set -e
+
+# Variables de conexión
+DB_HOST="${DB_HOST:-db}"
+DB_PORT="${DB_PORT:-3306}"
+DB_USER="${DB_USER:-teleparkUser}"
+DB_PASSWORD="${DB_PASSWORD:-teleparkUser}"
+DB_DATABASE="${DB_DATABASE:-teleparkbackend}"
+TIMEOUT=60
+INTERVAL=3
+
+echo "⏳ Esperando a MySQL en $DB_HOST:$DB_PORT ..."
+
+# Loop de espera con timeout
+elapsed=0
+while ! mysqladmin ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" --silent 2>/dev/null; do
+    elapsed=$((elapsed + INTERVAL))
+    if [ "$elapsed" -ge "$TIMEOUT" ]; then
+        echo "❌ ERROR: MySQL no está disponible después de ${TIMEOUT}s"
+        echo "   Host: $DB_HOST:$DB_PORT"
+        echo "   User: $DB_USER"
+        exit 1
+    fi
+    echo "   MySQL no responde aún... (${elapsed}s/${TIMEOUT}s)"
+    sleep $INTERVAL
+done
+
+echo "✅ MySQL está listo."
+
+# Verificar conectividad con Django
+echo "🔍 Verificando configuración de Django..."
+python manage.py check --deploy 2>&1 | grep -v "WARNINGS" || true
+
+# Generar migraciones
+echo "📦 Ejecutando makemigrations teleparkApi..."
+python manage.py makemigrations teleparkApi
+
+# Aplicar migraciones
+echo "🗄️ Ejecutando migrate..."
+python manage.py migrate
+
+# Verificar resultado
+echo "✅ Migraciones aplicadas correctamente."
+
+# Iniciar servidor de desarrollo
+echo "🚀 Iniciando servidor Django en 0.0.0.0:8000..."
+exec python manage.py runserver 0.0.0.0:8000
 ```
 
----
+**Requisitos del entrypoint:**
+- `mysql-client` debe estar instalado en el contenedor (incluido en `default-libmysqlclient-dev` o instalado explícitamente)
+- Alternativa: usar `python -c "import MySQLdb; MySQLdb.connect(...)"` si mysqladmin no está disponible
 
-## 3. SECRET_KEY y settings.py
-
-### 3.1. Migración de SECRET_KEY (REQ-05)
-
-**Estado actual:** `settings.py:40` — hardcodeada: `SECRET_KEY = 'django-insecure-5@j$75afof+#p%ft9d4e!)x7%_8na_3arrrb19k1enrjz*g+%u'`
-
-**Estado objetivo:**
-
-```python
-SECRET_KEY = os.getenv("SECRET_KEY")
-```
-
-**Archivo `example.env`** ya contiene `SECRET_KEY=` (línea 8). Se requiere solo asegurar que la documentación del proyecto indique que esta variable es obligatoria.
-
-**Verificación:** `python manage.py check --deploy` no debe listar `SECRET_KEY` como error.
-
-### 3.2. ALLOWED_HOSTS
-
-**Estado actual:** `ALLOWED_HOSTS = ['*']` (settings.py:45)
-
-**Estado objetivo:**
-
-```python
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
-```
-
-Agregar al `example.env`:
-```
-ALLOWED_HOSTS=localhost,127.0.0.1
-```
-
-### 3.3. DEFAULT_AUTO_FIELD
-
-**Estado actual:** `DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'` (settings.py:187)
-
-**Análisis:** Desde Django 3.2+, `BigAutoField` es el valor por defecto implícito. En Django 5.2, sigue siendo el valor por defecto. **No requiere cambio.** Se mantiene explícito por claridad.
-
-### 3.4. MIDDLEWARE
-
-**Estado actual** (settings.py:62-73):
-
-```python
-MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',       # DUPLICADO!
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'teleparkApi.middleware.ExceptionMiddleware',
-]
-```
-
-**Problemas detectados:**
-1. `CommonMiddleware` aparece **dos veces** (líneas 64 y 68) — `SessionMiddleware` debería ir antes de `CommonMiddleware` según la documentación de Django. Se elimina el duplicado.
-2. Orden correcto recomendado por Django 5.2: Security → Session → Common → Csrf → Auth → Messages → Clickjacking
-
-**Estado objetivo:**
-
-```python
-MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'teleparkApi.middleware.ExceptionMiddleware',
-]
-```
-
-**Justificación:** Se eliminó `CommonMiddleware` duplicado. Se movió `SessionMiddleware` antes de `CommonMiddleware` (orden estándar Django). `CorsMiddleware` se mantiene primero (requisito de django-cors-headers).
-
-### 3.5. USE_L10N
-
-**Análisis:** `USE_L10N = True` (settings.py:174) está **deprecado** desde Django 4.x y eliminado en Django 5.x. Causará `RemovedInDjango50Warning` o error directo.
-
-**Acción:** **ELIMINAR** `USE_L10N = True` de `settings.py`. Django 5.2 usa `USE_I18N` y formateo por defecto habilitado.
-
-### 3.6. Cambios adicionales en settings.py
-
-| Aspecto | Cambio | Razón |
-|---------|--------|-------|
-| `USE_L10N` | ELIMINAR | Deprecado desde Django 4.0, eliminado en 5.0 |
-| `MIDDLEWARE` | Reordenar y eliminar duplicado | Ver sección 3.4 |
-| `SECRET_KEY` | `os.getenv("SECRET_KEY")` | Cumplir REQ-05 |
-| `ALLOWED_HOSTS` | `os.getenv("ALLOWED_HOSTS", "localhost").split(",")` | Cumplir REQ-05 |
-
----
-
-## 4. pytz → zoneinfo
-
-### 4.1. Contexto
-
-- Python 3.9+ incluye `zoneinfo` en la stdlib
-- Django 5.2+ usa `zoneinfo` por defecto (desde Django 4.0)
-- `pytz` actualmente listado en `requirements.txt` como dependencia directa
-- `USE_TZ = True` ya está en settings.py
-
-### 4.2. Estrategia
-
-| # | Acción | Detalle |
-|---|--------|---------|
-| 1 | Verificar que `pytz` no se importa en ningún `.py` del proyecto | `grep -r "import pytz" .` y `grep -r "from pytz" .` deben dar vacío |
-| 2 | Eliminar `pytz` de `requirements.txt` | Remover línea `pytz==2021.1` |
-| 3 | Ejecutar `pip uninstall pytz -y` | Remover del entorno |
-| 4 | Verificar que `settings.py` no menciona `pytz` | No hay mención actual |
-
-### 4.3. Cambios en settings.py
-
-**No se requieren cambios.** `USE_TZ = True` y `TIME_ZONE = 'UTC'` son compatibles con Django 5.2 y `zoneinfo`. Django 5.2 detecta automáticamente `zoneinfo` disponible y lo usa en lugar de `pytz`.
-
-**Verificación:** `python manage.py check` no debe reportar errores relacionados con timezone.
-
-### 4.4. Riesgo potencial
-
-Si algún modelo usa campos `DateTimeField` con `pytz` específico (ej. `pytz.timezone('America/Argentina/Buenos_Aires')`), requeriría migración a `zoneinfo.ZoneInfo`. No se ha detectado este patrón en el código actual.
-
----
-
-## 5. Verificación de compatibilidad simplejwt + Python 3.14
-
-### 5.1. Plan de Verificación
-
-simplejwt 5.5.1 declara oficialmente soporte para Python 3.9-3.13. Python 3.14 no está en su matriz de pruebas. Se requiere verificación empírica.
-
-**Checkpoint obligatorio** antes de Fase 5:
+**Estrategia alternativa (sin mysqladmin):**
 
 ```bash
-# Paso 1: Instalar simplejwt 5.5.1 de forma aislada en un entorno limpio
-# (O en el entorno actual si no hay conflictos)
-pip install djangorestframework-simplejwt==5.5.1 djangorestframework==3.17.1
-
-# Paso 2: Verificar que importa correctamente
+# Alternativa: usar Python para probar conexión
 python -c "
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.settings import api_settings
-print('simplejwt OK - imports exitosos')
-print(f'Python: {__import__(\"sys\").version}')
-print(f'simplejwt: {api_settings.ACCESS_TOKEN_LIFETIME}')
+import MySQLdb
+import time
+import sys
+
+host = '${DB_HOST}'
+port = int('${DB_PORT}')
+user = '${DB_USER}'
+password = '${DB_PASSWORD}'
+database = '${DB_DATABASE}'
+
+timeout = 60
+elapsed = 0
+while elapsed < timeout:
+    try:
+        conn = MySQLdb.connect(host=host, port=port, user=user, passwd=password, db=database)
+        conn.close()
+        print('MySQL connection OK')
+        sys.exit(0)
+    except Exception as e:
+        elapsed += 3
+        print(f'Waiting for MySQL... ({elapsed}s/{timeout}s)')
+        time.sleep(3)
+print('ERROR: MySQL connection timeout')
+sys.exit(1)
 "
-
-# Paso 3: Verificar que Django 5.2 arranca con simplejwt
-python manage.py check
-
-# Paso 4: Probar endpoint de login real
-python manage.py shell -c "
-from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
-# Verificar que la creación de tokens funciona
-user = User.objects.first()  # asumiendo que hay al menos un usuario
-if user:
-    token = RefreshToken.for_user(user)
-    print(f'Access: {str(token.access_token)[:20]}...')
-    print('Token generation OK')
-"
 ```
 
-### 5.2. Plan de Contingencia (si simplejwt 5.5.1 falla en Python 3.14)
+#### 3.2.4. .dockerignore
 
-| Escenario | Acción | Alternativa |
-|-----------|--------|-------------|
-| simplejwt 5.5.1 no instala | Reportar a upstream, esperar parche | Usar PyJWT 2.13.0 directamente con implementación custom |
-| simplejwt 5.5.1 instala pero falla en runtime | Degradar a simplejwt 5.4.x (última versión pre-5.5) | Probar compatibilidad parcial |
-| simplejwt 5.4.x también falla | Implementar JWT manual con PyJWT 2.13.0 | No recomendado para este ciclo |
+**Ubicación:** `D:\TELEPARK\backend\telepark-backend\.dockerignore`
 
-**Decisión vinculante:** Si simplejwt falla en Python 3.14, **no se retrasa el ciclo**. Se procede con implementación JWT usando PyJWT 2.13.0 directamente, replicando la interfaz mínima necesaria. Esto queda registrado en `CAMBIOS.md`.
+**Especificación:**
+
+```
+.git
+.gitignore
+.venv
+.vscode
+__pycache__
+*.pyc
+.env
+example.env
+BD/
+README.md
+package-lock.json
+```
+
+### 3.3. Endpoint de Healthcheck (Opcional — REQ-13)
+
+Se especifica un endpoint opcional `/api/health/` implementado como vista simple de Django:
+
+**Especificación del contrato:**
+
+| Atributo | Valor |
+|----------|-------|
+| **Ruta** | `GET /api/health/` |
+| **Propósito** | Verificar que la aplicación y la BD responden |
+| **Autenticación** | No requiere (público) |
+| **Respuesta exitosa** | `{"status": "ok", "database": "connected", "tables": 26}` |
+| **Respuesta fallo BD** | `{"status": "error", "database": "disconnected", "detail": "..."}` (HTTP 503) |
+| **Códigos HTTP** | 200 OK / 503 Service Unavailable |
+
+**Verificaciones que debe realizar:**
+1. Conexión a base de datos (ejecutar `Persona.objects.first()` o similar)
+2. Contar tablas de negocio disponibles
+
+**Cobertura de REQ-13:** REQ-13 es un criterio `Optional-feature`. Se implementa si el equipo lo considera necesario para QA, pero no bloquea el ciclo.
 
 ---
 
-## 6. Análisis de Breaking Changes
+## 4. Plan de Migración de Datos
 
-### 6.1. Django 3.2 → 5.2 LTS
+### 4.1. Escenario Dockerizado (entorno limpio)
 
-| Cambio | Impacto | Acción Requerida |
-|--------|---------|------------------|
-| `DEFAULT_AUTO_FIELD` ahora es `BigAutoField` por defecto | Ninguno (ya está explícito) | Ninguna |
-| `USE_L10N` eliminado | **ALTO** — causa error en settings.py | Eliminar línea `USE_L10N = True` |
-| `MIDDLEWARE` — orden más estricto | **BAJO** — Django 5.2 es menos tolerante a middleware duplicado | Corregir duplicado de `CommonMiddleware` |
-| `urlpatterns` — `path()` recomendado sobre `re_path()` | **MEDIO** — `re_path` sigue funcionando pero se migra por claridad | Migrar a `path()` (Fases 6-7) |
-| `urlpatterns` — `re_path` con `r'^'` y `include()` | **BAJO** — sigue funcionando pero se migra a `path('', include(...))` | Migrar en Fase 6 |
-| `settings.py` — `CSRF_TRUSTED_ORIGINS` requiere lista | **BAJO** — ya es lista | Ninguna |
-| `TEMPLATES` — `APP_DIRS: True` es compatible | Ninguno | Ninguna |
-| `AUTH_PASSWORD_VALIDATORS` — sin cambios | Ninguno | Ninguna |
-| `REST_FRAMEWORK` dict — compatible | Ninguno | Ninguna |
-| `SIMPLE_JWT` dict — compatible | **MEDIO** — simplejwt 5.5.1 cambia claves de configuración | Ver sección 6.3 |
-| Remoción de `pytz` como dependencia de Django | Ninguno | Django 5.2 usa `zoneinfo` de stdlib |
+| Paso | Acción | Resultado |
+|------|--------|-----------|
+| 1 | `docker-compose up -d db` | Contenedor MySQL inicia, crea BD y usuario |
+| 2 | `docker-compose up -d app` | Contenedor Django construye y arranca |
+| 3 | Entrypoint: `makemigrations teleparkApi` | Genera `0001_initial.py` con CreateModel para 26 modelos |
+| 4 | Entrypoint: `migrate` | Crea 26 tablas de negocio + tablas del framework Django |
+| 5 | QA verifica con `docker exec` | `SHOW TABLES` → 26 tablas de negocio presentes |
 
-### 6.2. DRF 3.12 → 3.17.1
+**No hay migración de datos porque no hay datos previos.** Es un entorno fresco.
 
-| Cambio | Impacto | Acción Requerida |
-|--------|---------|------------------|
-| `ViewSets` — sin cambios en API pública | Ninguno | Ninguna |
-| `@action(detail=True)` — compatible | Ninguno | Ninguna |
-| `ModelViewSet` — compatible | Ninguno | Ninguna |
-| `DefaultRouter` — compatible | Ninguno | Ninguna |
-| `serializers.ModelSerializer` — sin cambios | Ninguno | Ninguna |
-| `JSONParser` — compatible | Ninguno | Ninguna |
-| `JsonResponse` — compatible | Ninguno | Ninguna |
-| drf-yasg / swagger: no aplica | N/A | django-rest-swagger ya eliminado |
+### 4.2. Escenario con BD Existente (producción/staging)
 
-### 6.3. simplejwt 4.7 → 5.5.1
+Si en el futuro este diseño se aplica a una base de datos existente (con datos reales), el comportamiento esperado es:
 
-| Cambio | Impacto | Acción Requerida |
-|--------|---------|------------------|
-| `BLACKLIST_AFTER_ROTATION` requiere backend de blacklist | **MEDIO** — actualmente `True` sin backend | Cambiar a `False` o instalar backend. Para este ciclo, se cambia a `False` |
-| `ROTATE_REFRESH_TOKENS` — compatible | Ninguno | Ninguna |
-| `AUTH_TOKEN_CLASSES` — compatible | Ninguno | Ninguna |
-| `USER_ID_FIELD: 'username'` — compatible | Ninguno | Validar que el campo `username` existe en `auth_user` |
-| Configuración de `SIMPLE_JWT` dict — estructura compatible | Ninguno | Ninguna |
+| Condición | Comportamiento de `migrate` | Riesgo |
+|-----------|---------------------------|--------|
+| Tablas existen con misma estructura que modelos | `migrate` detecta que las tablas ya existen y las marca como sincronizadas (registra en `django_migrations`) | 🟢 Ninguno |
+| Tablas existen pero estructura diferente | `migrate` ejecutará `ALTER TABLE` si hay diferencias. Puede fallar si hay datos incompatibles | 🟡 Medio — requiere revisión manual |
+| Tablas no existen | `migrate` ejecuta `CREATE TABLE` | 🟢 Sin riesgo |
 
-**Decisión:** `BLACKLIST_AFTER_ROTATION` se cambia de `True` a `False` porque simplejwt 5.x requiere un backend de blacklist explícito (ej. `rest_framework_simplejwt.token_blacklist`) que no está instalado ni se va a instalar en este ciclo.
+**Recomendación para escenario brownfield con datos reales:**
+1. Hacer backup completo de la BD antes de aplicar migraciones
+2. Ejecutar `python manage.py migrate --fake-initial` si las tablas ya existen y coinciden exactamente
+3. Verificar con `python manage.py showmigrations` que todas las migraciones estén marcadas como `[X]`
 
-### 6.4. urllib3 1.26 → 2.7.0
+### 4.3. Estrategia de Rollback para models.py
 
-| Cambio | Impacto | Acción Requerida |
-|--------|---------|------------------|
-| API de pooling reescrita | **BAJO** — requests 2.34.2 encapsula urllib3 | Actualizar requests junto con urllib3 |
-| Solo HTTP/2 (eliminado HTTP/1.1 puro) | **BAJO** — requests 2.34.2 maneja la transición | Ninguna |
-| OpenSSL ≥1.1.1 requerido | **BAJO** — Python 3.14 incluye OpenSSL 3.x | Verificar con `python -c "import ssl; print(ssl.OPENSSL_VERSION)"` |
-| Eliminación de `urllib3.util.retry.Retry` | **BAJO** — no usado en el proyecto | Ninguna |
+Si el cambio de `managed = True` causa problemas:
 
-### 6.5. python-dotenv 0.18 → 1.2.2
+```bash
+# Revertir cambios en models.py (restaurar managed=False)
+git checkout -- teleparkApi/models.py
 
-| Cambio | Impacto | Acción Requerida |
-|--------|---------|------------------|
-| `set_key()` / `unset_key()` — firma modificada | **BAJO** — no se usan en el proyecto | Ninguna |
-| `load_dotenv()` — compatible | Ninguno | Ninguna |
-| `find_dotenv()` — compatible | Ninguno | Ninguna |
-
----
-
-## 7. Diagrama de Arquitectura Post-Estabilización
-
-### 7.1. Visión General
-
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                          TELEPARK BACKEND                                │
-│              Entorno Estabilizado — Django 5.2 LTS + DRF 3.17.1          │
-└──────────────────────────────────────────────────────────────────────────┘
-
-┌──────────────┐     ┌──────────────────┐     ┌──────────────────┐
-│   Cliente    │────▶│   Nginx/Proxy    │────▶│  Gunicorn/ASGI   │
-│  (Web/Mobile)│     │  (TLS terminator)│     │  (WSGI/ASGI)     │
-└──────────────┘     └──────────────────┘     └──────────────────┘
-                                                      │
-                                                      ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│                          DJANGO 5.2 LTS                                  │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │  MIDDLEWARE (9 capas)                                              │  │
-│  │  CorsMiddleware → Security → Session → Common → CSRF → Auth →    │  │
-│  │  Messages → XFrameOptions → ExceptionMiddleware                   │  │
-│  └────────────────────────────────────────────────────────────────────┘  │
-│                                                                          │
-│  ┌──────────────────────────────┐   ┌──────────────────────────────┐   │
-│  │  telepark/urls.py            │   │  settings.py                 │   │
-│  │  ┌────────────────────────┐  │   │  - python-dotenv 1.2.2      │   │
-│  │  │ path('admin/', ...)    │  │   │  - SECRET_KEY desde env     │   │
-│  │  │ path('', include(...)) │  │   │  - ALLOWED_HOSTS desde env  │   │
-│  │  └────────────────────────┘  │   │  - USE_TZ=True (zoneinfo)   │   │
-│  └──────────────────────────────┘   │  - BigAutoField explícito   │   │
-│                                     └──────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│  teleparkApi  (aplicación DRF)                                          │
-│                                                                          │
-│  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │  urls.py (DRF Routers)                                          │   │
-│  │  DefaultRouter(trailing_slash=False)                             │   │
-│  │  ├── ViewSets registrados (16)                                  │   │
-│  │  └── Endpoints directos (5) via path()                          │   │
-│  └──────────────────────────────────────────────────────────────────┘   │
-│                                                                          │
-│  ┌──────────────────────┐    ┌──────────────────────┐                   │
-│  │  api.py              │    │  serializers.py      │                   │
-│  │  ┌────────────────┐  │    │  ┌────────────────┐  │                   │
-│  │  │ 16 ModelViewSets│  │    │  │ 25 Serializers │  │                   │
-│  │  │ + 4 @action     │  │    │  │ (1 duplicado  │  │                   │
-│  │  └────────────────┘  │    │  │  eliminado)    │  │                   │
-│  └──────────────────────┘    │  └────────────────┘  │                   │
-│                               └──────────────────────┘                   │
-│                                                                          │
-│  ┌──────────────────────┐    ┌──────────────────────┐                   │
-│  │  authentication.py   │    │  handlers.py         │                   │
-│  │  auth_view           │    │  CRUDHandlerStrategies│                  │
-│  │  create_user         │    │  (dead code en       │                   │
-│  │  update_user         │    │   views.py eliminado)│                   │
-│  │  get_users           │    └──────────────────────┘                   │
-│  └──────────────────────┘                                               │
-│                                                                          │
-│  ┌──────────────────────┐    ┌──────────────────────┐                   │
-│  │  models.py           │    │  permission.py       │                   │
-│  │  managed=False (26)  │    │  IsSuperuser         │                   │
-│  │  SIN CAMBIOS         │    │                      │                   │
-│  └──────────────────────┘    └──────────────────────┘                   │
-└──────────────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│  MySQL (sin cambios)                                                     │
-│  Schema: teleparkbackend (pre-existente, managed=False)                  │
-│  Conexión: mysqlclient 2.2.8                                            │
-└──────────────────────────────────────────────────────────────────────────┘
-```
-
-### 7.2. Patrón Arquitectónico
-
-| Aspecto | Detalle |
-|---------|---------|
-| **Patrón** | REST API con ViewSets + Routers (DRF) |
-| **Estilo** | Resource-oriented (cada modelo = un ViewSet) |
-| **Autenticación** | JWT Bearer Token via `rest_framework_simplejwt` |
-| **Autorización** | `IsAuthenticated` global + `IsSuperuser` para endpoints de usuario |
-| **Base de datos** | MySQL — modelos `managed=False` (espejo de BD existente) |
-| **Configuración** | `python-dotenv` + variables de entorno (`.env`) |
-| **Manejo de errores** | Middleware `ExceptionMiddleware` captura excepciones no manejadas y retorna `JsonResponse` |
-| **Serialización** | DRF `ModelSerializer` con campos explícitos |
-| **URL routing** | `DefaultRouter` para ViewSets CRUD + `path()` para endpoints de autenticación |
-
-### 7.3. Stack de Dependencias Post-Estabilización
-
-```
-Django 5.2 LTS
-├── asgiref 3.11.1
-├── sqlparse 0.5.4
-└── zoneinfo (stdlib, reemplaza pytz)
-djangorestframework 3.17.1
-djangorestframework-simplejwt 5.5.1
-├── PyJWT 2.13.0
-└── djangorestframework >=3.14
-django-cors-headers 4.9.0
-mysqlclient 2.2.8
-python-dotenv 1.2.2
-requests 2.34.2
-├── urllib3 2.7.0
-├── certifi 2026.05.20
-├── charset-normalizer 3.3.x+
-└── idna 3.7+
-Jinja2 3.1.6
-└── MarkupSafe 2.1.x+
-simplejson 3.19.x
-setuptools 82.0.1
+# En Docker: reconstruir imagen
+docker-compose down -v
+docker-compose build --no-cache app
+docker-compose up -d
 ```
 
 ---
 
-## 8. Matriz de Riesgos
+## 5. Variables de Entorno
+
+### 5.1. Lista Completa
+
+| Variable | Obligatoria | Valor por Defecto | Descripción | Usada en |
+|----------|-------------|-------------------|-------------|----------|
+| `DB_DATABASE` | Sí | `teleparkbackend` | Nombre de la base de datos MySQL | settings.py, docker-compose.yml, entrypoint.sh |
+| `DB_HOST` | Sí | `localhost` (local) / `db` (Docker) | Host del servidor MySQL | settings.py, docker-compose.yml, entrypoint.sh |
+| `DB_PORT` | Sí | `3306` | Puerto del servidor MySQL | settings.py, docker-compose.yml, entrypoint.sh |
+| `DB_USER` | Sí | `teleparkUser` | Usuario de MySQL | settings.py, docker-compose.yml, entrypoint.sh |
+| `DB_PASSWORD` | Sí | — | Contraseña de MySQL | settings.py, docker-compose.yml, entrypoint.sh |
+| `DB_ROOT_PASSWORD` | Sí (Docker) | `rootpassword` | Contraseña root de MySQL (solo para Docker) | docker-compose.yml |
+| `SECRET_KEY` | Sí | — | Clave secreta de Django | settings.py |
+| `ALLOWED_HOSTS` | No | `localhost` | Hosts permitidos separados por coma | settings.py |
+| `CSRF_TRUSTED_ORIGINS` | No | `http://localhost:8000` | Orígenes confiables para CSRF | settings.py |
+| `SITE_URL` | No | `http://localhost:8000` | URL del sitio para CORS | settings.py |
+| `ENV` | No | `dev` | Entorno (`dev`/`prod`). `dev` activa DEBUG | settings.py |
+
+### 5.2. Mapeo settings.py ↔ Variables de Entorno
+
+```python
+# telepark/settings.py
+SECRET_KEY = os.getenv("SECRET_KEY")                    # REQUERIDO
+DEBUG = os.getenv("ENV") == 'dev'                       # dev → True
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
+CSRF_TRUSTED_ORIGINS = [os.getenv("CSRF_TRUSTED_ORIGINS")]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv("DB_DATABASE"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': os.getenv("DB_PORT"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+    }
+}
+```
+
+### 5.3. example.env (actualizado para Docker)
+
+```
+# ============================================================
+# Telepark — Variables de Entorno
+# ============================================================
+
+# MySQL Connection
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=teleparkbackend
+DB_USER=teleparkUser
+DB_PASSWORD=teleparkUser
+DB_ROOT_PASSWORD=rootpassword
+
+# Django Security
+SECRET_KEY=django-insecure-5@j$75afof+#p%ft9d4e!)x7%_8na_3arrrb19k1enrjz*g+%u
+ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost:8000
+SITE_URL=http://localhost:8000
+
+# Environment
+ENV=dev
+```
+
+### 5.4. Configuración para Docker
+
+Cuando se ejecuta con Docker Compose, las variables se pasan desde el archivo `.env` o desde el entorno del host. Docker Compose carga automáticamente un archivo `.env` si existe en el mismo directorio.
+
+```yaml
+# docker-compose.yml extrae automáticamente:
+# - Variables de entorno del host
+# - Variables del archivo .env (si existe)
+# - Valores por defecto definidos en docker-compose.yml
+```
+
+---
+
+## 6. Riesgos y Mitigaciones
+
+### 6.1. Matriz de Riesgos
 
 | ID | Riesgo | Probabilidad | Impacto | Mitigación | Plan de Contingencia |
 |----|--------|-------------|---------|------------|----------------------|
-| R001 | **simplejwt 5.5.1 incompatible con Python 3.14** | **ALTA** (no está en matriz de pruebas oficial) | **CRÍTICO** — bloquea autenticación JWT | Verificación empírica aislada antes de Fase 5 (sección 5.1) | Implementar JWT con PyJWT 2.13.0 directo (sección 5.2) |
-| R002 | **Django 5.2 requiere cambios en URL patterns** (`re_path` obsoleto) | **BAJA** — `re_path` sigue funcionando en 5.2 | **MEDIO** — warning de deprecación | Migración planificada a `path()` en Fases 6-7 | Si causa error, reportar y revertir (sección 2) |
-| R003 | **mysqlclient 2.2.8 wheel no disponible para cp314** | **VERIFICADO DISPONIBLE** (REQUERIMIENTOS.md) | Ninguno si se verifica | Verificar en Fase 0 | Usar `PyMySQL==1.0.2` como alternativa (ya presente) |
-| R004 | **urllib3 2.x rompe requests que usen API antigua** | **BAJA** — requests 2.34.2 encapsula urllib3 | **BAJO** — no se usa urllib3 directo | Actualizar requests junto con urllib3 (Fase 3) | Degradar a urllib3 1.26.x si hay errores de import |
-| R005 | **SECRET_KEY ausente en entorno (post-migración)** | **MEDIA** — depende de despliegue | **ALTO** — Django no arranca | `os.getenv("SECRET_KEY")` sin default — forzar error temprano | Documentar en example.env como obligatorio; agregar chequeo en settings: `if not SECRET_KEY: raise ImproperlyConfigured(...)` |
-| R006 | **B001 (basename duplicado) causa error en DRF 3.17** | **ALTA** — DRF 3.17 valida basenames únicos | **ALTO** — error de check impide arranque | Corrección programada en Fase 8 | Se corrige como parte del plan (REQ-13) |
-| R007 | **USE_L10N eliminado causa error de configuración** | **ALTA** — eliminado en Django 5.0 | **ALTO** — Django 5.2 rechaza setting desconocido | Eliminar línea en Fase 5 (sección 3.5) | Si se omite, el error es claro y fácil de revertir |
-| R008 | **pytz usado en runtime por algún import no detectado** | **BAJA** — no hay imports de pytz en el código | **MEDIO** — error de import en tiempo de ejecución | Verificación con grep antes de eliminar | Reinstalar pytz y reportar hallazgo |
-| R009 | **CORS configurado con `['*']` causa inseguridad** | N/A — ya se corrige | N/A | Migrar ALLOWED_HOSTS desde env (sección 3.2) | Incluido en plan |
-| R010 | **django-cors-headers 4.9.0 incompatible con Django 5.2** | **BAJA** — documentado compatible | **MEDIO** — error en check | Verificar en Fase 5 | Degradar a 4.8.x |
+| R001 | **mysqlclient no compila en python:3.14-slim** | Media | Alto — bloquea migraciones | Instalar dependencias de compilación (gcc, default-libmysqlclient-dev) en Dockerfile | Usar `PyMySQL==1.0.2` como engine alternativo (ya en requirements.txt). Cambiar `ENGINE` a `'django.db.backends.mysql'` con PyMySQL instalado como driver |
+| R002 | **Conflicto de migraciones entre modelos Django (auth/admin) y teleparkApi** | Alta | Alto — `migrate` falla | Mantener `managed=False` en los 10 modelos Django (Categoría B) | Eliminar modelos Django de models.py (Alternativa A-1) |
+| R003 | **makemigrations no genera CreateModel para modelos con db_table** | Baja | Alto — tablas no se crean | Verificar que `managed=False` se eliminó correctamente. Django trata modelos sin `managed=False` como managed por defecto | Forzar `managed = True` explícito en la clase Meta como fallback |
+| R004 | **MySQL container no ready timeout en entrypoint** | Baja | Medio — app no arranca | Healthcheck configurado con `start_period: 30s` y retry 5 | Aumentar `TIMEOUT` en entrypoint.sh de 60s a 120s |
+| R005 | **Puerto 3306 conflictua con MySQL local del host** | Alta (dev) | Bajo — error de bind | Usar puerto host `3307` en docker-compose.yml | Cambiar a `3308` o puerto no utilizado |
+| R006 | **`makemigrations` falla porque las migraciones antiguas tienen conflictos** | Media | Medio — bloquea generación | Eliminar migraciones antiguas (`0*.py`) en Dockerfile | Mantener migraciones antiguas y usar `--name` para crear migraciones con nombre diferente |
+| R007 | **Django 6.0.6 incompatible con mysqlclient 2.2.8** | Baja | Alto — no conexión a BD | mysqlclient 2.2.8 es estable y compatible con Django 4.x-6.x | Usar `PyMySQL==1.0.2` como engine alternativo |
+| R008 | **Los modelos con `db_column` con mayúsculas causan problemas con MySQL en Linux** | Baja | Medio — diferencias case-sensitive | MySQL en Linux es case-sensitive para nombres de tabla. `db_table` usa minúsculas | Verificar que `db_table` siempre está en minúsculas en los modelos |
+| R009 | **Volumen mysql_data persiste datos corruptos entre recreaciones** | Baja | Medio — datos inconsistentes | Usar `docker-compose down -v` para eliminar volúmenes al hacer limpieza | Documentar procedimiento de limpieza |
+| R010 | **Healthcheck con mysqladmin no disponible en contenedor slim** | Media | Medio — no se puede verificar salud | No depende de mysqladmin; usar script Python de conexión como alternativa en entrypoint.sh | Instalar mysql-client en Dockerfile |
 
-### Mapa de calor de riesgos
+### 6.2. Mapa de Calor
 
 ```
-CRÍTICO:  R001
-ALTO:     R005, R006, R007
-MEDIO:    R002, R008, R010
-BAJO:     R004, R009
-VERIFICADO: R003 (disponible)
+ALTO:     R002 (Conflicto migraciones)
+ALTO:     R001 (mysqlclient no compila)
+MEDIO:    R006 (Migraciones antiguas)
+MEDIO:    R004 (Timeout MySQL)
+MEDIO:    R010 (mysqladmin no disponible)
+BAJO:     R003 (CreateModel no generado)
+BAJO:     R005 (Puerto conflictivo)
+BAJO:     R007 (Incompatibilidad Django-mysqlclient)
+BAJO:     R008 (Case sensitivity)
+BAJO:     R009 (Volumen corrupto)
 ```
+
+### 6.3. OWASP Compliance
+
+| Requisito OWASP | Implementación en este ciclo |
+|----------------|----------------------------|
+| **A01 — Broken Access Control** | Se mantiene `IsAuthenticated` global en ViewSets (heredado). El healthcheck `/api/health/` es público por diseño |
+| **A02 — Cryptographic Failures** | `SECRET_KEY` ya migrada a variable de entorno en ciclo anterior. Conexión MySQL dentro de Docker sin TLS (red interna bridge). Para producción se debe habilitar TLS |
+| **A03 — Injection** | Django ORM protege contra inyección SQL. No se usan raw queries. Validación con DRF Serializers |
+| **A04 — Insecure Design** | El diseño sigue el patrón de capas definido en GLOBAL_RULES.md |
+| **A05 — Security Misconfiguration** | Variables de entorno validadas. Puerto 3307 en host evita conflictos |
+| **A06 — Vulnerable Components** | Todas las dependencias actualizadas a versiones seguras en ciclo anterior |
+| **A07 — Authentication Failures** | JWT con simplejwt 5.5.1. Tokens con expiración (60 min access, 1 día refresh) |
+| **A08 — Software Integrity** | Dockerfile construye desde fuente. requirements.txt con versiones fijas |
+| **A09 — Logging & Monitoring** | No implementado en este ciclo. Pendiente para ciclo futuro |
+| **A10 — SSRF** | No aplica (no hay fetch a URLs externas) |
 
 ---
 
-## 9. Contrato Vinculante
+## 7. Contrato de Interfaces
 
-Las siguientes cláusulas son **innegociables** para este ciclo:
+### 7.1. Puertos
 
-### 9.1. Cláusulas Técnicas
+| Servicio | Puerto Contenedor | Puerto Host | Protocolo | Propósito |
+|----------|------------------|-------------|-----------|-----------|
+| **app** (Django) | 8000 | 8000 | TCP/HTTP | API REST |
+| **db** (MySQL) | 3306 | 3307 (nota 1) | TCP/MySQL | Base de datos |
 
-1. **Orden de fases respetado.** No se puede actualizar Django antes de completar Fase 1 (dead code) y Fase 3 (deps infra).
-2. **SECRET_KEY migrada a variable de entorno** antes de la verificación `check --deploy`. No se acepta mantener la clave hardcodeada.
-3. **USE_L10N eliminado de settings.py.** Django 5.2 no acepta este setting.
-4. **pytz eliminado** de requirements.txt y del entorno. Reemplazado por `zoneinfo` (stdlib).
-5. **BLACKLIST_AFTER_ROTATION = False** en simplejwt settings (no hay backend de blacklist).
-6. **B001 corregido** (`basename='personaEp'` → `basename='personaP'` en PersonaPViewSet).
-7. **re_path migrado a path()** en urls.py de ambas aplicaciones.
-8. **CommonMiddleware duplicado eliminado** del MIDDLEWARE.
-9. **No se modifican modelos, lógica de negocio, ni BD.**
-10. **No se agregan tests nuevos.**
+> **Nota 1:** Se usa puerto host `3307` para no conflictuar con instalaciones MySQL locales que usualmente ocupan el 3306. Internamente, los contenedores se comunican por el puerto 3306.
 
-### 9.2. Cláusulas de Proceso
+### 7.2. Red
 
-1. **Cada fase se commitea por separado** (commits atómicos). No se permite un solo commit gigante.
-2. **Cada fase debe pasar `python manage.py check`** antes de avanzar a la siguiente.
-3. **Al final de Fase 5** se ejecuta `python manage.py check --deploy` obligatoriamente.
-4. **Si simplejwt 5.5.1 falla en Python 3.14** (R001), se activa el plan de contingencia (sección 5.2) sin bloquear el ciclo.
-5. **No se corrigen B002 ni B003** a menos que la actualización los haga sintácticamente inválidos.
-6. **El pipeline de CI debe ejecutar la suite de tests** (si existe) al final del ciclo. Si no existen tests, se documenta en CAMBIOS.md.
+| Nombre | Driver | Propósito |
+|--------|--------|-----------|
+| `telepark-network` | bridge | Red aislada para comunicación entre contenedores |
 
-### 9.3. Exclusiones Explícitas (No cubiertas por este contrato)
+**Nombres de host dentro de la red:**
+- `db` → resuelve al contenedor MySQL (puerto 3306)
+- `app` → resuelve al contenedor Django (puerto 8000)
 
-- ✗ Migración a `drf-spectacular` (documentación de API)
-- ✗ Corrección de B002 (asignación de clase `TipoEventoSerializer`)
-- ✗ Corrección de B003 (ruta catch-all en `telepark/urls.py`)
-- ✗ Instalación de blacklist backend para simplejwt
-- ✗ Agregar tests unitarios o de integración
-- ✗ Refactorización de `handlers.py` o `authentication.py`
-- ✗ Cambios en `models.py` o migraciones de BD
+### 7.3. Endpoints de API (Afectados por este ciclo)
+
+| Método | Ruta | Cambio | Autenticación |
+|--------|------|--------|---------------|
+| GET | `/api/health/` | 🆕 Nuevo (opcional — REQ-13) | Pública |
+
+El resto de los endpoints (~80+) heredados de ciclos anteriores no se modifican.
+
+### 7.4. Volúmenes
+
+| Nombre | Mount point | Propósito |
+|--------|-------------|-----------|
+| `telepark_mysql_data` | `/var/lib/mysql` | Persistencia de datos MySQL entre reinicios |
+
+### 7.5. Nombres de Contenedor
+
+| Servicio | container_name | Hostname (red interna) |
+|----------|---------------|----------------------|
+| db | `telepark-db` | `db` |
+| app | `telepark-app` | `app` |
 
 ---
 
-## 10. Aprobación
+## 8. Contrato Vinculante
+
+### 8.1. Cláusulas Técnicas
+
+1. **`managed = False` se elimina exclusivamente de los 26 modelos de negocio.** Los 10 modelos del framework Django (Auth*, Django*) mantienen `managed = False` para evitar conflictos de migraciones.
+2. **Las migraciones existentes se eliminan** (`teleparkApi/migrations/0*.py`) y se regeneran en el entrypoint.
+3. **El entrypoint.sh** es responsable de la secuencia: wait-for-mysql → makemigrations → migrate → runserver.
+4. **MySQL se expone en puerto host 3307**, no 3306, para evitar conflictos.
+5. **La imagen base es `python:3.14-slim`** con las dependencias de compilación necesarias para mysqlclient.
+6. **PyMySQL 1.0.2** se mantiene en requirements.txt como fallback si mysqlclient falla.
+7. **No se modifican modelos, lógica de negocio, ni estructura de tablas.** Solo se cambia el atributo `managed` en la clase `Meta`.
+8. **No se agregan datos seed ni fixtures.** La BD se crea vacía.
+
+### 8.2. Cláusulas de Proceso
+
+1. **El ciclo se ejecuta en orden:** models.py → Dockerfile → docker-compose.yml → entrypoint.sh → .dockerignore → verificación.
+2. **Cada cambio en models.py debe pasar `python manage.py check`** antes de construir la imagen Docker.
+3. **La verificación final** consiste en `docker-compose up` exitoso + verificación de tablas via `docker exec`.
+4. **Si mysqlclient falla en la compilación Docker**, se activa el plan de contingencia (PyMySQL) sin bloquear el ciclo.
+5. **Si `makemigrations` genera migraciones conflictivas** (ej. para modelos Django), se eliminan los modelos conflictivos de models.py.
+
+### 8.3. Cobertura de Requerimientos
+
+| User Story | Criterios EARS | Cobertura Arquitectónica |
+|------------|---------------|--------------------------|
+| **US-01** | REQ-01, REQ-10, REQ-12 | Sección 2.1 (estrategia managed) + Sección 3.1 (plan de modificación) |
+| **US-02** | REQ-02, REQ-03, REQ-04, REQ-07, REQ-08, REQ-11 | Sección 3.2 (Dockerfile, docker-compose, entrypoint) |
+| **US-03** | REQ-05, REQ-06 | Sección 3.1.2 (estrategia migraciones) + entrypoint.sh |
+| **US-04** | REQ-09, REQ-13 | Sección 3.3 (healthcheck) + Sección 7.3 (endpoints) |
+
+### 8.4. Exclusiones Explícitas
+
+- ✗ Modificación de campos, tipos de dato, o relaciones en modelos
+- ✗ Eliminación de modelos Django de models.py (a menos que sea necesario por conflicto)
+- ✗ Implementación de autenticación adicional
+- ✗ Tests unitarios o de integración
+- ✗ Configuración de Gunicorn/uWSGI para producción
+- ✗ Configuración de TLS/SSL
+- ✗ Implementación de logging estructurado
+- ✗ Seed de datos o fixtures
+
+---
+
+## Aprobación
 
 | Rol | Estado | Fecha |
 |-----|--------|-------|
@@ -613,5 +933,5 @@ Las siguientes cláusulas son **innegociables** para este ciclo:
 | **Orquestador** | ⏳ PENDIENTE | — |
 | **Aprobación humana** | ⏳ PENDIENTE | — |
 
-> **Pipeline bloqueado hasta:** `GATEKEEPER_CHECKPOINT` → `USER_CHECKPOINT`
-> **Próximo paso:** Gatekeeper revisa contrato arquitectónico. Si aprueba, se pasa a estado `LISTO_PARA_DESARROLLO` y se invoca al Desarrollador.
+> **Pipeline bloqueado hasta:** Revisión del Gatekeeper y aprobación humana.
+> **Próximo paso:** Gatekeeper revisa el contrato arquitectónico. Si aprueba, se notifica al Orquestador para proceder a `LISTO_PARA_DESARROLLO`.

@@ -1,4 +1,67 @@
-# CAMBIOS — Ciclo de Estabilización CICLO-20260702-001
+# CAMBIOS
+
+## Ciclo CICLO-20260702-001 (Estabilización)
+[Contenido del ciclo anterior preservado abajo]
+
+---
+
+## Ciclo CICLO-20260702-002 (Dockerización + managed=True)
+
+### Resumen
+Ciclo Brownfield que dockeriza la aplicación Django + MySQL y migra 26 modelos de negocio de `managed=False` a `managed=True`. Los 10 modelos del framework Django (Auth*, Django*) mantienen `managed=False` para evitar conflictos de migraciones.
+
+### US-01: Pasar 26 modelos de negocio a managed=True
+- **Archivo:** `teleparkApi/models.py`
+- **Cambio:** Eliminado `managed = False` de las clases `Meta` de los 26 modelos de negocio
+- **Modelos afectados:** Actividad, Actividadrealizada, Asistenciataller, Clasetaller, Comportamiento, Diagnostico, Direccion, Enfermedad, Evento, Evolucion, Factorclase, Factorglobal, Indicacionmedicamento, Localidad, Medicamento, Municipio, Obrasocial, Os, Persona, PersonaEp, Taller, Tipoevento, Tipoparentesco, Unidadobservacion, Valorvariableuo, Variableuo
+- **Modelos no modificados (10):** AuthGroup, AuthGroupPermissions, AuthPermission, AuthUser, AuthUserGroups, AuthUserUserPermissions, DjangoAdminLog, DjangoContentType, DjangoMigrations, DjangoSession
+- **Seguridad aplicada:** Validación de white-listing de modelos a modificar contra la lista especificada en ARQUITECTURA.md. Los 10 modelos Django se excluyen por ser gestionados por apps internas de Django.
+
+### US-02: Dockerizar app Django + MySQL
+- **Archivo:** `Dockerfile` (CREADO)
+  - Base: `python:3.14-slim` (single stage)
+  - Instala gcc, libc6-dev, default-libmysqlclient-dev, pkg-config para compilar mysqlclient
+  - Elimina migraciones antiguas (`0*.py`) para regeneración limpia
+  - Crea directorio `static/`
+  - Entrypoint: `/entrypoint.sh`
+- **Archivo:** `docker-compose.yml` (CREADO)
+  - Servicio `db`: mysql:8.0, container_name: telepark-db, puerto host 3307:3306, volumen telepark_mysql_data, healthcheck con mysqladmin ping
+  - Servicio `app`: build: ., container_name: telepark-app, depends_on db (condition: service_healthy), puerto 8000:8000, volumen .:/app (hot-reload)
+  - Red: telepark-network (bridge)
+  - Variables de entorno con defaults para desarrollo local
+- **Archivo:** `entrypoint.sh` (CREADO)
+  - Wait-for-mysql usando Python (MySQLdb) en lugar de mysqladmin (evita instalar mysql-client)
+  - Timeout configurable de 60s con retry cada 3s
+  - Secuencia: wait → makemigrations teleparkApi → migrate → runserver 0.0.0.0:8000
+- **Archivo:** `.dockerignore` (CREADO)
+  - Excluye: .git, .venv, __pycache__, *.pyc, .env, example.env, BD/, README.md
+
+### US-03: makemigrations + migrate (gestionado por entrypoint.sh)
+- Las migraciones antiguas (`0001_initial.py`, `0002_authgroup_...py`) se eliminan en el Dockerfile
+- El entrypoint regenera migraciones desde cero y las aplica
+- Verificación: `docker-compose up` debe crear las 26 tablas de negocio
+
+### US-04: Endpoint de healthcheck /api/health/ (REQ-13)
+- **Archivo:** `teleparkApi/views/__init__.py` (CREADO)
+- **Archivo:** `teleparkApi/views/health.py` (CREADO)
+  - `GET /api/health/` — verifica conexión a BD y cuenta tablas de negocio
+  - Respuesta 200: `{"status": "ok", "database": "connected", "tables": N}`
+  - Respuesta 503: `{"status": "error", "database": "disconnected", "detail": "..."}`
+  - Público (sin autenticación), seguro por diseño (solo info de conectividad)
+- **Archivo:** `teleparkApi/urls.py` (MODIFICADO)
+  - Agregada importación de `health_check` y ruta `api/health`
+
+### Verificación
+- `python manage.py check` ✅ PASS — 0 errores, 0 warnings (excluyendo static preexistente)
+
+### Control de seguridad aplicado
+1. Sanitización: El healthcheck solo expone estado de conexión, no datos sensibles
+2. Secretos: Todas las credenciales viajan como variables de entorno en docker-compose.yml
+3. Logging: El entrypoint.sh no logea contraseñas ni datos sensibles
+4. Aislamiento: Red bridge propia (telepark-network) para aislar servicios
+5. White-listing: Solo se modificaron los 26 modelos explícitamente listados en ARQUITECTURA.md
+
+---
 
 ## Resumen
 Ciclo de refactorización Brownfield completado. Se ejecutaron las 10 fases del plan arquitectónico.

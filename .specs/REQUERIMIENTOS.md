@@ -1,198 +1,164 @@
-# REQUERIMIENTOS — Ciclo de Estabilización Brownfield
+# REQUERIMIENTOS — CICLO CICLO-20260703-001
 
-> **Ciclo:** CICLO-20260702-001  
-> **Modo:** BROWNFIELD  
-> **Baseline de referencia:** `.specs/BASELINE.md` (commit `7c3eb7c`)  
-> **Objetivo exclusivo:** Estabilización del entorno — sin alteraciones funcionales en la API.
+## Modo
+`BROWNFIELD`
 
----
+## Contexto
+El proyecto Telepark tiene una deuda técnica crítica de acoplamiento en la capa web identificada como **A001** en BASELINE.md: toda la lógica de negocio (consultas ORM, validaciones, reglas de dominio) reside dentro de los ViewSets en `teleparkApi/api.py`, violando la **Regla 1 de GLOBAL_RULES.md** que establece: *"Capa de Presentación: PROHIBIDO contener lógica de negocio"*.
 
-## Contexto del Sistema Legacy (desde BASELINE.md)
+Adicionalmente, el archivo se llama `api.py` cuando la convención Django estándar es `views.py` (el archivo `views.py` original fue eliminado en CICLO-20260702-001 por ser código muerto).
 
-El proyecto Telepark Backend corre sobre **Django 3.2.5** (EOL desde abril 2024) con **djangorestframework 3.12.4** y base de datos MySQL. Se han detectado:
+No existe una capa de Servicios (`services/`) que encapsule las reglas de negocio, dejando a los ViewSets como controladores monolíticos que mezclan responsabilidades HTTP con lógica de dominio.
 
-- **25 dependencias** en `requirements.txt`, de las cuales **22 están desactualizadas**, **13 son eliminables sin impacto funcional**, y **5 arrastran CVEs conocidos** (Django 3.2.5, urllib3 1.26.6, PyJWT 2.1.0).
-- **Código muerto:** Archivo completo `views.py` (34 líneas, no enrutado), `admin.py` stub, `tests.py` stub.
-- **Serializador duplicado:** `EnfermedadSerializer` definido dos veces en `serializers.py`.
-- **django-rest-swagger** y 5 dependencias transitivas muertas no referenciadas en ningún archivo `.py`.
-
-**Stack tecnológico actual:**
-| Componente | Versión Actual | Estado | Versión Recomendada (verificada) |
-|-----------|---------------|--------|----------------------------------|
-| Django | 3.2.5 | 🔴 EOL (Abril 2024) | **5.2.x LTS** — compatible con Python 3.14 |
-| DRF | 3.12.4 | 🟡 Desactualizado | **3.17.1** (PyPI, marzo 2026) |
-| simplejwt | 4.7.2 | 🟡 Desactualizado | **5.5.1** (PyPI) |
-| django-cors-headers | 3.10.1 | 🟡 Desactualizado | **4.9.0** (PyPI) |
-| django-rest-swagger | 2.2.0 | 🔴 Deprecado (2019) | ❌ **ELIMINAR** |
-| python-dotenv | 0.18.0 | 🟡 Desactualizado | **1.2.2** (PyPI, marzo 2026) |
-| mysqlclient | 2.1.0 | 🟡 Desactualizado | **2.2.8** (PyPI, feb 2026) — wheels para cp314 ✓ |
-| PyJWT | 2.1.0 | 🔴 CVE conocido | **2.13.0** (PyPI, mayo 2026) |
-| urllib3 | 1.26.6 | 🔴 CVE conocido, 1.26 EOL | **2.7.0** (PyPI, mayo 2026) |
-| requests | 2.26.0 | 🟡 Desactualizado | **2.34.2** (PyPI, mayo 2026) |
-| certifi | 2021.5.30 | 🔴 Desactualizado | **2026.05.20** (PyPI, fecha) |
-| sqlparse | 0.4.1 | 🟡 Desactualizado | **0.5.4** (PyPI) |
-| asgiref | 3.4.1 | 🟡 Desactualizado | **3.11.1** (PyPI, feb 2026) |
-| Jinja2 | 3.0.1 | 🟡 Desactualizado | **3.1.6** (PyPI, marzo 2025) |
-| setuptools | 41.2.0 | 🔴 Obsoleto | **82.0.1** (PyPI, marzo 2026) |
-| pytz | 2021.1 | 🟡 Desactualizado | Reemplazar por `zoneinfo` (stdlib Python 3.9+) |
-| MarkupSafe | 2.0.1 | 🟡 Desactualizado | Actualizar con Jinja2 |
-| simplejson | 3.17.3 | 🟢 Funcional | Mantener versión (no hay breaking changes) |
-
-> **Nota:** Python **3.14.2** está instalado en el entorno de ejecución. Django 4.2 LTS solo soporta Python ≤3.12, por lo que **no es compatible**. La versión mínima de Django requerida es **5.2 LTS** (soporta Python 3.10-3.14) o **6.0.6** (soporta Python 3.12-3.14). Para un ciclo de estabilización, se recomienda **Django 5.2 LTS** por su ventana de soporte extendido.
+Este ciclo busca:
+1. **Crear la capa de Servicios** puros (`services/`) para encapsular toda la lógica de negocio
+2. **Migrar `api.py` → `views.py`** siguiendo la convención Django estándar
+3. **Refactorizar los ViewSets** para que sean únicamente adaptadores HTTP delgados
+4. **Eliminar código muerto** identificado (handlers.py) que quedó relicto de una arquitectura previa
 
 ---
 
-## Plan de Actualización de Dependencias (Verificado con Context7 + PyPI)
+## User Stories
 
-> Las versiones recomendadas han sido verificadas contra las fuentes oficiales (PyPI, GitHub, documentación oficial) usando Context7 MCP y web search al 2026-07-02.
-
-### Dependencias a ACTUALIZAR
-
-| Paquete | Versión Actual | Versión Objetivo | Fuente de Verificación | Notas |
-|---------|---------------|------------------|------------------------|-------|
-| Django | 3.2.5 | **5.2.x LTS** ⚠️ | `docs.djangoproject.com` | 4.2 LTS NO compatible con Python 3.14. 5.2 LTS es la versión LTS mínima que soporta Python 3.10-3.14 |
-| djangorestframework | 3.12.4 | **3.17.1** | `pypi.org/project/djangorestframework` | Soporta Django 4.2-6.0, Python ≥3.10 |
-| django-cors-headers | 3.10.1 | **4.9.0** | `pypi.org/project/django-cors-headers` | Compatible con Django 4.2-6.0, Python 3.10-3.14 |
-| djangorestframework-simplejwt | 4.7.2 | **5.5.1** | `pypi.org/project/djangorestframework-simplejwt` | Requiere Django ≥4.2, DRF ≥3.14, PyJWT ≥1.7.1. Verificar compatibilidad con Python 3.14 |
-| mysqlclient | 2.1.0 | **2.2.8** | `pypi.org/project/mysqlclient` | Wheels para cp314-win_amd64 disponibles ✓ |
-| python-dotenv | 0.18.0 | **1.2.2** | `pypi.org/project/python-dotenv` | Python ≥3.10. Breaking changes en set_key/unset_key |
-| PyJWT | 2.1.0 | **2.13.0** | `pypi.org/project/PyJWT` | Soporta Python 3.14. CVE-2.1.0 corregido |
-| urllib3 | 1.26.6 | **2.7.0** | `pypi.org/project/urllib3` | v1.26.x EOL (no mantenido). v2.x requiere Python ≥3.10 y OpenSSL ≥1.1.1 |
-| requests | 2.26.0 | **2.34.2** | `pypi.org/project/requests` | Python ≥3.10 |
-| certifi | 2021.5.30 | **2026.05.20** | `pypi.org/project/certifi` | Versionado por fecha (YYYY.MM.DD). CA bundle actualizado |
-| sqlparse | 0.4.1 | **0.5.4** | `pypi.org/project/sqlparse` | Python ≥3.10 desde 0.5.x |
-| asgiref | 3.4.1 | **3.11.1** | `pypi.org/project/asgiref` | Python ≥3.9 |
-| Jinja2 | 3.0.1 | **3.1.6** | `pypi.org/project/Jinja2` | Security release |
-| setuptools | 41.2.0 | **82.0.1** | `pypi.org/project/setuptools` | Python ≥3.9. Saltos de versión mayores — probar compatibilidad |
-| MarkupSafe | 2.0.1 | **2.1.x+** | Dependencia de Jinja2 | Se actualiza junto con Jinja2 |
-| charset-normalizer | 2.0.4 | **3.3.x+** | Dependencia de requests | Se actualiza junto con requests |
-| idna | 3.2 | **3.7+** | Dependencia de requests | Se actualiza junto con requests |
-| simplejson | 3.17.3 | **3.19.x** | `pypi.org/project/simplejson` | Actualizar si hay compatibilidad |
-| pytz | 2021.1 | **❌ ELIMINAR** | — | Python 3.9+ incluye `zoneinfo` en stdlib. Django 5.2+ usa `zoneinfo` por defecto |
-
-### Dependencias a ELIMINAR (código muerto verificado)
-
-| Paquete | Versión Actual | Motivo | Evidencia |
-|---------|---------------|--------|-----------|
-| django-rest-swagger | 2.2.0 | Deprecado desde 2019. No importado en ningún `.py` | `grep -r "rest_swagger"` sin resultados |
-| coreapi | 2.3.3 | Dependencia transitiva de swagger. No importado | Paquete no referenciado |
-| coreschema | 0.0.4 | Dependencia transitiva de swagger. No importado | Paquete no referenciado |
-| openapi-codec | 1.3.2 | Dependencia transitiva de swagger. No importado | Paquete no referenciado |
-| uritemplate | 3.0.1 | Dependencia transitiva de swagger. No importado | Paquete no referenciado |
-| itypes | 1.2.0 | Dependencia transitiva de swagger. No importado | Paquete no referenciado |
-
-### Árbol de dependencias post-actualización (estimado)
-
-```
-Django 5.2.x LTS
-├── asgiref 3.11.1
-├── sqlparse 0.5.4
-└── pytz → ELIMINADO (usa zoneinfo stdlib)
-djangorestframework 3.17.1
-djangorestframework-simplejwt 5.5.1
-├── PyJWT 2.13.0
-└── djangorestframework ≥3.14
-django-cors-headers 4.9.0
-mysqlclient 2.2.8
-python-dotenv 1.2.2
-requests 2.34.2
-├── urllib3 2.7.0
-├── certifi 2026.05.20
-├── charset-normalizer 3.3.x
-└── idna 3.7+
-Jinja2 3.1.6
-└── MarkupSafe 2.1.x
-simplejson 3.19.x
-setuptools 82.0.1
-```
+| ID | Rol | Quiero | Para |
+|----|-----|--------|------|
+| US-01 | Desarrollador | Que exista una capa de Servicios puros (`services/`) que encapsule toda la lógica de negocio (consultas ORM, validaciones, reglas de dominio) actualmente dispersa en los ViewSets | Separar responsabilidades y cumplir con la arquitectura de capas definida en GLOBAL_RULES.md |
+| US-02 | Desarrollador | Que los ViewSets en `api.py` sean migrados a `views.py` y refactorizados como adaptadores HTTP delgados que solo reciban requests, deleguen en servicios y devuelvan responses | Tener una separación limpia entre la capa de presentación y la lógica de dominio |
+| US-03 | Desarrollador | Que las 4 acciones personalizadas `@action` (Diagnostico.list_diagnosticoP, Evolucion.list_evolucionP, OS.list_obrasocialP, Indicacion.list_indicacionP) deleguen su lógica de filtrado a los Servicios en lugar de ejecutar ORM directamente en el ViewSet | Que todas las consultas a la base de datos estén centralizadas y reutilizables en la capa de Servicios |
+| US-04 | Arquitecto | Que el archivo `handlers.py` (50 líneas, 100% código muerto) sea eliminado del proyecto | Eliminar código relicto que ya no cumple ninguna función y reduce la mantenibilidad |
+| US-05 | QA Engineer | Poder verificar mediante pruebas que los endpoints existentes se comportan idénticamente antes y después de la refactorización (mismos datos de entrada producen mismas respuestas) | Asegurar que la extracción a Servicios no introduce regresiones funcionales |
 
 ---
 
-### US-01: Actualización de Django y dependencias a versiones estables y seguras
+## Criterios de Aceptación (EARS)
 
-> **Como** administrador del sistema,  
-> **quiero** actualizar Django y todas las dependencias del proyecto a versiones estables, seguras y con soporte activo,  
-> **para** eliminar vulnerabilidades conocidas (CVEs) y garantizar la mantenibilidad del proyecto.
+### Ubiquitous (comportamiento siempre activo)
 
-### US-02: Eliminación de código muerto
+| ID | Criterio |
+|----|----------|
+| REQ-01 | El sistema DEBE tener una carpeta `teleparkApi/services/` con un archivo `__init__.py` y módulos de servicio que encapsulen toda la lógica de negocio actualmente en los ViewSets |
+| REQ-02 | El archivo `teleparkApi/api.py` DEBE ser renombrado/migrado a `teleparkApi/views.py` (convención Django estándar) |
+| REQ-03 | Cada ViewSet en `views.py` DEBE delegar TODAS las operaciones de negocio (consultas ORM, validaciones, reglas de dominio) a la capa de Servicios |
+| REQ-04 | Los ViewSets DEBEN limitarse a: recibir un `request`, invocar al Servicio correspondiente, y devolver una `Response` DRF |
+| REQ-05 | El archivo `teleparkApi/handlers.py` DEBE ser eliminado del proyecto por ser código muerto (no importado ni usado por ningún archivo) |
+| REQ-06 | La capa de Servicios DEBE usar los Modelos de Django directamente (sin pasar por serializadores), retornando datos procesados o resultados de operaciones |
+| REQ-07 | Cada Servicio DEBE ser una clase Python pura (sin herencia de DRF) con métodos que representen operaciones de negocio (ej: `listar()`, `obtener_por_id()`, `filtrar_por_persona()`) |
 
-> **Como** desarrollador del equipo,  
-> **quiero** eliminar todo el código fuente que no está siendo ejecutado por ningún endpoint,  
-> **para** reducir la superficie de mantenimiento y evitar confusiones durante el desarrollo futuro.
+### Event-driven (respuesta a eventos)
 
-### US-03: Eliminación de librerías sin uso
+| ID | Criterio |
+|----|----------|
+| REQ-08 | CUANDO se realice una petición GET a `/api/diagnostico/{pk}/personaep`, el ViewSet `DiagnosticoViewSet` DEBE invocar un método del Servicio de Diagnóstico en lugar de ejecutar `Diagnostico.objects.filter(idpersonaep=pk)` directamente |
+| REQ-09 | CUANDO se realice una petición GET a `/api/evolucion/{pk}/personaep`, el ViewSet `EvolucionViewSet` DEBE invocar un método del Servicio de Evolución |
+| REQ-10 | CUANDO se realice una petición GET a `/api/os/{pk}/personaep`, el ViewSet `OSViewSet` DEBE invocar un método del Servicio de Obra Social |
+| REQ-11 | CUANDO se realice una petición GET a `/api/indicacion/{pk}/personaep`, el ViewSet `IndicacionViewSet` DEBE invocar un método del Servicio de Indicación |
+| REQ-12 | CUANDO se ejecute `python manage.py check` después de la refactorización, el sistema DEBE reportar 0 errores y 0 warnings (excluyendo warnings preexistentes de configuración) |
+| REQ-13 | CUANDO se ejecute `python manage.py test`, el sistema DEBE ejecutar las pruebas sin errores de importación |
 
-> **Como** administrador del sistema,  
-> **quiero** remover de `requirements.txt` todas las dependencias que no son importadas por ningún módulo del proyecto,  
-> **para** minimizar la cadena de suministro de software y reducir riesgos de seguridad por dependencias no utilizadas.
+### State-driven (comportamiento condicional)
 
-### US-04: Garantía de no regresión funcional
+| ID | Criterio |
+|----|----------|
+| REQ-14 | MIENTRAS el ViewSet herede de `ModelViewSet`, DEBE sobrescribir los métodos `list()`, `create()`, `retrieve()`, `update()`, `partial_update()`, `destroy()` para delegar en Servicios (o configurar `queryset` y `serializer_class` para casos CRUD puros sin lógica extra) |
+| REQ-15 | MIENTRAS un Servicio realice consultas a la BD, DEBE usar el ORM de Django (prohibido raw SQL por seguridad, según GLOBAL_RULES.md sección 2.2) |
 
-> **Como** desarrollador del equipo,  
-> **quiero** que el sistema compile correctamente y todos los tests existentes pasen sin alteraciones tras los cambios,  
-> **para** asegurar que la estabilización del entorno no introduzca regresiones en la funcionalidad existente.
+### Unwanted-behavior (manejo de errores)
 
----
+| ID | Criterio |
+|----|----------|
+| REQ-16 | SI un Servicio encuentra un error de dominio (ej: registro no encontrado, violación de regla de negocio), ENTONCES DEBE lanzar una excepción de dominio personalizada que el ViewSet capture y convierta en una respuesta HTTP apropiada (404, 400, etc.) |
+| REQ-17 | SI durante la refactorización se rompe algún endpoint existente, ENTONCES el ciclo DEBE rechazarse y reportar el error específico (sujeto al circuit breaker) |
 
-## Criterios de Aceptación (sintaxis EARS)
+### Optional-feature (características opcionales)
 
-### Ubiquitous (Comportamiento permanente del sistema)
-
-- **REQ-01:** El sistema DEBE compilar sin errores tras aplicar todas las actualizaciones de dependencias y limpieza de código.
-- **REQ-02:** Todos los tests existentes DEBEN ejecutarse correctamente (estado `PASSED`) sin modificación alguna de su lógica.
-- **REQ-03:** Todos los endpoints activos listados en `BASELINE.md` (sección 3) DEBEN responder exactamente con la misma estructura de datos que antes de la intervención.
-- **REQ-04:** El sistema DEBE utilizar únicamente versiones de paquetes con soporte activo (non-EOL) y sin CVEs públicos conocidos de severidad CRITICAL o HIGH en el momento del deploy.
-
-### Event-driven (Comportamiento disparado por eventos)
-
-- **REQ-05:** CUANDO se ejecute `python manage.py check --deploy`, el sistema DEBE reportar CERO errores de seguridad críticos (SECRET_KEY hardcodeada, ALLOWED_HOSTS genérico, DEBUG en producción).
-- **REQ-06:** CUANDO se ejecute `pip install -r requirements.txt` en un entorno limpio, el sistema DEBE instalar sin conflictos de dependencias.
-- **REQ-07:** CUANDO el pipeline de CI ejecute la suite de tests existente, todos los tests DEBEN retornar `PASSED` en el primer intento.
-
-### State-driven (Comportamiento condicionado por estado)
-
-- **REQ-08:** MIENTRAS la versión de Django sea 5.2 LTS o superior y DRF sea 3.14+, el sistema DEBE continuar funcionando sin requerir cambios en `models.py` (pues todos los modelos declaran `managed = False` explícitamente).
-- **REQ-09:** MIENTRAS el paquete `django-rest-swagger` esté presente en `requirements.txt`, si no es importado por ningún módulo, el sistema DEBE funcionar idénticamente sin él tras su eliminación.
-
-### Unwanted-behavior (Manejo de condiciones no deseadas)
-
-- **REQ-10:** SI una dependencia eliminada resulta ser necesaria en tiempo de ejecución, ENTONCES el pipeline DEBE abortar con error claro indicando qué import falló y restaurar la dependencia.
-- **REQ-11:** SI algún endpoint existente cambia su estructura de respuesta tras la actualización, ENTONCES el desarrollador DEBE revertir el cambio y notificar inmediatamente al orquestador.
-- **REQ-12:** SI la actualización de Django requiere cambios en la configuración de `settings.py` (ej. `DEFAULT_AUTO_FIELD`, `MIDDLEWARE`), ENTONCES dichos cambios DEBEN ser explícitamente documentados y aprobados por revisión antes del merge.
-- **REQ-13:** SI se detecta que la colisión de `basename='personaEp'` entre PersonaPViewSet y PersonaEPViewSet (bug B001) causa conflictos de ruta tras la actualización, ENTONCES el desarrollador DEBE corregir el basename y reportarlo explícitamente.
-
-### Optional-feature (Comportamiento condicionado por feature opcional)
-
-- **REQ-14:** DONDE existan múltiples versiones candidatas para la actualización de Django (5.2 LTS vs 6.0.x), el equipo DEBE optar por la versión LTS (5.2 LTS) dado que: (a) Python 3.14.2 está instalado y 5.2 LTS lo soporta oficialmente; (b) 5.2 LTS ofrece ventana de soporte extendido; (c) 6.0.x no es LTS y requeriría migración a 6.2 LTS futura.
-- **REQ-15:** DONDE `django-rest-swagger` sea eliminado, DONDE la documentación de API sea requerida en el futuro, el equipo DEBE considerar `drf-spectacular` como reemplazo (no incluido en este ciclo de estabilización).
+| ID | Criterio |
+|----|----------|
+| REQ-18 | DONDE exista la oportunidad de corregir bugs menores (B001: PersonaP queryset incorrecto, B002: EventoSerializer tipoEvento clase), el desarrollador PUEDE corregirlos como parte de la refactorización siempre que no aumente el alcance del ciclo |
+| REQ-19 | DONDE se identifiquen dependencias o patrones comunes entre servicios, el desarrollador PUEDE crear un `BaseService` o clase abstracta para reducir duplicación |
 
 ---
 
-## Fuera de Alcance (Out of Scope)
+## Trazabilidad US ↔ REQ
 
-1. ✗ **No se agregarán nuevas funcionalidades o endpoints.**
-2. ✗ **No se migrará el esquema de base de datos** (modelos `managed=False` se mantienen).
-3. ✗ **No se agregarán tests nuevos** más allá de los existentes.
-4. ✗ **No se refactorizará la lógica de negocio** — solo limpieza de dead code y dependencias.
-5. ✗ **No se reemplazará django-rest-swagger por drf-spectacular** en este ciclo (queda para ciclo futuro si se requiere documentación).
-6. ✗ **No se modificará la autenticación o el modelo de usuarios** (JWT, tokens, etc.).
-7. ✗ **No se cambiará el motor de base de datos** (MySQL se mantiene).
-8. ✗ **No se corregirán los bugs B002 y B003** a menos que la actualización de Django/DRF los haga sintácticamente inválidos. Quedan registrados en BASELINE.md para ciclos futuros.
-
----
-
-## Trazabilidad
-
-| User Story | Criterios EARS asociados |
-|-----------|-------------------------|
-| US-01 | REQ-01, REQ-04, REQ-05, REQ-06, REQ-08, REQ-12, REQ-14 |
-| US-02 | REQ-01, REQ-03, REQ-11 |
-| US-03 | REQ-01, REQ-06, REQ-09, REQ-10, REQ-15 |
-| US-04 | REQ-01, REQ-02, REQ-07, REQ-13 |
+| User Story | Criterios EARS |
+|------------|----------------|
+| US-01 | REQ-01, REQ-06, REQ-07, REQ-15 |
+| US-02 | REQ-02, REQ-03, REQ-04, REQ-14 |
+| US-03 | REQ-08, REQ-09, REQ-10, REQ-11 |
+| US-04 | REQ-05 |
+| US-05 | REQ-12, REQ-13, REQ-16, REQ-17 |
 
 ---
 
-## Aprobación
+## Trazabilidad REQ ↔ Hallazgos BASELINE.md
 
-> **Estado:** PENDIENTE DE APROBACIÓN HUMANA  
-> **Pipeline bloqueado hasta:** `USER_CHECKPOINT` para confirmación del usuario.
+| Criterio EARS | Hallazgo asociado |
+|---------------|-------------------|
+| REQ-01, REQ-02, REQ-03, REQ-04, REQ-07, REQ-14 | **A001**, **A002**, **A004** — Lógica de negocio en ViewSets, acoplamiento, ausencia de servicios |
+| REQ-05 | **D001** — handlers.py 100% código muerto |
+| REQ-08, REQ-09, REQ-10, REQ-11 | **B003** — Acciones @action con lógica ORM inline |
+| REQ-18 | **B001**, **B002** — Bugs opcionales a corregir |
+| REQ-15 | GLOBAL_RULES.md 2.2 — Prohibición de raw SQL |
+
+---
+
+## Fuera de Alcance
+
+| Item | Justificación |
+|------|---------------|
+| Corregir middleware.py (D003) | No afecta la funcionalidad actual y está fuera del objetivo de extracción a Servicios |
+| Corregir B004 (doble verificación de permisos en authentication.py) | Es código de autenticación, no de ViewSets ni servicios |
+| Agregar tests unitarios de servicios | Se prioriza la refactorización funcional; los tests se abordarán en ciclo posterior de QA |
+| Dockerizar cambios o modificar Dockerfile | La Dockerización ya está completa en CICLO-20260702-002 |
+| Actualizar Django, DRF o dependencias | Las dependencias ya fueron actualizadas en CICLO-20260702-001 |
+| Renombrar o modificar modelos/serializadores existentes | Solo se modifica la capa de presentación y se crea la de servicios |
+| Implementar autenticación adicional o autorización | Fuera del alcance de esta refactorización arquitectónica |
+| Migrar a base de datos diferente a MySQL | No aplica |
+
+---
+
+## Notas Técnicas
+
+- **Estructura objetivo de la capa Services:**
+  ```
+  teleparkApi/services/
+  ├── __init__.py
+  ├── base_service.py          (opcional - clase base)
+  ├── persona_service.py       (servicios de Persona, PersonaEp)
+  ├── diagnostico_service.py   (servicios de Diagnostico)
+  ├── evolucion_service.py     (servicios de Evolucion)
+  ├── os_service.py            (servicios de ObraSocial, Os)
+  ├── indicacion_service.py    (servicios de Indicacionmedicamento)
+  └── ... (demás servicios por dominio)
+  ```
+
+- **Migración api.py → views.py:**
+  - Crear `teleparkApi/views/` (ya existe con `__init__.py` y `health.py`)
+  - Mover contenido de `api.py` a `views/api_views.py` o directamente a `views.py`
+  - Actualizar importaciones en `urls.py` y demás archivos referenciantes
+
+- **Patrón de Servicio:**
+  ```python
+  class DiagnosticoService:
+      def listar(self) -> QuerySet:
+          return Diagnostico.objects.all()
+      
+      def obtener_por_id(self, pk: int) -> Diagnostico:
+          return Diagnostico.objects.get(pk=pk)
+      
+      def filtrar_por_persona(self, personaep_pk: int) -> QuerySet:
+          return Diagnostico.objects.filter(idpersonaep=personaep_pk)
+  ```
+
+- **ViewSets resultantes (adaptadores HTTP puros):**
+  ```python
+  class DiagnosticoViewSet(viewsets.ModelViewSet):
+      queryset = DiagnosticoService().listar()
+      serializer_class = DiagnosticoSerializer
+      
+      @action(detail=True, methods=['get'])
+      def personaep(self, request, pk=None):
+          diagnosticos = DiagnosticoService().filtrar_por_persona(pk)
+          serializer = DiagnosticoEpSerializer(diagnosticos, many=True)
+          return Response(serializer.data)
+  ```

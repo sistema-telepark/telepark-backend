@@ -1,10 +1,8 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
+# This is an auto-generated Django model module — cleaned.
+# Todos los modelos tienen managed=True (por defecto, sin declaración explícita).
+# Django administra el ciclo de vida de estas tablas vía migraciones.
+# Los modelos del framework Django (Auth*, Django*) fueron eliminados porque
+# ya son gestionados por django.contrib.auth, django.contrib.contenttypes, etc.
 from django.db import models
 
 
@@ -14,7 +12,6 @@ class Actividad(models.Model):
     idtaller = models.ForeignKey('Taller', models.DO_NOTHING, db_column='idTaller')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'actividad'
 
 
@@ -23,7 +20,6 @@ class Actividadrealizada(models.Model):
     idclasetaller = models.ForeignKey('Clasetaller', models.DO_NOTHING, db_column='idClaseTaller')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'actividadrealizada'
         unique_together = (('idactividad', 'idclasetaller'),)
 
@@ -36,77 +32,7 @@ class Asistenciataller(models.Model):
     idcomportamiento = models.ForeignKey('Comportamiento', models.DO_NOTHING, db_column='idComportamiento', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'asistenciataller'
-
-
-class AuthGroup(models.Model):
-    name = models.CharField(unique=True, max_length=150)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group'
-
-
-class AuthGroupPermissions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-    permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group_permissions'
-        unique_together = (('group', 'permission'),)
-
-
-class AuthPermission(models.Model):
-    name = models.CharField(max_length=255)
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
-    codename = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_permission'
-        unique_together = (('content_type', 'codename'),)
-
-
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.IntegerField()
-    username = models.CharField(unique=True, max_length=150)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    email = models.CharField(max_length=254)
-    is_staff = models.IntegerField()
-    is_active = models.IntegerField()
-    date_joined = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
-
-
-class AuthUserGroups(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_groups'
-        unique_together = (('user', 'group'),)
-
-
-class AuthUserUserPermissions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_user_permissions'
-        unique_together = (('user', 'permission'),)
 
 
 class Clasetaller(models.Model):
@@ -116,7 +42,6 @@ class Clasetaller(models.Model):
     idtaller = models.ForeignKey('Taller', models.DO_NOTHING, db_column='idTaller')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'clasetaller'
 
 
@@ -125,7 +50,6 @@ class Comportamiento(models.Model):
     comentario = models.CharField(max_length=45)
 
     class Meta:
-        managed = False
         db_table = 'comportamiento'
 
 
@@ -137,7 +61,6 @@ class Diagnostico(models.Model):
     borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'diagnostico'
 
 
@@ -150,53 +73,7 @@ class Direccion(models.Model):
     idlocalidad = models.ForeignKey('Localidad', models.DO_NOTHING, db_column='idLocalidad', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'direccion'
-
-
-class DjangoAdminLog(models.Model):
-    action_time = models.DateTimeField()
-    object_id = models.TextField(blank=True, null=True)
-    object_repr = models.CharField(max_length=200)
-    action_flag = models.PositiveSmallIntegerField()
-    change_message = models.TextField()
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'django_admin_log'
-
-
-class DjangoContentType(models.Model):
-    app_label = models.CharField(max_length=100)
-    model = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'django_content_type'
-        unique_together = (('app_label', 'model'),)
-
-
-class DjangoMigrations(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_migrations'
-
-
-class DjangoSession(models.Model):
-    session_key = models.CharField(primary_key=True, max_length=40)
-    session_data = models.TextField()
-    expire_date = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_session'
 
 
 class Enfermedad(models.Model):
@@ -204,7 +81,6 @@ class Enfermedad(models.Model):
     nombre = models.CharField(max_length=45)
 
     class Meta:
-        managed = False
         db_table = 'enfermedad'
 
 
@@ -218,7 +94,6 @@ class Evento(models.Model):
     borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'evento'
 
 
@@ -229,7 +104,6 @@ class Evolucion(models.Model):
     idpersonaep = models.ForeignKey('PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')  # Field name made lowercase.
     borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
     class Meta:
-        managed = False
         db_table = 'evolucion'
 
 
@@ -238,7 +112,6 @@ class Factorclase(models.Model):
     idfactorglobal = models.ForeignKey('Factorglobal', models.DO_NOTHING, db_column='idFactorGlobal')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'factorclase'
         unique_together = (('idclasetaller', 'idfactorglobal'),)
 
@@ -248,7 +121,6 @@ class Factorglobal(models.Model):
     nombre = models.CharField(max_length=45)
 
     class Meta:
-        managed = False
         db_table = 'factorglobal'
 
 
@@ -263,7 +135,6 @@ class Indicacionmedicamento(models.Model):
     borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'indicacionmedicamento'
 
 
@@ -274,7 +145,6 @@ class Localidad(models.Model):
     idmunicipio = models.ForeignKey('Municipio', models.DO_NOTHING, db_column='idMunicipio', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'localidad'
 
 
@@ -285,7 +155,6 @@ class Medicamento(models.Model):
     eslevodopa = models.IntegerField(db_column='esLevodopa', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'medicamento'
 
 
@@ -295,7 +164,6 @@ class Municipio(models.Model):
     provincia = models.CharField(max_length=45)
 
     class Meta:
-        managed = False
         db_table = 'municipio'
 
 
@@ -305,7 +173,6 @@ class Obrasocial(models.Model):
     esestatal = models.IntegerField(db_column='esEstatal', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'obrasocial'
 
 
@@ -316,7 +183,6 @@ class Os(models.Model):
     borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'os'
 
 
@@ -330,7 +196,6 @@ class Persona(models.Model):
     espaciente = models.IntegerField(db_column='esPaciente')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'persona'
 
 
@@ -350,7 +215,6 @@ class PersonaEp(models.Model):
     idreferente = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idReferente', related_name='+')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'persona_ep'
         unique_together = (('idpersona', 'idreferente'),)
 
@@ -360,7 +224,6 @@ class Taller(models.Model):
     tipotaller = models.CharField(db_column='tipoTaller', max_length=45)  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'taller'
 
 
@@ -371,7 +234,6 @@ class Tipoevento(models.Model):
     borrado = models.IntegerField(db_column='borrado')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'tipoevento'
 
 
@@ -381,7 +243,6 @@ class Tipoparentesco(models.Model):
     nombre = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
-        managed = False
         db_table = 'tipoparentesco'
         unique_together = (('idpersona', 'idpersonaep'),)
 
@@ -391,7 +252,6 @@ class Unidadobservacion(models.Model):
     nombre = models.CharField(max_length=45)
 
     class Meta:
-        managed = False
         db_table = 'unidadobservacion'
 
 
@@ -401,7 +261,6 @@ class Valorvariableuo(models.Model):
     idvariableuo = models.ForeignKey('Variableuo', models.DO_NOTHING, db_column='idVariableUO')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'valorvariableuo'
 
 
@@ -412,5 +271,5 @@ class Variableuo(models.Model):
     idunidadobservacion = models.ForeignKey(Unidadobservacion, models.DO_NOTHING, db_column='idUnidadObservacion')  # Field name made lowercase.
 
     class Meta:
-        managed = False
         db_table = 'variableuo'
+

@@ -6,7 +6,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .api import EvolucionViewSet, DiagnosticoViewSet, DireccionViewSet, EnfermedadViewSet, OSViewSet, ObraSocialViewSet, MedicamentoViewSet, IndicacionViewSet, EventoViewSet, LocalidadViewSet, MunicipioViewSet, PersonaEPViewSet, PersonaViewSet, PersonaPViewSet, TipoEventoViewSet, TipoParentescoViewSet
+from .views import EvolucionViewSet, DiagnosticoViewSet, DireccionViewSet, EnfermedadViewSet, OSViewSet, ObraSocialViewSet, MedicamentoViewSet, IndicacionViewSet, EventoViewSet, LocalidadViewSet, MunicipioViewSet, PersonaEPViewSet, PersonaViewSet, PersonaPViewSet, TipoEventoViewSet, TipoParentescoViewSet, health_check
 
 app_name = 'teleparkApi'
 
@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/refresh_token', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/users', authentication.get_users),
     path('api/update_user', authentication.update_user),
+    path('api/health', health_check, name='health_check'),
 ]
 
 urlpatterns += router.urls
