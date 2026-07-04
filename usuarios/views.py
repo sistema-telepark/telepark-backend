@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
-from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
-from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.hashers import check_password
 from core.permission import IsSuperuser
 from core.helpers import check_attributes
 from core.static import HTTP_METHOD

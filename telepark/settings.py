@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     # Módulos del dominio (ordenados por dependencias)
+    'usuarios',       # autenticación y gestión de usuarios
     'core',
     'personas',       # raíz — sin dependencias externas
     'salud',          # → personas

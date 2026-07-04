@@ -1,16 +1,10 @@
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenRefreshView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from core import authentication
 from core.views import health_check
 
 urlpatterns = [
-    # Autenticación
-    path('api/login', authentication.auth_view),
-    path('api/create_user', authentication.create_user),
-    path('api/refresh_token', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/users', authentication.get_users),
-    path('api/update_user', authentication.update_user),
+    # Autenticación y gestión de usuarios — delegado al módulo usuarios
+    path('', include('usuarios.urls')),
     path('api/health', health_check, name='health_check'),
 
     # Documentación OpenAPI / Swagger
