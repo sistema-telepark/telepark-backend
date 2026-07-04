@@ -598,3 +598,128 @@ rm -rf core/ personas/ salud/ eventos/ obra_social/ talleres/
 
 > **Pipeline:** ✅ COMPLETADO — 6 módulos implementados, 0 errores `check`.
 > **Verificación final:** `python manage.py check` → 0 errores. 26 modelos en 5 módulos + core. 27 ViewSets. 5 FKs cross-module string-based.
+
+---
+
+## 10. ANEXO — Integración Swagger/OpenAPI (CICLO-20260704-001)
+
+> **Ciclo:** CICLO-20260704-001
+> **Fecha:** 2026-07-04
+> **Propósito:** Integrar `drf-spectacular==0.29.0` para generar documentación OpenAPI 3.0 automática de todos los endpoints, manteniendo las rutas intactas.
+
+### 10.1. Stack Modificado
+
+| Componente | Versión | Acción |
+|-----------|---------|--------|
+| **drf-spectacular** | **0.29.0** | 🆕 Agregar — generador OpenAPI 3.0 para DRF |
+| **PyYAML** | ≥6.0 | 🆕 Dependencia transitiva de drf-spectacular |
+
+**Stack existente no modificado:** Python 3.14.2, Django 6.0.6, DRF 3.17.1, simplejwt, mysqlclient, django-cors-headers, etc.
+
+### 10.2. Configuración en settings.py
+
+```python
+INSTALLED_APPS += [
+    'drf_spectacular',
+]
+
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Telepark API',
+    'DESCRIPTION': 'API REST del sistema Telepark — módulos: personas, salud, eventos, obra_social, talleres',
+    'VERSION': '1.0.0',
+    'CONTACT': {'email': 'admin@telepark.com'},
+    'SCHEMA_PATH_PREFIX': r'/api/',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'] if DEBUG else ['rest_framework.permissions.IsAdminUser'],
+    'SECURITY': [{'BearerAuth': []}],
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+        'deepLinking': True,
+    },
+}
+```
+
+### 10.3. Nuevas rutas en core/urls.py
+
+Se agregan 3 rutas nuevas bajo el prefijo `/api/schema/`:
+
+```python
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
+urlpatterns = [
+    # ... rutas existentes ...
+    
+    # Documentación OpenAPI / Swagger
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+]
+```
+
+### 10.4. Dependencia en requirements.txt
+
+```
+drf-spectacular==0.29.0
+```
+
+### 10.5. Endpoints de documentación
+
+| Ruta | Vista | Propósito | Auth (DEBUG) | Auth (Producción) |
+|------|-------|-----------|:------------:|:-----------------:|
+| `GET /api/schema/` | SpectacularAPIView | Esquema OpenAPI 3.0 (YAML) | ❌ Público | 🔒 IsAdminUser |
+| `GET /api/schema/swagger-ui/` | SpectacularSwaggerView | UI Swagger interactiva | ❌ Público | 🔒 IsAdminUser |
+| `GET /api/schema/redoc/` | SpectacularRedocView | UI ReDoc legible | ❌ Público | 🔒 IsAdminUser |
+
+### 10.6. Seguridad (GLOBAL_RULES.md compliance)
+
+| Regla Global | Implementación |
+|-------------|----------------|
+| §2.3 IAM / JWT | Security scheme `BearerAuth` configurado en `SPECTACULAR_SETTINGS.SECURITY`. Todos los endpoints protegidos muestran candado en Swagger UI. Botón "Authorize" preconfigurado para JWT Bearer. |
+| §2.4 Protección de datos | El schema solo expone tipos y estructuras de serializadores — NO datos reales ni PII. |
+| §2.5 Logging sanitizado | Los endpoints de documentación no logean requests. Sin exposición de stacktraces. |
+| §2.5 Manejo de errores | Errores de schema se traducen en warnings de drf-spectacular, no en errores HTTP 500. |
+| §3 Checklist Revisor/QA | En producción (`DEBUG=False`), los endpoints requieren `IsAdminUser`. No hay fuga de información. |
+
+### 10.7. Cobertura de Endpoints
+
+La integración documenta automáticamente todos los ViewSets registrados y endpoints funcionales:
+
+| Tipo | Cantidad | Detalle |
+|------|:--------:|---------|
+| ViewSets CRUD | 27 | personas (7), salud (5), eventos (2), obra_social (2), talleres (11) |
+| @action endpoints | 4 | `personaep` en Diagnostico, Evolucion, OS, Indicacion |
+| Endpoints funcionales | 6 | login, create_user, users, update_user, refresh_token, health |
+| **Total endpoints** | **37** | 33 rutas base + 4 @action |
+
+### 10.8. Verificación
+
+```bash
+# 1. Verificar integridad del proyecto
+python manage.py check                    # → 0 errores
+
+# 2. Generar schema para validación
+python manage.py spectacular --file schema.yaml   # → archivo YAML sin errores
+
+# 3. Verificar que endpoints existentes siguen funcionando
+curl -s http://localhost:8081/api/health          # → {"status": "ok", ...}
+```
+
+### 10.9. Exclusiones de este anexo
+
+- ✗ No se modifican modelos, vistas, serializadores o servicios existentes
+- ✗ No se genera documentación para endpoints que no estén bajo `/api/`
+- ✗ No se implementa autenticación OAuth2 en Swagger UI (solo JWT Bearer)
+- ✗ No se agregan tests unitarios para la documentación
+- ✗ No se migra a SIDECAR para assets locales (queda como mejora futura)
+
+---
+
+## Aprobación del Anexo
+
+| Rol | Estado | Fecha |
+|-----|--------|-------|
+| **Arquitecto** (emisor) | ✅ FIRMADO | 2026-07-04 |
+| **Gatekeeper (DISEÑO)** | ⏳ Pendiente | 2026-07-04 |
+| **Aprobación humana** | ⏳ Pendiente | 2026-07-04 |

@@ -1,8 +1,18 @@
-# Environments
+# Environments, AGENTS, and IDEs
 .env
+.venv/
+.vscode/
+.specs/
+AGENTS.md
 
 # Cache
 *.pyc
 */*/*/__pycache__/
 */*/__pycache__/
 */__pycache__/
+
+# migrations
+*migrations/
+
+
+

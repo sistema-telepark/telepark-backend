@@ -1,14 +1,16 @@
-# REQUERIMIENTOS — CICLO CICLO-20260703-002
+# REQUERIMIENTOS — CICLO-20260704-001
 
 ## Modo
 `BROWNFIELD`
 
 ## Contexto
-El proyecto Telepark es actualmente una aplicación Django monolítica: todo el dominio (26 modelos, 15 servicios, 16 ViewSets, 19 serializadores) vive dentro de una única app `teleparkApi`. Aunque en el ciclo anterior se extrajo una capa de servicios (`services.py`), el código sigue siendo un monolito en un solo módulo Python — alto acoplamiento, baja cohesión, y sin fronteras explícitas entre contextos del dominio.
+El proyecto Telepark backend ha sido reestructurado exitosamente en 6 módulos Django (core, personas, salud, eventos, obra_social, talleres) con 27 ViewSets que exponen endpoints REST bajo el prefijo `/api/`. No existe actualmente documentación automática de la API — los endpoints solo pueden descubrirse leyendo el código fuente o las rutas en `core/urls.py`.
 
-**Hallazgo M001 (BASELINE.md):** Monolito — 26 modelos + 16 ViewSets + 15 servicios en un solo módulo.
+En el ciclo anterior (CICLO-20260703-002) se eliminaron del proyecto las dependencias legacy `django-rest-swagger`, `coreapi`, `coreschema`, `openapi-codec`, `uritemplate` e `itypes` por estar obsoletas e incompatibles con Django 6.0 / DRF 3.17.
 
-Este ciclo busca dividir el monolito en **contextos delimitados (Bounded Contexts)** cohesivos e independientes, siguiendo los principios de Domain-Driven Design (DDD) táctico. Cada contexto será un módulo Django autocontenido con sus propios modelos, servicios, serializadores, vistas y URLs.
+Este ciclo propone integrar **`drf-spectacular`**, el generador de esquemas OpenAPI 3.0 estándar para DRF, para exponer documentación viva, interactiva y precisa de todos los endpoints del sistema, manteniendo las direcciones intactas.
+
+**Compatibilidad verificada:** `drf-spectacular` soporta Django 3.2–6.0 y DRF 3.12–3.17 ✅.
 
 ---
 
@@ -16,14 +18,12 @@ Este ciclo busca dividir el monolito en **contextos delimitados (Bounded Context
 
 | ID | Rol | Quiero | Para |
 |----|-----|--------|------|
-| US-01 | Arquitecto | Que el dominio `personas` (Persona, PersonaEp, Direccion, Localidad, Municipio, Tipoparentesco) sea un módulo autocontenido con sus modelos, servicios, serializadores y vistas | Que sea el contexto raíz del que dependan los demás módulos sin acoplamiento directo |
-| US-02 | Arquitecto | Que el dominio `obra_social` (Obrasocial, Os) sea un módulo independiente para la gestión de coberturas médicas | Aislar la lógica de obra social del núcleo clínico |
-| US-03 | Arquitecto | Que el dominio `eventos` (Evento, TipoEvento) sea un módulo independiente para la gestión de eventos y tipos de evento | Separar la trazabilidad de eventos (altas, bajas, cambios) del resto del sistema |
-| US-04 | Arquitecto | Que el dominio `talleres` (Taller, Clasetaller, Actividad, Actividadrealizada, Asistenciataller, Comportamiento, Factorclase, Factorglobal, Unidadobservacion, Variableuo, Valorvariableuo) sea un módulo independiente | Separar el módulo de talleres terapéuticos del núcleo de pacientes |
-| US-05 | Arquitecto | Que el dominio `salud` (Diagnostico, Evolucion, Enfermedad, Medicamento, Indicacionmedicamento) sea un módulo unificado que agrupe lo clínico y lo farmacéutico | Tener un contexto cohesivo de salud del paciente sin dividir artificialmente diagnóstico de prescripción |
-| US-06 | Arquitecto | Que el módulo `core` contenga la infraestructura compartida (authentication, middleware, helpers, permission, static) | Mantener la lógica transversal en un lugar único y reutilizable |
-| US-07 | Arquitecto | Que no existan dependencias circulares entre los módulos resultantes | Mantener un grafo de dependencias acíclico que sea mantenible y testeable |
-| US-08 | QA Engineer | Poder verificar que todos los endpoints existentes funcionan idénticamente tras la división en módulos (sin regresiones) | Asegurar que la reestructuración es puramente arquitectónica y no introduce cambios funcionales |
+| US-01 | Arquitecto | Integrar `drf-spectacular` como generador OpenAPI 3.0 en el proyecto | Que la documentación de la API se genere automáticamente desde los ViewSets, sin mantenimiento manual |
+| US-02 | Desarrollador | Tener un endpoint `/api/schema/` que exponga el esquema OpenAPI 3.0 completo | Poder validar que todos los endpoints, serializadores y métodos están correctamente declarados |
+| US-03 | Desarrollador | Tener una UI Swagger interactiva en `/api/schema/swagger-ui/` con JWT Bearer Auth preconfigurado | Poder explorar y probar todos los endpoints desde el navegador sin herramientas externas |
+| US-04 | QA Engineer | Tener una vista ReDoc en `/api/schema/redoc/` para lectura limpia de la documentación | Verificar la completitud del contrato de la API contra los criterios EARS |
+| US-05 | Security Engineer | Que la documentación en producción requiera autenticación o esté deshabilitada | Prevenir exposición de información interna de la API en entornos productivos |
+| US-06 | Desarrollador | Que todos los endpoints existentes bajo `/api/` sigan funcionando idénticamente tras la integración | Garantizar cero regresiones — la documentación es aditiva |
 
 ---
 
@@ -33,49 +33,61 @@ Este ciclo busca dividir el monolito en **contextos delimitados (Bounded Context
 
 | ID | Criterio |
 |----|----------|
-| REQ-01 | El sistema DEBE tener un módulo `personas/` (Django app) con sus propios `models.py`, `services.py`, `serializers.py`, `views.py`, `urls.py` y `migrations/` |
-| REQ-02 | El módulo `personas/` DEBE contener los modelos Persona, PersonaEp, Direccion, Localidad, Municipio y Tipoparentesco |
-| REQ-03 | El sistema DEBE tener un módulo `obra_social/` con sus propios `models.py`, `services.py`, `serializers.py`, `views.py`, `urls.py` y `migrations/` |
-| REQ-04 | El módulo `obra_social/` DEBE contener los modelos Obrasocial y Os |
-| REQ-05 | El sistema DEBE tener un módulo `eventos/` con sus propios `models.py`, `services.py`, `serializers.py`, `views.py`, `urls.py` y `migrations/` |
-| REQ-06 | El módulo `eventos/` DEBE contener los modelos Evento y Tipoevento |
-| REQ-07 | El sistema DEBE tener un módulo `talleres/` con sus propios `models.py`, `services.py`, `serializers.py`, `views.py`, `urls.py` y `migrations/` |
-| REQ-08 | El módulo `talleres/` DEBE contener los modelos Taller, Clasetaller, Actividad, Actividadrealizada, Asistenciataller, Comportamiento, Factorclase, Factorglobal, Unidadobservacion, Variableuo y Valorvariableuo |
-| REQ-09 | El sistema DEBE tener un módulo `salud/` con sus propios `models.py`, `services.py`, `serializers.py`, `views.py`, `urls.py` y `migrations/` |
-| REQ-10 | El módulo `salud/` DEBE contener los modelos Diagnostico, Evolucion, Enfermedad, Medicamento e Indicacionmedicamento |
-| REQ-11 | El sistema DEBE tener un módulo `core/` con la infraestructura compartida: authentication, middleware, helpers, permission, static, y el health_check |
-| REQ-12 | El grafo de dependencias entre módulos DEBE ser acíclico (DAG) — ningún módulo puede importar directa o transitivamente desde un módulo que dependa de él |
-| REQ-13 | El módulo `personas/` NO DEBE tener dependencias de ningún otro módulo de dominio (es el contexto base raíz) |
-| REQ-14 | `python manage.py check` DEBE reportar 0 errores tras la reestructuración |
+| REQ-01 | El sistema DEBE agregar `'drf_spectacular'` a `INSTALLED_APPS` en `telepark/settings.py` |
+| REQ-02 | El sistema DEBE configurar `DEFAULT_SCHEMA_CLASS = 'drf_spectacular.openapi.AutoSchema'` en `REST_FRAMEWORK` de `settings.py` |
+| REQ-03 | El sistema DEBE incorporar `drf-spectacular` en `requirements.txt` como dependencia del proyecto |
+| REQ-04 | El sistema DEBE exponer `GET /api/schema/` que devuelva el esquema OpenAPI 3.0 en formato YAML (content-type `application/vnd.oai.openapi`) |
+| REQ-05 | El sistema DEBE exponer una UI Swagger interactiva en `GET /api/schema/swagger-ui/` con capacidad de autenticación Bearer JWT |
+| REQ-06 | El sistema DEBE exponer una vista ReDoc en `GET /api/schema/redoc/` para documentación legible |
+| REQ-07 | El esquema OpenAPI DEBE reflejar todos los ViewSets registrados: personas (7), salud (5), eventos (2), obra_social (2), talleres (11), más los endpoints de auth (login, create_user, users, update_user, refresh_token) y health_check — total 27 ViewSets + 5 endpoints funcionales |
+| REQ-08 | El esquema OpenAPI DEBE incluir el esquema de seguridad `BearerAuth` (JWT) para todos los endpoints protegidos por `IsAuthenticated` |
+| REQ-09 | El endpoint `GET /api/health` DEBE aparecer en el esquema como público (sin requerir autenticación) |
+| REQ-10 | Todas las rutas documentadas DEBEN preservar exactamente los paths actuales (`/api/persona`, `/api/diagnostico`, `/api/evento`, etc.) — sin cambios de ruta |
+| REQ-11 | El sistema DEBE configurar metadata del schema: `TITLE`, `DESCRIPTION`, `VERSION`, `CONTACT` en `SPECTACULAR_SETTINGS` |
 
 ### Event-driven (respuesta a eventos)
 
 | ID | Criterio |
 |----|----------|
-| REQ-15 | CUANDO un modelo en un módulo A referencie mediante FK a un modelo del módulo `personas/`, DEBE usar la sintaxis `'personas.NombreModelo'` (string-based FK), NO importando directamente la clase del modelo |
-| REQ-16 | CUANDO se ejecute `python manage.py test` tras la migración, el sistema DEBE pasar todas las pruebas existentes sin errores de importación |
-| REQ-17 | CUANDO un módulo dependa de otro (ej: salud → personas), DEBE declarar esa dependencia explícitamente en su `apps.py` mediante `name` de Django app |
+| REQ-12 | CUANDO se agregue un nuevo ViewSet a cualquier módulo, el sistema DEBE reflejarlo automáticamente en el esquema OpenAPI sin intervención manual adicional |
+| REQ-13 | CUANDO se ejecute `python manage.py spectacular --file schema.yaml` tras la integración, el sistema DEBE generar un archivo YAML válido sin errores |
+| REQ-14 | CUANDO se acceda a la UI Swagger en modo DEBUG (`ENV=dev`), el sistema DEBE mostrar la interfaz completa sin requerir autenticación adicional en la UI |
 
 ### State-driven (comportamiento condicional)
 
 | ID | Criterio |
 |----|----------|
-| REQ-18 | MIENTRAS los modelos estén distribuidos en módulos separados, las rutas de API DEBEN mantener el mismo prefijo `/api/` que tenía el monolito (no se cambian URLs) |
-| REQ-19 | MIENTRAS un serializer serialice modelos de otro módulo (ej: un serializer de `salud` serializa un modelo de `personas`), DEBE importar el serializer del módulo origen de manera explícita |
+| REQ-15 | MIENTRAS `DEBUG = True`, los endpoints de documentación (`/api/schema/`, `/api/schema/swagger-ui/`, `/api/schema/redoc/`) DEBEN ser accesibles sin autenticación |
+| REQ-16 | MIENTRAS `DEBUG = False` (producción), los endpoints de documentación DEBEN requerir autenticación JWT (restringidos a usuarios con rol `superuser`) O estar deshabilitados — según decisión del Arquitecto |
+| REQ-17 | MIENTRAS los endpoints utilicen `JWTAuthentication`, el botón "Authorize" en Swagger UI DEBE estar preconfigurado para el esquema `Bearer <token>` |
 
 ### Unwanted-behavior (manejo de errores)
 
 | ID | Criterio |
 |----|----------|
-| REQ-20 | SI durante la división en módulos se rompe algún endpoint existente, ENTONCES el ciclo DEBE rechazarse y reportar el error específico |
-| REQ-21 | SI dos módulos quedan con dependencia circular, ENTONCES el diseño DEBE rechazarse y el Arquitecto DEBE proponer una topología alternativa |
+| REQ-18 | SI `python manage.py check` reporta errores después de agregar `drf-spectacular`, ENTONCES el ciclo DEBE rechazarse y reportar los errores específicos |
+| REQ-19 | SI un ViewSet carece de serializador explícito o tiene campos no tipables, ENTONCES `drf-spectacular` DEBE degradar gracefulmente usando inferencia automática sin romper el schema |
+| REQ-20 | SI la integración modifica o elimina algún endpoint existente, ENTONCES el ciclo DEBE rechazarse inmediatamente (GATEKEEPER de regresiones) |
 
 ### Optional-feature (características opcionales)
 
 | ID | Criterio |
 |----|----------|
-| REQ-22 | DONDE se detecten servicios faltantes (ej: modelos Taller sin servicios), el Arquitecto PUEDE proponer la creación de servicios básicos como parte del diseño |
-| REQ-23 | DONDE sea necesario, el Arquitecto PUEDE proponer un archivo `urls.py` central en `core/` que agregue las rutas de todos los módulos |
+| REQ-21 | DONDE existan `@action` endpoints personalizados (`/api/diagnostico/{pk}/personaep`, `/api/evolucion/{pk}/personaep`, `/api/os/{pk}/personaep`, `/api/indicacion/{pk}/personaep`), el sistema DEBE documentarlos con sus métodos HTTP, parámetros de ruta y respuestas correctas |
+| REQ-22 | DONDE se requiera servir assets de Swagger UI sin depender de CDN externos, el sistema PUEDE usar `drf-spectacular-sidecar` como distribución local alternativa |
+| REQ-23 | DONDE se requiera limitar los esquemas expuestos, el sistema PUEDE usar `SCHEMA_COERCE_METHOD_NAMES` para unificar nombres de operación |
+
+---
+
+## Stack Tecnológico Propuesto
+
+| Componente | Versión | Nota |
+|-----------|---------|-------|
+| **drf-spectacular** | **==0.29.0** | Última versión estable (Nov 2025). Generador OpenAPI 3.0 — compatible con Django 6.0 y DRF 3.17 verificados vía readthedocs |
+| **PyYAML** | ≥6.0 | Dependencia de drf-spectacular para serialización YAML |
+| *drf-spectacular-sidecar* | *opcional* | Solo si se opta por REQ-22 (assets locales sin CDN) |
+
+**Sin cambios al stack existente:** Python 3.14.2, Django 6.0.6, DRF 3.17.1, simplejwt 5.5.1.
 
 ---
 
@@ -83,78 +95,56 @@ Este ciclo busca dividir el monolito en **contextos delimitados (Bounded Context
 
 | User Story | Criterios EARS |
 |------------|----------------|
-| US-01 — Módulo personas | REQ-01, REQ-02, REQ-13 |
-| US-02 — Módulo obra_social | REQ-03, REQ-04, REQ-15, REQ-17 |
-| US-03 — Módulo eventos | REQ-05, REQ-06, REQ-15, REQ-17 |
-| US-04 — Módulo talleres | REQ-07, REQ-08, REQ-15, REQ-17 |
-| US-05 — Módulo salud | REQ-09, REQ-10, REQ-15, REQ-17 |
-| US-06 — Módulo core | REQ-11 |
-| US-07 — Sin ciclos | REQ-12, REQ-21 |
-| US-08 — Sin regresiones | REQ-14, REQ-16, REQ-18, REQ-20 |
+| US-01 — Integrar drf-spectacular | REQ-01, REQ-02, REQ-03, REQ-11 |
+| US-02 — Schema endpoint | REQ-04, REQ-13 |
+| US-03 — Swagger UI | REQ-05, REQ-14, REQ-17 |
+| US-04 — ReDoc | REQ-06 |
+| US-05 — Seguridad en producción | REQ-15, REQ-16 |
+| US-06 — Sin regresiones | REQ-07, REQ-08, REQ-09, REQ-10, REQ-18, REQ-20 |
 
 ---
 
-## Trazabilidad REQ ↔ Hallazgos BASELINE.md
+## Mapa de Endpoints para documentar
 
-| Criterio EARS | Hallazgo asociado |
-|---------------|-------------------|
-| REQ-01 a REQ-11 | **M001** — Monolito en teleparkApi |
-| REQ-12, REQ-21 | **M001** — Sin dependencias circulares |
-| REQ-22 | **M002** — Sin servicios para Talleres |
-| REQ-23 | **M003** — Serializadores con acoplamiento cruzado |
-| REQ-11 | **M004** — Archivos planos transversales |
-
----
-
-## Topología de Módulos (consensuada)
-
-```
-                    ┌──────────────────────────┐
-                    │   core (shared kernel)    │
-                    │  authentication. helpers  │
-                    │  middleware, permission,  │
-                    │  static, health_check     │
-                    │  (NO tiene modelos)       │
-                    └──────────────────────────┘
-
-                    ┌──────────────────────────┐
-                    │      personas             │
-                    │  (CONTEXTO RAÍZ)          │
-                    │  Persona, PersonaEp       │
-                    │  Direccion, Localidad     │
-                    │  Municipio, Tipoparentesco│
-                    └──────┬────────────────┬───┘
-                           │                │
-              ┌────────────▼──┐    ┌────────▼───────────┐
-              │    salud      │    │     talleres        │
-              │  Diagnostico  │    │  Taller, Clasetaller│
-              │  Evolucion    │    │  Actividad, Act.    │
-              │  Enfermedad   │    │  Asistenciataller   │
-              │  Medicamento  │    │  Comportamiento     │
-              │  Indicacion   │    │  Factor*, Variable* │
-              └──────┬────────┘    └─────────────────────┘
-                     │
-                     └──────────┬────────────┐
-                                ▼            ▼
-                        ┌────────────┐ ┌────────────┐
-                        │ eventos    │ │ obra_social│
-                        │ Evento     │ │ Obrasocial │
-                        │ TipoEvento │ │ Os         │
-                        └────────────┘ └────────────┘
-```
-
-**Grafo de dependencias (DAG):**
-
-```
-personas ──→ (ninguno)            ← contexto raíz
-core     ──→ (ninguno)            ← plano, no tiene modelos
-salud    ──→ personas             ← Diagnostico, Evolucion, Indicacion → PersonaEp
-eventos  ──→ personas             ← Evento → PersonaEp
-obra_social ──→ personas          ← Os → PersonaEp
-talleres ──→ personas             ← Asistenciataller → PersonaEp
-```
-
-**✅ Cero dependencias circulares — DAG puro.**
+| Ruta | ViewSet/Función | Módulo | Auth |
+|------|----------------|--------|------|
+| `GET /api/health` | `health_check` | core | ❌ Público |
+| `POST /api/login` | `auth_view` | core | ❌ Público |
+| `POST /api/create_user` | `create_user` | core | 🔒 IsSuperuser |
+| `GET /api/users` | `get_users` | core | 🔒 IsSuperuser |
+| `PUT /api/update_user` | `update_user` | core | 🔒 IsSuperuser |
+| `POST /api/refresh_token` | `TokenRefreshView` | core | ❌ Público |
+| `GET/POST/PUT/DELETE /api/persona` | PersonaViewSet | personas | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/personaEp` | PersonaEPViewSet | personas | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/personaP` | PersonaPViewSet | personas | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/direccion` | DireccionViewSet | personas | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/tipoparentesco` | TipoParentescoViewSet | personas | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/localidad` | LocalidadViewSet | personas | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/municipio` | MunicipioViewSet | personas | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/diagnostico` | DiagnosticoViewSet | salud | 🔒 IsAuthenticated |
+| `GET /api/diagnostico/{pk}/personaep` | DiagnosticoViewSet @action | salud | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/evolucion` | EvolucionViewSet | salud | 🔒 IsAuthenticated |
+| `GET /api/evolucion/{pk}/personaep` | EvolucionViewSet @action | salud | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/enfermedad` | EnfermedadViewSet | salud | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/medicamento` | MedicamentoViewSet | salud | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/indicacion` | IndicacionViewSet | salud | 🔒 IsAuthenticated |
+| `GET /api/indicacion/{pk}/personaep` | IndicacionViewSet @action | salud | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/evento` | EventoViewSet | eventos | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/tipoevento` | TipoEventoViewSet | eventos | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/obrasocial` | ObraSocialViewSet | obra_social | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/os` | OSViewSet | obra_social | 🔒 IsAuthenticated |
+| `GET /api/os/{pk}/personaep` | OSViewSet @action | obra_social | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/taller` | TallerViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/clasetaller` | ClaseTallerViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/actividad` | ActividadViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/actividadrealizada` | ActividadRealizadaViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/asistenciataller` | AsistenciaTallerViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/comportamiento` | ComportamientoViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/factorclase` | FactorClaseViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/factorglobal` | FactorGlobalViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/unidadobservacion` | UnidadObservacionViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/variableuo` | VariableUOViewSet | talleres | 🔒 IsAuthenticated |
+| `GET/POST/PUT/DELETE /api/valorvariableuo` | ValorVariableUOViewSet | talleres | 🔒 IsAuthenticated |
 
 ---
 
@@ -162,49 +152,72 @@ talleres ──→ personas             ← Asistenciataller → PersonaEp
 
 | Item | Justificación |
 |------|---------------|
-| Migrar de MySQL a otra base de datos | No aplica a la reestructuración arquitectónica |
-| Refactorizar authentication.py (A003, B004) | Pendiente de ciclo futuro de seguridad |
-| Agregar tests unitarios nuevos | Este ciclo es puramente arquitectónico/estructural |
-| Implementar event bus o mensajería entre contextos | Los contextos comparten BD (misma base MySQL) |
-| Cambiar lógica de negocio existente | Solo se mueven archivos, no se modifica comportamiento |
-| Renombrar modelos o modificar campos | Solo se redistribuye el código existente |
-| Dockerizar los módulos por separado | Los módulos son lógicos dentro del mismo proceso Django |
+| Migrar a OpenAPI 2.0 (Swagger 2.0) | drf-spectacular genera OpenAPI 3.0, el estándar actual. No hay razón para usar Swagger 2.0 |
+| Generar clientes de API automáticamente | Fuera del alcance de este ciclo — se centra solo en documentación y visualización |
+| Autenticación OAuth2 en Swagger UI | El sistema usa JWT Bearer via simplejwt. OAuth2 no está en el stack actual |
+| Agregar tests unitarios para la documentación | La documentación es un artefacto derivado del código — su verificación es visual y funcional |
+| Refactorizar endpoints o agregar nuevos | Este ciclo es puramente aditivo — no modifica la API existente |
+| Migrar de CDN a SIDECAR para assets | Se deja como opcional (REQ-22) para un ciclo futuro si es necesario |
+
+---
+
+## Checklist de Seguridad (GLOBAL_RULES.md)
+
+| Regla Global | Aplicación en este ciclo |
+|-------------|--------------------------|
+| §2.2 Validación de entradas | El schema OpenAPI se genera desde serializadores existentes — no introduce nuevas superficies de validación |
+| §2.3 IAM / JWT | El esquema de seguridad Bearer JWT se configura en `SPECTACULAR_SETTINGS.SECURITY_SCHEME` |
+| §2.4 Protección de datos | Los esquemas no exponen datos sensibles — solo tipos, estructuras y constraints de serializadores |
+| §2.5 Observabilidad / Logging | Los endpoints de documentación no logean requests ni exponen PII |
+| §2.5 Manejo de errores | Errores de schema se traducen en warnings de `drf-spectacular`, no en stacktraces |
+| §3 Checklist Revisor/QA | Endpoints de documentación deben tener auth explícita en producción (REQ-16) |
 
 ---
 
 ## Notas Técnicas
 
-- **Estructura objetivo:**
-  ```
-  telepark-backend/
-  ├── telepark/                    (proyecto — configuración)
-  │   ├── settings.py              (INSTALLED_APPS actualizado)
-  │   └── urls.py                  (apunta a core.urls)
-  ├── core/                        (infraestructura compartida)
-  │   ├── apps.py
-  │   ├── authentication.py
-  │   ├── middleware.py
-  │   ├── helpers.py
-  │   ├── permission.py
-  │   ├── static.py
-  │   ├── urls.py                  (router central que agrega rutas de todos los módulos)
-  │   └── views.py                 (health_check)
-  ├── personas/
-  │   ├── apps.py
-  │   ├── models.py
-  │   ├── services.py
-  │   ├── serializers.py
-  │   ├── views.py
-  │   ├── urls.py
-  │   └── migrations/
-  ├── salud/
-  ├── eventos/
-  ├── obra_social/
-  ├── talleres/
-  └── manage.py
-  ```
+### Instalación esperada
 
-- **Referencias FK entre módulos:** Usar sintaxis `'personas.PersonaEp'` en el `ForeignKey` para evitar acoplamientos circulares en tiempo de importación.
-- **Migraciones:** Se regenerarán desde cero para reflejar la nueva topología de módulos.
-- **settings.py:** Se agregarán a `INSTALLED_APPS` los 6 nuevos módulos. Se eliminará `teleparkApi`.
-- **URLs:** `core/urls.py` actuará como router central, importando las rutas de cada módulo.
+```bash
+pip install drf-spectacular==0.29.0
+pip freeze | findstr drf-spectacular >> requirements.txt
+```
+
+### Configuración estimada en settings.py
+
+```python
+INSTALLED_APPS += ['drf_spectacular',]
+
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Telepark API',
+    'DESCRIPTION': 'API REST del sistema Telepark — módulos: personas, salud, eventos, obra_social, talleres',
+    'VERSION': '1.0.0',
+    'CONTACT': {'email': 'admin@telepark.com'},
+    'SCHEMA_PATH_PREFIX': r'/api/',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SECURITY': [{'BearerAuth': []}],
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+    },
+}
+```
+
+### URLs estimadas en core/urls.py
+
+```python
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+
+# Al inicio o al final de urlpatterns:
+path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+```
+
+### Verificación de integridad
+
+```bash
+python manage.py check                    # 0 errores
+python manage.py spectacular --file schema.yaml   # archivo YAML generado sin errores
+```

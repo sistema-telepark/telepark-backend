@@ -12,7 +12,7 @@ Hacer esto la primera vez
 
 5- Crear un superusuario con: python manage.py createsuperuser
 
-5- Correr el servidor con:  python manage.py runserver 8080
+5- Correr el servidor con:  python manage.py runserver 8081
 -----------------------------------------------------------------------------
 En caso de hacer un cambio en la bd.
 
@@ -25,4 +25,4 @@ En caso de hacer un cambio en la bd.
 	en el campo idreferente en la clase PersonaEp, entre los parentesis despues
 	de db_column='idReferente' agregar , related_name="+"
 
-5- Correr el servidor con:  python manage.py runserver 8080
+5- Correr el servidor con:  python manage.py runserver 8081

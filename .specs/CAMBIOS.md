@@ -26,13 +26,13 @@ Ciclo Brownfield que dockeriza la aplicación Django + MySQL y migra 26 modelos 
   - Entrypoint: `/entrypoint.sh`
 - **Archivo:** `docker-compose.yml` (CREADO)
   - Servicio `db`: mysql:8.0, container_name: telepark-db, puerto host 3307:3306, volumen telepark_mysql_data, healthcheck con mysqladmin ping
-  - Servicio `app`: build: ., container_name: telepark-app, depends_on db (condition: service_healthy), puerto 8000:8000, volumen .:/app (hot-reload)
+  - Servicio `app`: build: ., container_name: telepark-app, depends_on db (condition: service_healthy), puerto 8081:8080, volumen .:/app (hot-reload)
   - Red: telepark-network (bridge)
   - Variables de entorno con defaults para desarrollo local
 - **Archivo:** `entrypoint.sh` (CREADO)
   - Wait-for-mysql usando Python (MySQLdb) en lugar de mysqladmin (evita instalar mysql-client)
   - Timeout configurable de 60s con retry cada 3s
-  - Secuencia: wait → makemigrations teleparkApi → migrate → runserver 0.0.0.0:8000
+  - Secuencia: wait → makemigrations teleparkApi → migrate → runserver 0.0.0.0:8080
 - **Archivo:** `.dockerignore` (CREADO)
   - Excluye: .git, .venv, __pycache__, *.pyc, .env, example.env, BD/, README.md
 

@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'drf_spectacular',
     # Módulos del dominio (ordenados por dependencias)
     'core',
     'personas',       # raíz — sin dependencias externas
@@ -115,7 +116,24 @@ DATABASES = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# drf-spectacular OpenAPI 3.0 schema generation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Telepark API',
+    'DESCRIPTION': 'API REST del sistema Telepark — módulos: personas, salud, eventos, obra_social, talleres',
+    'VERSION': '1.0.0',
+    'CONTACT': {'email': 'admin@telepark.com'},
+    'SCHEMA_PATH_PREFIX': r'/api/',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'] if DEBUG else ['rest_framework.permissions.IsAdminUser'],
+    'SECURITY': [{'BearerAuth': []}],
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+        'deepLinking': True,
+    },
 }
 
 # JWT configuration

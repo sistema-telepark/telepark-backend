@@ -62,5 +62,5 @@ python manage.py migrate
 echo "Migraciones aplicadas correctamente."
 
 # Iniciar servidor de desarrollo
-echo "Iniciando servidor Django en 0.0.0.0:8000..."
-exec python manage.py runserver 0.0.0.0:8000
+echo "Iniciando servidor Django en 0.0.0.0:8080..."
+exec python manage.py runserver 0.0.0.0:8080

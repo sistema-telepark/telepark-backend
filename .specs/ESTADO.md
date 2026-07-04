@@ -3,9 +3,9 @@
 ## Metadatos del Ciclo
 | Campo | Valor |
 |-------|-------|
-| **Ciclo ID** | `CICLO-20260703-002` |
+| **Ciclo ID** | `CICLO-20260704-001` |
 | **Modo** | `BROWNFIELD` |
-| **Fecha Inicio** | 2026-07-03 |
+| **Fecha Inicio** | 2026-07-04 |
 | **Fase Actual** | `COMPLETADO` |
 | **siguiente_agente** | `NONE` |
 | **intentos_fase_actual** | 0 |
@@ -13,117 +13,99 @@
 ## Requerimientos Completados
 | ID | User Story | Estado |
 |----|-----------|--------|
-| US-01 | Módulo `personas/` — Persona, PersonaEp, Direccion, Localidad, Municipio, Tipoparentesco | ✅ COMPLETADO |
-| US-02 | Módulo `obra_social/` — Obrasocial, Os | ✅ COMPLETADO |
-| US-03 | Módulo `eventos/` — Evento, TipoEvento | ✅ COMPLETADO |
-| US-04 | Módulo `talleres/` — 11 modelos + servicios CRUD nuevos | ✅ COMPLETADO |
-| US-05 | Módulo `salud/` — Diagnostico, Evolucion, Enfermedad, Medicamento, Indicacion | ✅ COMPLETADO |
-| US-06 | Módulo `core/` — authentication, middleware, helpers, permission, static, health | ✅ COMPLETADO |
-| US-07 | Sin dependencias circulares (DAG) | ✅ COMPLETADO |
-| US-08 | Sin regresiones — rutas preservadas | ✅ COMPLETADO |
+| US-01 | Integrar `drf-spectacular` como generador OpenAPI 3.0 | ✅ COMPLETADO |
+| US-02 | Endpoint `/api/schema/` con esquema OpenAPI 3.0 | ✅ COMPLETADO |
+| US-03 | UI Swagger interactiva en `/api/schema/swagger-ui/` con JWT Bearer | ✅ COMPLETADO |
+| US-04 | Vista ReDoc en `/api/schema/redoc/` | ✅ COMPLETADO |
+| US-05 | Seguridad en producción (documentación autenticada/restringida) | ✅ COMPLETADO |
+| US-06 | Preservación de endpoints existentes — cero regresiones | ✅ COMPLETADO |
 
 ## Trazabilidad EARS
 | ID | Criterio | Estado |
 |----|----------|--------|
-| REQ-01 | Módulo `personas/` con models, services, serializers, views, urls, migrations | ✅ PASS |
-| REQ-02 | personas contiene Persona, PersonaEp, Direccion, Localidad, Municipio, Tipoparentesco | ✅ PASS |
-| REQ-03 | Módulo `obra_social/` completo | ✅ PASS |
-| REQ-04 | obra_social contiene Obrasocial, Os | ✅ PASS |
-| REQ-05 | Módulo `eventos/` completo | ✅ PASS |
-| REQ-06 | eventos contiene Evento, Tipoevento | ✅ PASS |
-| REQ-07 | Módulo `talleres/` completo | ✅ PASS |
-| REQ-08 | talleres contiene 11 modelos | ✅ PASS |
-| REQ-09 | Módulo `salud/` completo | ✅ PASS |
-| REQ-10 | salud contiene Diagnostico, Evolucion, Enfermedad, Medicamento, Indicacion | ✅ PASS |
-| REQ-11 | Módulo `core/` con auth, helpers, middleware, permission, static, health | ✅ PASS |
-| REQ-12 | Grafo acíclico (DAG) validado | ✅ PASS |
-| REQ-13 | personas no tiene dependencias externas (contexto raíz) | ✅ PASS |
-| REQ-14 | `python manage.py check` → 0 errores | ✅ PASS |
-| REQ-15 | FKs cross-module usan string-based references | ✅ PASS |
-| REQ-16 | `python manage.py test` (sin errores de importación) | ⏳ Requiere BD |
-| REQ-17 | Dependencias declaradas en INSTALLED_APPS | ✅ PASS |
-| REQ-18 | Rutas API preservadas idénticas | ✅ PASS |
-| REQ-19 | Serializadores anidados intra-módulo | ✅ PASS |
-| REQ-20 | Sin regresiones en endpoints | ✅ PASS |
-| REQ-21 | Sin dependencias circulares | ✅ PASS |
-| REQ-22 | Talleres: 11 servicios nuevos creados | ✅ PASS |
-| REQ-23 | core/urls.py como router central | ✅ PASS |
+| REQ-01 | `drf_spectacular` en INSTALLED_APPS | ✅ IMPLEMENTADO |
+| REQ-02 | `DEFAULT_SCHEMA_CLASS` configurado | ✅ IMPLEMENTADO |
+| REQ-03 | `drf-spectacular` en requirements.txt | ✅ IMPLEMENTADO |
+| REQ-04 | GET `/api/schema/` → OpenAPI 3.0 YAML | ✅ IMPLEMENTADO |
+| REQ-05 | UI Swagger en `/api/schema/swagger-ui/` | ✅ IMPLEMENTADO |
+| REQ-06 | ReDoc en `/api/schema/redoc/` | ✅ IMPLEMENTADO |
+| REQ-07 | Cobertura de 27 ViewSets + endpoints funcionales | ✅ IMPLEMENTADO (ViewSets documentados; auth views sin serializer ignoradas gracefulmente) |
+| REQ-08 | Security scheme Bearer JWT en schema | ✅ IMPLEMENTADO |
+| REQ-09 | `/api/health` como endpoint público en schema | ✅ IMPLEMENTADO |
+| REQ-10 | Preservación de rutas existentes | ✅ IMPLEMENTADO (sin cambios en rutas existentes) |
+| REQ-11 | Metadata TITLE, DESCRIPTION, VERSION, CONTACT | ✅ IMPLEMENTADO |
+| REQ-12 | Reflejo automático de nuevos ViewSets | ✅ IMPLEMENTADO (drf-spectacular escanea routers automáticamente) |
+| REQ-13 | `python manage.py spectacular --file schema.yaml` sin errores | ✅ VERIFICADO (chema ~132KB generado; 4 warnings graceful de auth views sin serializer) |
+| REQ-14 | Swagger UI accesible en DEBUG | ✅ IMPLEMENTADO |
+| REQ-15 | Documentación libre en DEBUG | ✅ IMPLEMENTADO (AllowAll en DEBUG) |
+| REQ-16 | Documentación autenticada/restringida en producción | ✅ IMPLEMENTADO (IsAdminUser cuando DEBUG=False) |
+| REQ-17 | Botón Authorize preconfigurado para JWT Bearer | ✅ IMPLEMENTADO (persistAuthorization=True) |
+| REQ-18 | `python manage.py check` sin errores | ✅ VERIFICADO (0 errores, 1 warning preexistente de static/) |
+| REQ-19 | Degradación graceful en ViewSets sin serializador | ✅ VERIFICADO (auth views ignoradas sin romper schema) |
+| REQ-20 | Rechazo si endpoints existentes se modifican | ✅ VERIFICADO (rutas existentes intactas) |
+| REQ-21 | Documentación de @action endpoints personalizados | ✅ IMPLEMENTADO (documentados automáticamente por drf-spectacular) |
+| REQ-22 | Uso opcional de drf-spectacular-sidecar | 🔲 OPCIONAL — no implementado |
+| REQ-23 | Uso opcional de SCHEMA_COERCE_METHOD_NAMES | 🔲 OPCIONAL — no implementado |
 
 ## Resumen Ejecutivo
 
-### Pipeline completo
+### Pipeline completado exitosamente
 | Fase | Agente | Resultado |
 |------|--------|-----------|
-| `DISCOVERY` | Orquestador | ✅ BASELINE.md refrescado (commit `4991a18`) |
-| `REQUERIMIENTOS` | Orquestador | ✅ 8 US + 23 EARS, aprobado por humano |
-| `DISEÑO` | Orquestador (rol Arquitecto) | ✅ ARQUITECTURA.md con plan detallado, aprobado por humano |
-| `DESARROLLO` | Orquestador (rol Developer) | ✅ 6 módulos creados, 0 errores check |
-| `REVISION` | (integrada) | ✅ Pendiente para ciclo formal |
-| `QA` | (integrada) | ✅ Pendiente para ciclo formal |
+| `SETUP_REQUERIDO` | Orquestador | ✅ PRECONDICIÓN: `.specs/GLOBAL_RULES.md` existe y no está vacío (47 líneas) |
+| `DISCOVERY` | Analista | ✅ BASELINE.md refrescado al commit `6c8dafc` |
+| `REQUERIMIENTOS` | Orquestador | ✅ Formalizado: 6 User Stories + 23 criterios EARS para integración Swagger/OpenAPI vía drf-spectacular. Aprobado por humano. |
+| `DISEÑO` | Orquestador (rol Arquitecto) | ✅ Anexo Swagger/OpenAPI agregado a ARQUITECTURA.md (Sección 10). Aprobado por humano. |
+| `DESARROLLO` | Desarrollador | ✅ Integración `drf-spectacular==0.29.0` completada. `check` → 0 errores. Schema generado. |
+| `REVISION` | Revisor | ✅ `VERDICT: APPROVED` — `OWASP: COMPLIANT`. 21/21 EARS cubiertos. |
+| `QA` | QA | ✅ `Veredicto QA: PASSED` — `Seguridad: PASSED`. Hallazgo `/api/health` corregido in-situ. |
+| **Ciclo** | **Completado** | ✅ **CICLO-20260704-001: Swagger/OpenAPI finalizado** |
 
-### Arquitectura final
-```
-telepark-backend/
-├── telepark/              (proyecto — settings + root urls)
-├── core/                  (shared kernel — auth, helpers, middleware, permission, static, health)
-├── personas/              (6 modelos — raíz del dominio)
-├── salud/                 (5 modelos — clínico + farmacia)
-├── eventos/               (2 modelos — eventos + tipos)
-├── obra_social/           (2 modelos — coberturas)
-├── talleres/              (11 modelos — talleres terapéuticos)
-├── .specs/                (documentación del pipeline)
-├── BD/                    (schema SQL)
-├── manage.py
-└── [docker files]
-```
+### Requerimiento abierto
+Se ha formalizado en `.specs/REQUERIMIENTOS.md` el requerimiento para integrar **Swagger/OpenAPI** mediante `drf-spectacular`, documentando automáticamente los 27 ViewSets + 5 endpoints funcionales existentes, preservando todas las rutas `/api/*`.
 
-### Logros cuantitativos
-| Métrica | Antes (monolito) | Después (modular) |
-|---------|-----------------|-------------------|
-| Módulos Django | 1 (`teleparkApi`) | 6 (`core`, `personas`, `salud`, `eventos`, `obra_social`, `talleres`) |
-| Modelos por módulo | 26 en 1 archivo | 6+5+2+2+11 distribuidos |
-| Servicios | 15 en 1 archivo | 26 en 6 módulos |
-| Serializadores | 19 en 1 archivo | 30 en 5 módulos |
-| ViewSets | 16 en 1 archivo | 27 en 5 módulos |
-| Dependencias circulares | ❌ No aplica (monolito) | ✅ 0 (DAG puro) |
-| FKs cross-module | ❌ No aplica | ✅ 5 (string-based) |
-| `python manage.py check` | 0 errores | ✅ 0 errores |
+**Stack propuesto:**
+- `drf-spectacular==0.29.0` (compatible con Django 6.0.6 / DRF 3.17.1 ✅ verificado vía Context7/readthedocs)
+- `PyYAML` ≥ 6.0
+
+### Baseline — Pendiente de refresco
+El baseline capturado en `.specs/BASELINE.md` pertenece al commit `4991a18` ("refactor: extraer lógica a servicios y configurar gestión del ORM"). El código actual se encuentra en `6c8dafc` ("refactor: dividir monolito teleparkApi en 6 modulos") con cambios sin commit. Se requiere invocar al **Analista** para regenerar el baseline antes de proceder con DISEÑO.
 
 ## Veredicto de Seguridad Global
 | Indicador | Estado |
 |-----------|--------|
 | **Seguridad Global** | ✅ `COMPLIANT` |
 | **OWASP Compliance** | ✅ `COMPLIANT` |
+| **Revisor** | ✅ `VERDICT: APPROVED` |
+| **QA** | ✅ `PASSED` |
+| **Docker check** | ✅ `manage.py check` → 0 errores |
+| **Schema endpoint** | ✅ `GET /api/schema/?format=json` → 200 OK, OpenAPI 3.0.3 |
+| **Health endpoint** | ✅ `GET /api/health` → 200 OK, DB connected, 26 tablas |
+| **Nota** | Verificación completa dentro del contenedor Docker. La documentación OpenAPI respeta autenticación JWT existente, no expone datos sensibles, y restringe acceso a documentación en producción (IsAdminUser). Health check convertido a @api_view con @extend_schema para documentación completa. |
 
 ## Circuit Breaker
 - **Intentos acumulados:** 0
 - **Estado:** INACTIVO — ciclo completado exitosamente
 
-## Archivos Creados/Modificados/Eliminados
+## Nota Docker
+La imagen Docker actual tiene `drf-spectacular==0.29.0` instalado manualmente via `docker exec`. Para que persista en builds futuros, ejecutar:
+```bash
+docker-compose build app
+docker-compose up -d
+```
+
+## Archivos Modificados en este Ciclo
 | Archivo | Acción | Propósito |
 |---------|--------|-----------|
-| `core/` | 🆕 Creado | Módulo de infraestructura compartida |
-| `core/apps.py` | 🆕 Creado | CoreConfig |
-| `core/authentication.py` | 🆕 Creado | Auth JWT (migrado de teleparkApi) |
-| `core/helpers.py` | 🆕 Creado | Helpers (migrado de teleparkApi) |
-| `core/middleware.py` | 🆕 Creado | ExceptionMiddleware (migrado) |
-| `core/permission.py` | 🆕 Creado | IsSuperuser (migrado) |
-| `core/static.py` | 🆕 Creado | HTTP_METHOD (migrado) |
-| `core/views.py` | 🆕 Creado | health_check (extraído) |
-| `core/urls.py` | 🆕 Creado | Router central de toda la API |
-| `personas/` | 🆕 Creado | Módulo de Personas (6 modelos) |
-| `personas/{models,services,serializers,views,urls}.py` | 🆕 Creado | Capas completas |
-| `salud/` | 🆕 Creado | Módulo de Salud (5 modelos) |
-| `salud/{models,services,serializers,views,urls}.py` | 🆕 Creado | Capas completas |
-| `eventos/` | 🆕 Creado | Módulo de Eventos (2 modelos) |
-| `eventos/{models,services,serializers,views,urls}.py` | 🆕 Creado | Capas completas |
-| `obra_social/` | 🆕 Creado | Módulo de Obra Social (2 modelos) |
-| `obra_social/{models,services,serializers,views,urls}.py` | 🆕 Creado | Capas completas |
-| `talleres/` | 🆕 Creado | Módulo de Talleres (11 modelos) |
-| `talleres/{models,services,serializers,views,urls}.py` | 🆕 Creado | Capas completas (11 servicios NUEVOS) |
-| `telepark/settings.py` | ✏️ Modificado | INSTALLED_APPS + MIDDLEWARE actualizados |
-| `telepark/urls.py` | ✏️ Modificado | Incluye `core.urls` en lugar de `teleparkApi.urls` |
-| `teleparkApi/` | 🗑️ Eliminado | Todo el contenido distribuido en los 6 módulos |
-| `.specs/BASELINE.md` | 🔄 Regenerado | Refrescado al commit `4991a18` |
-| `.specs/ARQUITECTURA.md` | 🆕 Creado | Contrato arquitectónico de Bounded Contexts |
-| `.specs/REQUERIMIENTOS.md` | 🆕 Creado | 8 US + 23 criterios EARS |
+| `.specs/REQUERIMIENTOS.md` | ✏️ Sobrescrito | Requerimientos para integración Swagger/OpenAPI vía drf-spectacular |
+| `.specs/ESTADO.md` | ✏️ Sobrescrito | Estado persistente del nuevo ciclo CICLO-20260704-001 |
+| `.specs/BASELINE.md` | 🔄 Refrescado | Actualizado al commit 6c8dafc |
+| `.specs/ARQUITECTURA.md` | ✏️ Extendido | Anexo §10 — Integración Swagger/OpenAPI |
+| `telepark/settings.py` | ✏️ Modificado | +`drf_spectacular` en INSTALLED_APPS, +`DEFAULT_SCHEMA_CLASS`, +`SPECTACULAR_SETTINGS` |
+| `core/urls.py` | ✏️ Modificado | +3 rutas: `/api/schema/`, `/api/schema/swagger-ui/`, `/api/schema/redoc/` |
+| `requirements.txt` | ✏️ Modificado | +`drf-spectacular==0.29.0` |
+
+## Ciclo Anterior Preservado
+- **CICLO-20260703-002:** División del monolito teleparkApi en 6 módulos (COMPLETADO)
+- **CICLO-20260702-002:** Dockerización + managed=True (COMPLETADO)
+- **CICLO-20260702-001:** Estabilización de entorno (COMPLETADO)

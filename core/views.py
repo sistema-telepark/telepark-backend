@@ -1,8 +1,20 @@
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.db.utils import OperationalError
 from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.request import Request
+from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 
 
+@extend_schema(
+    description="Verifica el estado de conexion a la base de datos y cuenta las tablas de negocio.",
+    responses={
+        200: {"type": "object", "properties": {"status": {"type": "string"}, "database": {"type": "string"}, "tables": {"type": "integer"}}},
+        503: {"type": "object", "properties": {"status": {"type": "string"}, "database": {"type": "string"}, "detail": {"type": "string"}}},
+    },
+)
+@api_view(["GET"])
 def health_check(request):
     result = {
         "status": "ok",
