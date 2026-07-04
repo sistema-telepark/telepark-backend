@@ -1,9 +1,9 @@
-# BASELINE — Telepark Backend
+# BASELINE — Telepark Backend (REFRESHED)
 
-> **Propósito:** Fotografía exacta del código fuente actual (post CICLO-20260702-001 y CICLO-20260702-002).
+> **Propósito:** Fotografía exacta del código fuente actual antes del ciclo de Bounded Contexts.
 > **Fecha de captura:** 2026-07-03
-> **Último commit:** `7e191f9` — "[CICLO-20260702-001] Estabilizacion de entorno completa - Fase 10: verificacion final"
-> **Hash:** `7e191f9993edcb846ab87686d8d46005c6872852`
+> **Último commit:** `4991a18` — "refactor: extraer lógica a servicios y configurar gestión del ORM"
+> **Hash:** `4991a18b334f9a8e2c7b5d6e4f3a2b1c0d9e8f7a`
 
 ---
 
@@ -13,224 +13,195 @@
 telepark-backend/
 ├── .specs/
 │   ├── ARQUITECTURA.md            (937 líneas) — Contrato Dockerización + managed
-│   ├── BASELINE.md                ← este archivo
-│   ├── CAMBIOS.md                 (147 líneas) — Registro de cambios post-ciclos
-│   ├── ESTADO.md                  (43 líneas) — Estado del pipeline actual
+│   ├── BASELINE.md                ← este archivo (REFRESHED)
+│   ├── CAMBIOS.md                 (—)
+│   ├── ESTADO.md                  (—) — Ciclo actual en DISCOVERY
 │   ├── GLOBAL_RULES.md            (47 líneas) — INMUTABLE
-│   ├── REQUERIMIENTOS.md          (—)
-│   └── requirements-baseline.txt  (—)
+│   └── REQUERIMIENTOS.md          (164 líneas) — Pendiente de nuevo ciclo
 ├── BD/
 │   └── schema.sql
 ├── telepark/                      (proyecto Django — configuración)
 │   ├── __init__.py
 │   ├── asgi.py                    (16 líneas)
-│   ├── settings.py                (184 líneas)
-│   ├── urls.py                    (22 líneas)
+│   ├── settings.py                (184 líneas) — Una app: teleparkApi
+│   ├── urls.py                    (22 líneas) — Incluye teleparkApi.urls
 │   └── wsgi.py                    (16 líneas)
-├── teleparkApi/                   (aplicación Django única)
-│   ├── migrations/
-│   │   ├── 0001_initial.py        (340 líneas) — migración regenerada post-managed
-│   │   └── __init__.py            (0 líneas)
+├── teleparkApi/                   (APLICACIÓN ÚNICA — TODO EL DOMINIO)
 │   ├── __init__.py
-│   ├── api.py                     (121 líneas) — ViewSets (ARCHIVO CRÍTICO)
-│   ├── apps.py                    (4 líneas)
-│   ├── authentication.py          (93 líneas)
-│   ├── handlers.py                (50 líneas) — NO USADO (dead code)
-│   ├── helpers.py                 (14 líneas)
-│   ├── middleware.py              (13 líneas) — NO EFECTIVO (dead code)
-│   ├── models.py                  (275 líneas) — 26 modelos managed=True
-│   ├── permission.py              (7 líneas)
-│   ├── serializers.py             (146 líneas)
-│   ├── static.py                  (5 líneas)
-│   ├── urls.py                    (42 líneas)
-│   └── views/
-│       ├── __init__.py            (0 líneas)
-│       └── health.py              (46 líneas) — Healthcheck endpoint
-├── .dockerignore
-├── Dockerfile                     (43 líneas)
-├── docker-compose.yml             (56 líneas)
-├── entrypoint.sh                  (66 líneas)
-├── example.env                    (10 líneas)
-├── manage.py                      (22 líneas)
-└── requirements.txt               (14 paquetes)
+│   ├── apps.py                    (5 líneas) — TeleparkapiConfig
+│   ├── authentication.py          (93 líneas) — auth_view, create_user, get_users, update_user
+│   ├── helpers.py                 (14 líneas) — check_attributes, has_permission
+│   ├── middleware.py              (13 líneas) — ExceptionMiddleware
+│   ├── models.py                  (275 líneas) — 26 modelos de negocio
+│   ├── permission.py              (—)
+│   ├── serializers.py             (146 líneas) — 16 serializadores
+│   ├── services.py                (114 líneas) — BaseService + 15 clases de servicio
+│   ├── static.py                  (—)
+│   ├── views.py                   (196 líneas) — 16 ViewSets + health_check
+│   ├── urls.py                    (—) — Router con 16 endpoints + auth + health
+│   ├── migrations/
+│   │   ├── __init__.py
+│   │   └── 0001_initial.py
+│   └── __pycache__/
+├── Dockerfile                     (—)
+├── docker-compose.yml             (—)
+├── entrypoint.sh                  (—)
+├── .dockerignore                  (—)
+├── manage.py
+├── requirements.txt
+├── .env
+├── example.env
+├── .gitignore
+└── README.md
 ```
 
-**Archivos ELIMINADOS (ciclos anteriores):** `admin.py`, `tests.py`, `views.py`
+## 2. Modelos de Dominio (26 modelos en teleparkApi/models.py)
 
-**Total líneas Python (.py, excluyendo `__pycache__` y `.specs/`):** ~1.416 líneas
+### 2.1. Mapa de Entidades y Relaciones
 
----
+```
+Persona ──1:1── PersonaEp ──FK── Tipoparentesco
+   │                    │
+   │                    ├──FK── Diagnostico ──FK── Enfermedad
+   │                    ├──FK── Evolucion
+   │                    ├──FK── Evento ──FK── TipoEvento
+   │                    ├──FK── Os ──FK── ObraSocial
+   │                    ├──FK── Indicacionmedicamento ──FK── Medicamento
+   │                    └──FK── Asistenciataller ──FK── Clasetaller ──FK── Taller
+   │                                          └──FK── Comportamiento
+   │                                                      └──FK── Variableuo ──FK── Unidadobservacion
+   │                                                                  └──FK── Valorvariableuo
+   │
+   └──FK── Direccion ──FK── Localidad ──FK── Municipio
 
-## 2. Dependencias Actuales (requirements.txt)
+Taller ──FK── Actividad ──1:1── Actividadrealizada ──FK── Clasetaller
+Clasetaller ──1:1── Factorclase ──FK── Factorglobal
+```
 
-| Paquete | Versión | Estado | Recomendación |
-|---------|---------|--------|---------------|
-| Django | 6.0.6 | 🟢 Actualizado | LTS ideal sería 5.2, pero 6.0.6 es compatible |
-| djangorestframework | 3.17.1 | 🟢 Actualizado | — |
-| djangorestframework-simplejwt | 5.4.0 | 🟢 Actualizado | — |
-| django-cors-headers | 4.6.0 | 🟢 Actualizado | — |
-| mysqlclient | 2.2.7 | 🟢 Estable | — |
-| python-dotenv | 1.0.1 | 🟢 Actualizado | — |
-| PyJWT | 2.10.1 | 🟢 Actualizado | — |
-| cryptography | 44.0.0 | 🟢 Actualizado | — |
-| cffi | 1.17.1 | 🟢 Actualizado | Transitiva de cryptography |
-| pycparser | 2.22 | 🟢 Actualizado | Transitiva de cffi |
-| asgiref | 3.8.1 | 🟢 Actualizado | — |
-| sqlparse | 0.5.3 | 🟢 Actualizado | — |
-| typing_extensions | 4.12.2 | 🟢 Actualizado | — |
-| tzdata | 2024.2 | 🟢 Actualizado | — |
-| pytz | **ELIMINADO** | ✅ Eliminado | Reemplazado por zoneinfo stdlib |
+### 2.2. Agrupaciones por Dominio Natural
 
-**Dependencias funcionales directas:** Django, djangorestframework, django-cors-headers, djangorestframework-simplejwt, mysqlclient, python-dotenv, cryptography
-**Paquetes ELIMINADOS (ciclo anterior):** django-rest-swagger, coreapi, coreschema, openapi-codec, uritemplate, itypes, requests, urllib3, certifi, Jinja2, simplejson, MarkupSafe, idna, charset-normalizer, setuptools, pytz
+| Grupo | Modelos | FK externas |
+|-------|---------|-------------|
+| **Personas** | Persona, PersonaEp, Direccion, Localidad, Municipio, Tipoparentesco | Direccion→Localidad, Localidad→Municipio, PersonaEp→Persona, Tipoparentesco→Persona+PersonaEp |
+| **Clínico** | Diagnostico, Evolucion, Enfermedad, Evento, TipoEvento | Diagnostico→PersonaEp+Enfermedad, Evolucion→PersonaEp, Evento→PersonaEp+TipoEvento |
+| **Farmacia** | Medicamento, Indicacionmedicamento | Indicacionmedicamento→PersonaEp+Medicamento |
+| **Obra Social** | Obrasocial, Os | Os→PersonaEp+Obrasocial |
+| **Talleres** | Taller, Clasetaller, Actividad, Actividadrealizada, Asistenciataller, Comportamiento, Factorclase, Factorglobal, Unidadobservacion, Variableuo, Valorvariableuo | Múltiples FKs (ver 2.1) |
 
----
+## 3. Capa de Servicios (teleparkApi/services.py — 114 líneas)
 
-## 3. Endpoints Activos
+| Clase | Modelo | Métodos extra |
+|-------|--------|---------------|
+| `BaseService` | — (abstracto) | `listar()`, `obtener_por_id()`, `crear()`, `actualizar()`, `eliminar()` |
+| `PersonaService` | Persona | — |
+| `PersonaEpService` | PersonaEp | — |
+| `DireccionService` | Direccion | — |
+| `TipoParentescoService` | Tipoparentesco | — |
+| `LocalidadService` | Localidad | — |
+| `MunicipioService` | Municipio | — |
+| `ObraSocialService` | Obrasocial | — |
+| `OsService` | Os | `filtrar_por_persona()` |
+| `MedicamentoService` | Medicamento | — |
+| `IndicacionService` | Indicacionmedicamento | `filtrar_por_persona()` |
+| `EvolucionService` | Evolucion | `filtrar_por_persona()` |
+| `EventoService` | Evento | — |
+| `TipoEventoService` | Tipoevento | — |
+| `EnfermedadService` | Enfermedad | — |
+| `DiagnosticoService` | Diagnostico | `filtrar_por_persona()` |
 
-### Endpoints directos:
-| Método | Ruta | Función | Autenticación |
-|--------|------|---------|---------------|
-| POST | `/api/login` | `auth_view` | Pública |
-| POST | `/api/create_user` | `create_user` | IsSuperuser |
-| POST | `/api/refresh_token` | `TokenRefreshView` | Pública |
-| GET | `/api/users` | `get_users` | IsSuperuser |
-| PUT | `/api/update_user` | `update_user` | IsSuperuser |
-| GET | `/api/health` | `health_check` | Pública 🆕 |
+> **Nota:** Los modelos Taller, Clasetaller, Actividad, Actividadrealizada, Asistenciataller, Comportamiento, Factorclase, Factorglobal, Unidadobservacion, Variableuo, Valorvariableuo NO tienen servicios asociados.
 
-### Endpoints registrados vía DefaultRouter (ViewSets):
-| ViewSet | Rutas generadas | Modelo |
-|---------|-----------------|--------|
-| PersonaViewSet | GET/POST `/api/persona`, GET/PUT/DELETE `/api/persona/{pk}` | Persona |
-| PersonaEPViewSet | GET/POST `/api/personaEp`, GET/PUT/DELETE `/api/personaEp/{pk}` | PersonaEp |
-| PersonaPViewSet | GET/POST `/api/personaP`, GET/PUT/DELETE `/api/personaP/{pk}` | PersonaEp 🔴 |
-| DireccionViewSet | GET/POST `/api/direccion`, GET/PUT/DELETE `/api/direccion/{pk}` | Direccion |
-| TipoParentescoViewSet | GET/POST `/api/tipoparentesco`, GET/PUT/DELETE `/api/tipoparentesco/{pk}` | Tipoparentesco |
-| LocalidadViewSet | GET/POST `/api/localidad`, GET/PUT/DELETE `/api/localidad/{pk}` | Localidad |
-| MunicipioViewSet | GET/POST `/api/municipio`, GET/PUT/DELETE `/api/municipio/{pk}` | Municipio |
-| EventoViewSet | GET/POST `/api/evento`, GET/PUT/DELETE `/api/evento/{pk}` | Evento |
-| TipoEventoViewSet | GET/POST `/api/tipoevento`, GET/PUT/DELETE `/api/tipoevento/{pk}` | Tipoevento |
-| EnfermedadViewSet | GET/POST `/api/enfermedad`, GET/PUT/DELETE `/api/enfermedad/{pk}` | Enfermedad |
-| DiagnosticoViewSet | GET/POST `/api/diagnostico`, GET/PUT/DELETE `/api/diagnostico/{pk}` + `GET /api/diagnostico/{pk}/personaep` | Diagnostico |
-| EvolucionViewSet | GET/POST `/api/evolucion`, GET/PUT/DELETE `/api/evolucion/{pk}` + `GET /api/evolucion/{pk}/personaep` | Evolucion |
-| ObraSocialViewSet | GET/POST `/api/obrasocial`, GET/PUT/DELETE `/api/obrasocial/{pk}` | Obrasocial |
-| OSViewSet | GET/POST `/api/os`, GET/PUT/DELETE `/api/os/{pk}` + `GET /api/os/{pk}/personaep` | Os |
-| MedicamentoViewSet | GET/POST `/api/medicamento`, GET/PUT/DELETE `/api/medicamento/{pk}` | Medicamento |
-| IndicacionViewSet | GET/POST `/api/indicacion`, GET/PUT/DELETE `/api/indicacion/{pk}` + `GET /api/indicacion/{pk}/personaep` | Indicacionmedicamento |
+## 4. Capa de Presentación (teleparkApi/views.py — 196 líneas)
 
-### Acciones personalizadas (@action) con lógica de negocio:
-| ViewSet | Acción | Ruta | Lógica |
-|---------|--------|------|--------|
-| DiagnosticoViewSet | `list_diagnosticoP` | `GET /api/diagnostico/{pk}/personaep` | Filtra Diagnostico por `idpersonaep=pk`, serializa con DiagnosticoEpSerializer |
-| EvolucionViewSet | `list_evolucionP` | `GET /api/evolucion/{pk}/personaep` | Filtra Evolucion por `idpersonaep=pk`, serializa con EvolucionSerializer |
-| OSViewSet | `list_obrasocialP` | `GET /api/os/{pk}/personaep` | Filtra Os por `idpersonaep=pk`, serializa con OSEpSerializer |
-| IndicacionViewSet | `list_indicacionP` | `GET /api/indicacion/{pk}/personaep` | Filtra Indicacionmedicamento por `idpersonaep=pk`, serializa con IndicacionEpSerializer |
+16 ViewSets + health_check. Todos heredan de `ModelViewSet` con `IsAuthenticated`.
 
-**Total endpoints activos: ~80+**
+| ViewSet | Serializer | Servicio |
+|---------|-----------|----------|
+| `PersonaViewSet` | PersonaSerializer | PersonaService |
+| `PersonaEPViewSet` | PersonaEpSerializer | PersonaEpService |
+| `PersonaPViewSet` | PersonaPSerializer | PersonaEpService |
+| `LocalidadViewSet` | LocalidadSerializer | LocalidadService |
+| `DireccionViewSet` | DireccionSerializer | DireccionService |
+| `TipoParentescoViewSet` | TipoparentescoSerializer | TipoParentescoService |
+| `MunicipioViewSet` | MunicipioSerializer | MunicipioService |
+| `EventoViewSet` | EventoSerializer | EventoService |
+| `TipoEventoViewSet` | TipoEventoSerializer | TipoEventoService |
+| `EnfermedadViewSet` | EnfermedadSerializer | EnfermedadService |
+| `DiagnosticoViewSet` | DiagnosticoSerializer (+ @action) | DiagnosticoService |
+| `EvolucionViewSet` | EvolucionSerializer (+ @action) | EvolucionService |
+| `ObraSocialViewSet` | ObraSocialSerializer | ObraSocialService |
+| `OSViewSet` | OSSerializer (+ @action) | OsService |
+| `MedicamentoViewSet` | MedicamentoSerializer | MedicamentoService |
+| `IndicacionViewSet` | IndicacionSerializer (+ @action) | IndicacionService |
 
----
+### @action endpoints (cross-context):
+- `DiagnosticoViewSet.personaep` → GET `/api/diagnostico/{pk}/personaep`
+- `EvolucionViewSet.personaep` → GET `/api/evolucion/{pk}/personaep`
+- `OSViewSet.personaep` → GET `/api/os/{pk}/personaep`
+- `IndicacionViewSet.personaep` → GET `/api/indicacion/{pk}/personaep`
 
-## 4. Serializadores
+## 5. Serializadores (teleparkApi/serializers.py — 146 líneas)
 
-| Serializador | Modelo | Campos | Notas |
-|-------------|--------|--------|-------|
-| EvolucionSerializer | Evolucion | idevolucion, escalaevolucion, fecha, idpersonaep, borrado | Plano |
-| EnfermedadSerializer | Enfermedad | idenfermedad, nombre | Plano |
-| DiagnosticoEpSerializer | Diagnostico | iddiagnostico, fecha, idpersonaep, idenfermedad (anidado), borrado | Nested EnfermedadSerializer |
-| DiagnosticoSerializer | Diagnostico | iddiagnostico, fecha, idpersonaep, idenfermedad, borrado | Plano (FK directa) |
-| DireccionSerializer | Direccion | iddireccion, calle, departamento, numero, piso, idlocalidad | Plano |
-| PersonaSerializer | Persona | idpersona, nombre, apellido, telefono, iddireccion, borrado, espaciente | Plano |
-| PersonaEpSerializer | PersonaEp | activataller, escolaridadcompleta, fechainicio, fechanacimiento, maximaescolaridadalcanzada, sexo, tieneacompanante, tienecuidador, vivesolo, ocupacionprevia, ocupacionactual, idpersona, idreferente | Plano |
-| PersonaPSerializer | PersonaEp | sexo, idpersona (anidado PersonaSerializer) | Nested — vista reducida |
-| LocalidadSerializer | Localidad | idlocalidad, nombre, codigopostal, idmunicipio | Plano |
-| MunicipioSerializer | Municipio | idmunicipio, nombre, provincia | Plano |
-| TipoparentescoSerializer | Tipoparentesco | idpersona, idpersonaep, nombre | Plano |
-| TipoEventoSerializer | Tipoevento | idtipoevento, nombre, desactivataller, borrado | Plano |
-| EventoSerializer | Evento | idevento, fechadesde, fechahasta, motivo, idpersonaep, idtipoevento, borrado | 🔴 B002: `tipoEvento = TipoEventoSerializer` (class) |
-| ObraSocialSerializer | Obrasocial | idobrasocial, nombre, esestatal | Plano |
-| OSEpSerializer | Os | idos, idpersonaep, idobrasocial (anidado), borrado | Nested ObraSocialSerializer |
-| OSSerializer | Os | idos, idpersonaep, idobrasocial, borrado | Plano |
-| MedicamentoSerializer | Medicamento | idmedicamento, nombre, esantiparkinsoniano, eslevodopa | Plano |
-| IndicacionEpSerializer | Indicacionmedicamento | idindicacion, cantidadmiligramos, estavigente, fechaprescripcion, horadetoma, idpersonaep, idmedicamento (anidado), borrado | Nested MedicamentoSerializer |
-| IndicacionSerializer | Indicacionmedicamento | idindicacion, cantidadmiligramos, estavigente, fechaprescripcion, horadetoma, idpersonaep, idmedicamento, borrado | Plano |
+| Serializer | Modelo | Anidaciones |
+|-----------|--------|-------------|
+| `PersonaSerializer` | Persona | — |
+| `PersonaEpSerializer` | PersonaEp | — |
+| `PersonaPSerializer` | PersonaEp | `idpersona` → PersonaSerializer |
+| `DireccionSerializer` | Direccion | — |
+| `LocalidadSerializer` | Localidad | — |
+| `MunicipioSerializer` | Municipio | — |
+| `TipoparentescoSerializer` | Tipoparentesco | — |
+| `TipoEventoSerializer` | Tipoevento | — |
+| `EventoSerializer` | Evento | `tipoEvento` → TipoEventoSerializer |
+| `EnfermedadSerializer` | Enfermedad | — |
+| `DiagnosticoSerializer` | Diagnostico | — |
+| `DiagnosticoEpSerializer` | Diagnostico | `idenfermedad` → EnfermedadSerializer |
+| `EvolucionSerializer` | Evolucion | — |
+| `ObraSocialSerializer` | Obrasocial | — |
+| `OSSerializer` | Os | — |
+| `OSEpSerializer` | Os | `idobrasocial` → ObraSocialSerializer |
+| `MedicamentoSerializer` | Medicamento | — |
+| `IndicacionSerializer` | Indicacionmedicamento | — |
+| `IndicacionEpSerializer` | Indicacionmedicamento | `idmedicamento` → MedicamentoSerializer |
 
----
+## 6. Autenticación y Seguridad (teleparkApi/authentication.py — 93 líneas)
 
-## 5. Hallazgos
+- `auth_view`: POST login con JWT (simplejwt)
+- `create_user`: POST solo superuser
+- `get_users`: GET listar usuarios
+- `update_user`: PUT actualizar usuarios
 
-### 5.1. Código Muerto (Dead Code)
+## 7. Configuración Django (telepark/settings.py)
 
-| ID | Archivo | Descripción |
-|----|---------|-------------|
-| D001 | `teleparkApi/handlers.py` (50 líneas) | **100% muerto.** Define `ICRUDStrategy`, `PostStrategy`, `GetStrategy`, `OtherStrategy`, `CRUDHandlerStrategies`. No es importado ni usado por ningún archivo del proyecto. Quedó relicto de una arquitectura anterior. |
-| D002 | `teleparkApi/helpers.py:has_permission` (líneas 8-14) | El decorador `has_permission` no es importado ni usado por ningún archivo. |
-| D003 | `teleparkApi/middleware.py` (13 líneas) | `ExceptionMiddleware.process_exception` **nunca es llamado por Django**. El método `process_exception` solo funciona con middleware antiguo (MiddlewareMixin). El middleware moderno (basado en `__call__`) no ejecuta `process_exception`. El error 500 queda manejado por defecto de Django. |
+- **Apps instaladas:** django.contrib.[admin, auth, contenttypes, sessions, messages, staticfiles] + corsheaders + rest_framework + **teleparkApi**
+- **Middleware:** CORS, Security, Session, Common, CSRF, Auth, Message, XFrame + **teleparkApi.middleware.ExceptionMiddleware**
+- **Auth:** JWTAuthentication (simplejwt), acceso 60min / refresh 1 día
+- **BD:** MySQL (variables de entorno)
+- **CORS:** SITE_URL desde variable de entorno
 
-### 5.2. Bugs Activos
+## 8. Hallazgos y Deuda Técnica Persistente
 
-| ID | Archivo:Línea | Severidad | Descripción |
-|----|--------------|-----------|-------------|
-| B001 | `teleparkApi/api.py:24` | 🟡 Medio | **PersonaPViewSet usa queryset incorrecto:** `queryset = PersonaEp.objects.all()`. El ViewSet se llama `PersonaP` pero consulta el modelo `PersonaEp`. Debería tener su propio queryset o explicitar que es una vista alternativa de PersonaEp. |
-| B002 | `teleparkApi/serializers.py:95` | 🟡 Medio | **EventoSerializer.tipoEvento es clase, no instancia:** `tipoEvento = TipoEventoSerializer` (asignación de clase, no instancia con `many=False, read_only=True`). El campo no serializa nested object. No se usa en `fields`. |
-| B003 | `teleparkApi/api.py:70-71, 83-84, 101-102, 119-120` | 🟢 Bajo | **Redundancia de método en @action:** Todos los @action usan `methods=['get']` pero dentro del handler verifican `if request.method == 'GET'`. El chequeo es siempre verdadero e innecesario. |
-| B004 | `teleparkApi/authentication.py:42-43, 62-63, 86-87` | 🟢 Bajo | **Doble verificación de permiso:** Las funciones usan `@permission_classes([IsSuperuser])` Y luego verifican manualmente `if(not request.user.is_superuser)`. El decorador ya asegura esto. |
+| ID | Hallazgo | Severidad | Archivo |
+|----|----------|-----------|---------|
+| A003 | Lógica de negocio directa en authentication.py | 🔴 Crítico | authentication.py |
+| B004 | Doble verificación de permisos en authentication.py | 🟡 Medio | authentication.py |
+| S004 | `CSRF_TRUSTED_ORIGINS` sin fallback seguro | 🟡 Medio | settings.py |
+| M001 | Monolito: 26 modelos + 16 ViewSets + 15 servicios en un solo modulo | 🔴 Arquitectura | teleparkApi/ |
+| M002 | Sin servicios para Talleres (11 modelos sin capa de negocio) | 🟡 Medio | services.py |
+| M003 | Serializadores con acoplamiento cruzado entre dominios | 🟡 Medio | serializers.py |
+| M004 | Todo el código de un dominio en archivos planos únicos | 🔴 Arquitectura | teleparkApi/ |
 
-### 5.3. Deuda Técnica — Violaciones de Arquitectura (GLOBAL_RULES.md)
+## 9. Stack Tecnológico Confirmado
 
-| ID | Archivo | Violación |
-|----|---------|-----------|
-| **A001** | `teleparkApi/api.py` (todo el archivo) | **🔴 CRÍTICO — Lógica de negocio en capa de presentación.** Los ViewSets contienen consultas ORM directas (business logic) en los métodos `@action`. GLOBAL_RULES.md sección 1 establece: "Capa de Presentación: PROHIBIDO contener lógica de negocio". |
-| A002 | `teleparkApi/api.py:12-121` | **🟡 Acoplamiento alto.** Todos los ViewSets heredan directamente de `viewsets.ModelViewSet` sin capa de servicio intermedia. No existe un directorio `services/`. |
-| A003 | `teleparkApi/authentication.py` | **🟡 Lógica de negocio en vistas.** `auth_view`, `create_user`, `update_user`, `get_users` mezclan HTTP handling con lógica de dominio (validación, consultas, creación de usuarios). |
-| A004 | General | **🟡 Ausencia de capa Services.** El proyecto no tiene carpeta `services/` ni clases service. Toda la lógica de negocio vive en api.py y authentication.py. |
-
-### 5.4. Problemas de Seguridad
-
-| ID | Aspecto | Estado | Detalle |
-|----|---------|--------|---------|
-| S001 | SECRET_KEY | 🟢 Resuelto | Migrado a variable de entorno |
-| S002 | ALLOWED_HOSTS | 🟢 Resuelto | Migrado a variable de entorno |
-| S003 | DEBUG | 🟢 Aceptable | `os.getenv("ENV") == 'dev'` |
-| S004 | CSRF_TRUSTED_ORIGINS | 🟡 Mejorable | Desde env pero sin fallback en settings.py |
-| S005 | JWT blacklist | 🟡 Ausente | `BLACKLIST_AFTER_ROTATION: False` — tokens refresh no invalidan anteriores |
-| S006 | TLS no configurado | 🟡 Pendiente | Depende del proxy |
-| S007 | Versión Django 6.0.6 | 🟢 Segura | Versión reciente con soporte activo |
-
-### 5.5. handlers.py — Análisis de Relación con api.py
-
-`CRUDHandlerStrategies` en `handlers.py` define un patrón Strategy con:
-- `GetStrategy`: Ejecuta `Model.objects.all()` y serializa con `JsonResponse`
-- `PostStrategy`: Parsea JSON, valida con serializer, guarda y responde 201/400
-- `OtherStrategy`: Retorna 404
-
-**Ninguno de los ViewSets en api.py usa `CRUDHandlerStrategies`.** Los ViewSets heredan de `ModelViewSet` que ya implementa CRUD por defecto. handlers.py es completamente código muerto.
-
----
-
-## 6. Firma de Configuración
-
-| Aspecto | Valor |
-|---------|-------|
+| Componente | Versión |
+|-----------|---------|
 | Python | 3.14.2 |
 | Django | 6.0.6 |
-| DRF | 3.17.1 |
-| simplejwt | 5.4.0 |
-| Base de datos | MySQL 8.0 (vía mysqlclient 2.2.7) |
-| Migraciones | 0001_initial.py (regenerada post-managed) |
-| Modelos | 26 de negocio (managed=True) |
-| Docker | Dockerfile + docker-compose.yml + entrypoint.sh |
-| Autenticación | JWT (Bearer) via rest_framework_simplejwt |
-| CORS | django-cors-headers 4.6.0 |
-| Middleware | 8 estándar + ExceptionMiddleware (no efectivo) |
-
----
-
-## 7. Arquitectura Objetivo para Próximo Ciclo
-
-Basado en ESTADO.md y GLOBAL_RULES.md, el próximo ciclo debe:
-
-1. **Extraer lógica de negocio de api.py** hacia servicios puros (`services/`)
-2. **Migrar api.py → views.py** (convención Django estándar)
-3. **Eliminar código muerto:** handlers.py, middleware.py (o corregirlo)
-4. **Corregir bugs:** B001 (PersonaP queryset), B002 (EventoSerializer), B003 (redundancia @action), B004 (doble permiso)
-5. **Implementar capa Services** con arquitectura: `views.py → services.py → models.py`
+| djangorestframework | 3.17.1 |
+| djangorestframework-simplejwt | 5.5.1 |
+| mysqlclient | 2.2.8 |
+| PyMySQL | 1.0.2 (fallback) |
+| django-cors-headers | 4.9.0 |
+| MySQL Server | 8.0.x (Docker) |
+| Docker | ≥ 24.0 |
+| Docker Compose | ≥ 2.20 |

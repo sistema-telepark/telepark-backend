@@ -1,11 +1,10 @@
-from urllib import response
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth.hashers import check_password, make_password
-from .permission import IsSuperuser
-from .helpers import check_attributes
-from .static import HTTP_METHOD
+from core.permission import IsSuperuser
+from core.helpers import check_attributes
+from core.static import HTTP_METHOD
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
@@ -49,12 +48,20 @@ def create_user(request):
     if (not check_attributes(body, ['user', 'first_name', 'last_name', 'password', 'is_superuser', 'is_staff', 'is_active'])):
         return Response('Datos incompletos', status=status.HTTP_400_BAD_REQUEST)
 
-    if (User.objects.filter(username=body['user']).exists()):
+    if User.objects.filter(username=body['user']).exists():
         return Response('El usuario ya existe', status=status.HTTP_400_BAD_REQUEST)
 
-    User.objects.create_user(username=body['user'], first_name=body['first_name'], last_name=body['last_name'], password=body['password'], is_superuser=body['is_superuser'], is_staff=body['is_staff'], is_active=body['is_active'])
+    user = User.objects.create_user(
+        username=body['user'],
+        first_name=body['first_name'],
+        last_name=body['last_name'],
+        password=body['password'],
+        is_superuser=body['is_superuser'],
+        is_staff=body['is_staff'],
+        is_active=body['is_active'],
+    )
+    return Response({'messagge': 'Usuario creado correctamente'}, status=status.HTTP_201_CREATED)
 
-    return Response('OK', status=status.HTTP_201_CREATED)
 
 @api_view([HTTP_METHOD.PUT])
 @permission_classes([IsSuperuser])
@@ -63,21 +70,28 @@ def update_user(request):
         return Response('No posee los permisos requeridos', status.HTTP_401_UNAUTHORIZED)
 
     body = json.loads(request.body.decode('utf-8'))
+
     if (request.method != HTTP_METHOD.PUT):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    if (not check_attributes(body, ['user', 'first_name', 'last_name', 'is_superuser', 'is_active'])):
+    if (not check_attributes(body, ['user'])):
         return Response('Datos incompletos', status=status.HTTP_400_BAD_REQUEST)
 
-    if (check_attributes(body, ['password'])):
-        User.objects.filter(username=body['user']).update(first_name=body['first_name'], last_name=body['last_name'],password=make_password(body['password']), is_superuser=body['is_superuser'], is_active=body['is_active'])
-    
-    if (not check_attributes(body, ['password'])):
-        User.objects.filter(username=body['user']).update(first_name=body['first_name'], last_name=body['last_name'], is_superuser=body['is_superuser'], is_active=body['is_active'])
-        
-    response = User.objects.filter(username=body['user']).values()
-
-    return Response({response}, status=status.HTTP_201_CREATED)
+    user = User.objects.get(username=body['user'])
+    if 'password' in body:
+        user.set_password(body['password'])
+    if 'first_name' in body:
+        user.first_name = body['first_name']
+    if 'last_name' in body:
+        user.last_name = body['last_name']
+    if 'is_active' in body:
+        user.is_active = body['is_active']
+    if 'is_superuser' in body:
+        user.is_superuser = body['is_superuser']
+    if 'is_staff' in body:
+        user.is_staff = body['is_staff']
+    user.save()
+    return Response({'message': 'Usuario actualizado correctamente'}, status=status.HTTP_200_OK)
 
 
 @api_view([HTTP_METHOD.GET])
@@ -86,8 +100,5 @@ def get_users(request):
     if(not request.user.is_superuser):
         return Response('No posee los permisos requeridos', status.HTTP_401_UNAUTHORIZED)
 
-    if (request.method != HTTP_METHOD.GET):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    response = ([{'username': user.username, 'first_name':user.first_name, 'last_name':user.last_name, 'name': user.get_full_name(), 'is_superuser': user.is_superuser, 'is_active': user.is_active} for user in User.objects.all()])
-    return Response(response, status=status.HTTP_200_OK)
+    users = User.objects.all().values('username', 'first_name', 'last_name', 'is_superuser', 'is_active')
+    return Response({'data': list(users)}, status=status.HTTP_200_OK)

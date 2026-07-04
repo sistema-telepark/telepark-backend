@@ -56,7 +56,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'teleparkApi'
+    # Módulos del dominio (ordenados por dependencias)
+    'core',
+    'personas',       # raíz — sin dependencias externas
+    'salud',          # → personas
+    'eventos',        # → personas
+    'obra_social',    # → personas
+    'talleres',       # → personas
 ]
 
 MIDDLEWARE = [
@@ -68,7 +74,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'teleparkApi.middleware.ExceptionMiddleware',
+    'core.middleware.ExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'telepark.urls'

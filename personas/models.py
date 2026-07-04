@@ -1,0 +1,75 @@
+from django.db import models
+
+
+class Persona(models.Model):
+    idpersona = models.AutoField(db_column='idPersona', primary_key=True)
+    nombre = models.CharField(max_length=45)
+    apellido = models.CharField(max_length=45)
+    telefono = models.CharField(max_length=35)
+    iddireccion = models.ForeignKey('Direccion', models.DO_NOTHING, db_column='idDireccion', blank=True, null=True)
+    borrado = models.IntegerField(db_column='borrado')
+    espaciente = models.IntegerField(db_column='esPaciente')
+
+    class Meta:
+        db_table = 'persona'
+
+
+class PersonaEp(models.Model):
+    activataller = models.IntegerField(db_column='activaTaller', blank=True, null=True)
+    escolaridadcompleta = models.IntegerField(db_column='escolaridadCompleta', blank=True, null=True)
+    fechainicio = models.DateTimeField(db_column='fechaInicio')
+    fechanacimiento = models.DateField(db_column='fechaNacimiento')
+    maximaescolaridadalcanzada = models.CharField(db_column='maximaEscolaridadAlcanzada', max_length=45, blank=True, null=True)
+    sexo = models.CharField(max_length=45)
+    tieneacompanante = models.IntegerField(db_column='tieneAcompanante')
+    tienecuidador = models.IntegerField(db_column='tieneCuidador')
+    vivesolo = models.IntegerField(db_column='viveSolo')
+    ocupacionprevia = models.CharField(db_column='ocupacionPrevia', max_length=45)
+    ocupacionactual = models.CharField(db_column='ocupacionActual', max_length=45)
+    idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='idPersona', primary_key=True)
+    idreferente = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idReferente', related_name='+')
+
+    class Meta:
+        db_table = 'persona_ep'
+        unique_together = (('idpersona', 'idreferente'),)
+
+
+class Direccion(models.Model):
+    iddireccion = models.AutoField(db_column='idDireccion', primary_key=True)
+    calle = models.CharField(max_length=45, blank=True, null=True)
+    departamento = models.CharField(max_length=45, blank=True, null=True)
+    numero = models.IntegerField(blank=True, null=True)
+    piso = models.IntegerField(blank=True, null=True)
+    idlocalidad = models.ForeignKey('Localidad', models.DO_NOTHING, db_column='idLocalidad', blank=True, null=True)
+
+    class Meta:
+        db_table = 'direccion'
+
+
+class Localidad(models.Model):
+    idlocalidad = models.AutoField(db_column='idLocalidad', primary_key=True)
+    nombre = models.CharField(max_length=45)
+    codigopostal = models.IntegerField(db_column='codigoPostal')
+    idmunicipio = models.ForeignKey('Municipio', models.DO_NOTHING, db_column='idMunicipio', blank=True, null=True)
+
+    class Meta:
+        db_table = 'localidad'
+
+
+class Municipio(models.Model):
+    idmunicipio = models.AutoField(db_column='idMunicipio', primary_key=True)
+    nombre = models.CharField(max_length=45)
+    provincia = models.CharField(max_length=45)
+
+    class Meta:
+        db_table = 'municipio'
+
+
+class Tipoparentesco(models.Model):
+    idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='idPersona', primary_key=True)
+    idpersonaep = models.ForeignKey(PersonaEp, models.DO_NOTHING, db_column='idPersonaEP')
+    nombre = models.CharField(max_length=45, blank=True, null=True)
+
+    class Meta:
+        db_table = 'tipoparentesco'
+        unique_together = (('idpersona', 'idpersonaep'),)

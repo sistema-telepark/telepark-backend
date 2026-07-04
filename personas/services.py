@@ -1,7 +1,5 @@
 from .models import (
     Persona, PersonaEp, Direccion, Tipoparentesco, Localidad, Municipio,
-    Obrasocial, Os, Medicamento, Indicacionmedicamento, Evolucion,
-    Evento, Tipoevento, Enfermedad, Diagnostico,
 )
 
 
@@ -64,51 +62,3 @@ class LocalidadService(BaseService):
 
 class MunicipioService(BaseService):
     model = Municipio
-
-
-class ObraSocialService(BaseService):
-    model = Obrasocial
-
-
-class OsService(BaseService):
-    model = Os
-
-    def filtrar_por_persona(self, personaep_pk):
-        return Os.objects.filter(idpersonaep=personaep_pk)
-
-
-class MedicamentoService(BaseService):
-    model = Medicamento
-
-
-class IndicacionService(BaseService):
-    model = Indicacionmedicamento
-
-    def filtrar_por_persona(self, personaep_pk):
-        return Indicacionmedicamento.objects.filter(idpersonaep=personaep_pk)
-
-
-class EvolucionService(BaseService):
-    model = Evolucion
-
-    def filtrar_por_persona(self, personaep_pk):
-        return Evolucion.objects.filter(idpersonaep=personaep_pk)
-
-
-class EventoService(BaseService):
-    model = Evento
-
-
-class TipoEventoService(BaseService):
-    model = Tipoevento
-
-
-class EnfermedadService(BaseService):
-    model = Enfermedad
-
-
-class DiagnosticoService(BaseService):
-    model = Diagnostico
-
-    def filtrar_por_persona(self, personaep_pk):
-        return Diagnostico.objects.filter(idpersonaep=personaep_pk)
