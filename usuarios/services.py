@@ -3,8 +3,13 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
-from rest_framework.exceptions import ValidationError, AuthenticationFailed
+from rest_framework.exceptions import ValidationError, AuthenticationFailed, PermissionDenied, NotFound, APIException
 from rest_framework_simplejwt.tokens import RefreshToken
+
+
+class Conflict(APIException):
+    status_code = 409
+    default_detail = 'Conflicto'
 
 
 class UsuarioService:
@@ -123,15 +128,15 @@ class UsuarioService:
         try:
             target = User.objects.get(username=target_username)
         except User.DoesNotExist:
-            raise ValidationError('Usuario no encontrado')
+            raise NotFound('Usuario no encontrado')
 
         if actor_user == target:
-            raise ValidationError('No puedes modificar tu propio rol')
+            raise PermissionDenied('No puedes modificar tu propio rol')
 
         if new_role == 'terapeuta':
             admin_count = User.objects.filter(is_superuser=True, is_active=True).count()
             if admin_count == 1 and target.is_superuser:
-                raise ValidationError('No puedes degradar al último administrador del sistema')
+                raise Conflict('No puedes degradar al último administrador del sistema')
 
         if new_role == 'admin':
             target.is_superuser = True

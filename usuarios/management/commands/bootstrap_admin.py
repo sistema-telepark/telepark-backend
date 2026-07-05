@@ -16,6 +16,7 @@ class Command(BaseCommand):
 
         if env == 'prod':
             password = secrets.token_urlsafe(32)
+            self.stdout.write(f'Password generada: {password}')
             self.stderr.write(self.style.WARNING(
                 'ADMIN_BOOTSTRAP_PASSWORD ignorada en entorno de producción — generando password aleatoria'
             ))
