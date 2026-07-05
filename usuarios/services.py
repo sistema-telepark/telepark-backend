@@ -1,5 +1,8 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db.models import Q
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -9,11 +12,6 @@ class UsuarioService:
 
     @staticmethod
     def autenticar(data):
-        """
-        Valida credenciales y retorna JWT.
-        Lanza AuthenticationFailed (401) si las credenciales son inválidas
-        o el usuario está deshabilitado.
-        """
         username = data.get('username')
         password = data.get('password')
 
@@ -40,33 +38,36 @@ class UsuarioService:
 
     @staticmethod
     def crear(data):
-        """
-        Crea un nuevo usuario Django.
-        Lanza ValidationError (400) si el username ya existe.
-        """
         username = data.get('user')
+        email = data.get('email')
 
         if User.objects.filter(username=username).exists():
             raise ValidationError('El usuario ya existe')
 
+        if email and User.objects.filter(email=email).exists():
+            raise ValidationError({'email': 'El email ya está registrado'})
+
+        password = data.get('password')
+        try:
+            validate_password(password)
+        except DjangoValidationError as e:
+            raise ValidationError({'password': list(e.messages)})
+
         User.objects.create_user(
             username=username,
+            email=email,
             first_name=data.get('first_name'),
             last_name=data.get('last_name'),
-            password=data.get('password'),
-            is_superuser=data.get('is_superuser'),
-            is_staff=data.get('is_staff'),
-            is_active=data.get('is_active'),
+            password=password,
+            is_superuser=False,
+            is_staff=False,
+            is_active=True,
         )
 
         return {'message': 'Usuario creado correctamente'}
 
     @staticmethod
     def actualizar(data):
-        """
-        Actualización parcial de un usuario existente.
-        Lanza ValidationError (400) si el usuario no existe.
-        """
         username = data.get('user')
 
         try:
@@ -74,24 +75,75 @@ class UsuarioService:
         except User.DoesNotExist:
             raise ValidationError('Usuario no encontrado')
 
+        if 'email' in data:
+            new_email = data['email']
+            if User.objects.filter(email=new_email).exclude(pk=user.pk).exists():
+                raise ValidationError({'email': 'El email ya está registrado'})
+            user.email = new_email
+
         if 'password' in data:
-            user.set_password(data['password'])
+            password = data['password']
+            try:
+                validate_password(password)
+            except DjangoValidationError as e:
+                raise ValidationError({'password': list(e.messages)})
+            user.set_password(password)
+
         if 'first_name' in data:
             user.first_name = data['first_name']
         if 'last_name' in data:
             user.last_name = data['last_name']
         if 'is_active' in data:
             user.is_active = data['is_active']
-        if 'is_superuser' in data:
-            user.is_superuser = data['is_superuser']
-        if 'is_staff' in data:
-            user.is_staff = data['is_staff']
 
         user.save()
 
         return {'message': 'Usuario actualizado correctamente'}
 
     @staticmethod
-    def listar():
-        """Retorna queryset de todos los usuarios."""
-        return User.objects.all()
+    def listar(filters=None):
+        qs = User.objects.all()
+        if filters:
+            if 'is_superuser' in filters:
+                qs = qs.filter(is_superuser=filters['is_superuser'])
+            if 'is_active' in filters:
+                qs = qs.filter(is_active=filters['is_active'])
+            if 'search' in filters:
+                search = filters['search']
+                qs = qs.filter(
+                    Q(username__icontains=search) |
+                    Q(first_name__icontains=search) |
+                    Q(last_name__icontains=search) |
+                    Q(email__icontains=search)
+                )
+        return qs
+
+    @staticmethod
+    def cambiar_rol(actor_user, target_username, new_role):
+        try:
+            target = User.objects.get(username=target_username)
+        except User.DoesNotExist:
+            raise ValidationError('Usuario no encontrado')
+
+        if actor_user == target:
+            raise ValidationError('No puedes modificar tu propio rol')
+
+        if new_role == 'terapeuta':
+            admin_count = User.objects.filter(is_superuser=True, is_active=True).count()
+            if admin_count == 1 and target.is_superuser:
+                raise ValidationError('No puedes degradar al último administrador del sistema')
+
+        if new_role == 'admin':
+            target.is_superuser = True
+            target.is_staff = True
+        elif new_role == 'terapeuta':
+            target.is_superuser = False
+            target.is_staff = False
+
+        target.save()
+
+        return {
+            'message': f'Rol actualizado a {new_role}',
+            'username': target.username,
+            'role': new_role,
+        }

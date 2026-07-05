@@ -1,5 +1,6 @@
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -8,6 +9,7 @@ from usuarios.serializers import (
     LoginSerializer,
     CreateUserSerializer,
     UpdateUserSerializer,
+    RoleChangeSerializer,
     UserListOutputSerializer,
 )
 from usuarios.services import UsuarioService
@@ -89,13 +91,39 @@ def update_user(request):
 
 
 @extend_schema(
+    parameters=[
+        {
+            "name": "search",
+            "in": "query",
+            "required": False,
+            "schema": {"type": "string"},
+            "description": "Búsqueda por username, nombre, apellido o email",
+        },
+        {
+            "name": "is_superuser",
+            "in": "query",
+            "required": False,
+            "schema": {"type": "boolean"},
+            "description": "Filtrar por administrador",
+        },
+        {
+            "name": "is_active",
+            "in": "query",
+            "required": False,
+            "schema": {"type": "boolean"},
+            "description": "Filtrar por activo/inactivo",
+        },
+    ],
     responses={
         200: OpenApiResponse(
-            description="Lista de usuarios del sistema",
+            description="Lista paginada de usuarios del sistema",
             response={
                 "type": "object",
                 "properties": {
-                    "data": {
+                    "count": {"type": "integer"},
+                    "next": {"type": "string", "nullable": True},
+                    "previous": {"type": "string", "nullable": True},
+                    "results": {
                         "type": "array",
                         "items": {
                             "type": "object",
@@ -116,6 +144,38 @@ def update_user(request):
 @api_view(['GET'])
 @permission_classes([IsSuperuser])
 def get_users(request):
-    users = UsuarioService.listar()
-    serializer = UserListOutputSerializer(users, many=True)
-    return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+    filters = {}
+    for param in ('is_superuser', 'is_active', 'search'):
+        value = request.query_params.get(param)
+        if value is not None:
+            if param in ('is_superuser', 'is_active'):
+                filters[param] = value.lower() == 'true'
+            else:
+                filters[param] = value
+
+    users = UsuarioService.listar(filters=filters)
+    paginator = PageNumberPagination()
+    paginator.page_size = 50
+    result_page = paginator.paginate_queryset(users, request)
+    serializer = UserListOutputSerializer(result_page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+
+@extend_schema(
+    request=RoleChangeSerializer,
+    responses={
+        200: OpenApiResponse(description="Rol actualizado exitosamente"),
+        400: OpenApiResponse(description="Error de validación"),
+    },
+)
+@api_view(['PUT'])
+@permission_classes([IsSuperuser])
+def change_user_role(request, username):
+    serializer = RoleChangeSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    result = UsuarioService.cambiar_rol(
+        actor_user=request.user,
+        target_username=username,
+        new_role=serializer.validated_data['role'],
+    )
+    return Response(result, status=status.HTTP_200_OK)
