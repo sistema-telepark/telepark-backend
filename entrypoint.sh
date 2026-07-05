@@ -61,6 +61,10 @@ python manage.py migrate
 
 echo "Migraciones aplicadas correctamente."
 
+# Crear usuario admin (idempotente)
+echo "Ejecutando bootstrap_admin..."
+python manage.py bootstrap_admin
+
 # Iniciar servidor de desarrollo
 echo "Iniciando servidor Django en 0.0.0.0:8080..."
 exec python manage.py runserver 0.0.0.0:8080

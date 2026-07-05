@@ -32,7 +32,6 @@ class Command(BaseCommand):
             is_active=True,
         )
 
-        self.stdout.write(self.style.SUCCESS(f'Admin creado exitosamente. Username: admin'))
-
-        if env != 'prod' and not os.getenv('ADMIN_BOOTSTRAP_PASSWORD'):
-            self.stdout.write(f'Password generada: {password}')
+        self.stdout.write(self.style.SUCCESS(
+            f'Admin creado exitosamente. Username: admin — Password: {password}'
+        ))
