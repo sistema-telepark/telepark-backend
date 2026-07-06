@@ -1,8 +1,9 @@
-from drf_spectacular.utils import extend_schema, OpenApiResponse
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from core.permission import IsSuperuser
 from usuarios.serializers import (
@@ -15,7 +16,14 @@ from usuarios.serializers import (
 from usuarios.services import UsuarioService
 
 
+@extend_schema_view(post=extend_schema(tags=['Usuarios']))
+class TokenRefreshViewWrapper(TokenRefreshView):
+    """Wrapper de TokenRefreshView que agrega el tag 'Usuarios' en Swagger."""
+    pass
+
+
 @extend_schema(
+    tags=['Usuarios'],
     request=LoginSerializer,
     responses={
         200: OpenApiResponse(
@@ -43,6 +51,7 @@ def auth_view(request):
 
 
 @extend_schema(
+    tags=['Usuarios'],
     request=CreateUserSerializer,
     responses={
         201: OpenApiResponse(
@@ -67,6 +76,7 @@ def create_user(request):
 
 
 @extend_schema(
+    tags=['Usuarios'],
     request=UpdateUserSerializer,
     responses={
         200: OpenApiResponse(
@@ -91,6 +101,7 @@ def update_user(request):
 
 
 @extend_schema(
+    tags=['Usuarios'],
     parameters=[
         {
             "name": "search",
@@ -162,6 +173,7 @@ def get_users(request):
 
 
 @extend_schema(
+    tags=['Usuarios'],
     request=RoleChangeSerializer,
     responses={
         200: OpenApiResponse(description="Rol actualizado exitosamente"),
