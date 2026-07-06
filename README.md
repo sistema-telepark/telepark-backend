@@ -1,6 +1,6 @@
 # Telepark Backend
 
-API REST para la gestión integral de personas, salud, eventos, obra social y talleres en una institución.
+API REST para la gestión integral de personas, obra social, talleres, salud y eventos en el Taller de Parkinson.
 
 ## Stack
 

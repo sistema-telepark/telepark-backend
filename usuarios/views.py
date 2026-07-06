@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -103,27 +103,27 @@ def update_user(request):
 @extend_schema(
     tags=['usuarios'],
     parameters=[
-        {
-            "name": "search",
-            "in": "query",
-            "required": False,
-            "schema": {"type": "string"},
-            "description": "Búsqueda por username, nombre, apellido o email",
-        },
-        {
-            "name": "is_superuser",
-            "in": "query",
-            "required": False,
-            "schema": {"type": "boolean"},
-            "description": "Filtrar por administrador",
-        },
-        {
-            "name": "is_active",
-            "in": "query",
-            "required": False,
-            "schema": {"type": "boolean"},
-            "description": "Filtrar por activo/inactivo",
-        },
+        OpenApiParameter(
+            name="search",
+            type=str,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Búsqueda por username, nombre, apellido o email",
+        ),
+        OpenApiParameter(
+            name="is_superuser",
+            type=bool,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Filtrar por administrador",
+        ),
+        OpenApiParameter(
+            name="is_active",
+            type=bool,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Filtrar por activo/inactivo",
+        ),
     ],
     responses={
         200: OpenApiResponse(
