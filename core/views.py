@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema
 
 
 @extend_schema(
+    tags=['sistema'],
     description="Verifica el estado de conexion a la base de datos y cuenta las tablas de negocio.",
     responses={
         200: {"type": "object", "properties": {"status": {"type": "string"}, "database": {"type": "string"}, "tables": {"type": "integer"}}},

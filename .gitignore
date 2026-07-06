@@ -14,5 +14,8 @@ AGENTS.md
 # migrations
 *migrations/
 
+# test schemas
+schema.yaml
+
 
 

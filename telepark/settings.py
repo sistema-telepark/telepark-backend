@@ -124,7 +124,7 @@ REST_FRAMEWORK = {
 # drf-spectacular OpenAPI 3.0 schema generation
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Telepark API',
-    'DESCRIPTION': 'API REST del sistema Telepark — módulos: personas, salud, eventos, obra_social, talleres',
+    'DESCRIPTION': 'API REST del sistema Telepark — módulos: usuarios, personas, salud, eventos, obra_social, talleres',
     'VERSION': '1.0.0',
     'CONTACT': {'email': 'admin@telepark.com'},
     'SCHEMA_PATH_PREFIX': r'/api/',
@@ -135,6 +135,15 @@ SPECTACULAR_SETTINGS = {
         'persistAuthorization': True,
         'deepLinking': True,
     },
+    'TAGS': [
+        {'name': 'sistema', 'description': 'Infraestructura del sistema — health check y documentación'},
+        {'name': 'usuarios', 'description': 'Autenticación y gestión de usuarios del sistema'},
+        {'name': 'personas', 'description': 'Gestión de personas, direcciones, localidades y parentescos'},
+        {'name': 'salud', 'description': 'Diagnósticos, evoluciones, enfermedades y medicamentos'},
+        {'name': 'eventos', 'description': 'Eventos y tipos de evento'},
+        {'name': 'obra_social', 'description': 'Obras sociales y coberturas'},
+        {'name': 'talleres', 'description': 'Talleres, actividades, asistencias y observaciones'},
+    ],
 }
 
 # JWT configuration
