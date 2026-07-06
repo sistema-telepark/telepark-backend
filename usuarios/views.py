@@ -16,14 +16,14 @@ from usuarios.serializers import (
 from usuarios.services import UsuarioService
 
 
-@extend_schema_view(post=extend_schema(tags=['Usuarios']))
+@extend_schema_view(post=extend_schema(tags=['usuario']))
 class TokenRefreshViewWrapper(TokenRefreshView):
-    """Wrapper de TokenRefreshView que agrega el tag 'Usuarios' en Swagger."""
+    """Wrapper de TokenRefreshView que agrega el tag 'usuario' en Swagger."""
     pass
 
 
 @extend_schema(
-    tags=['Usuarios'],
+    tags=['usuario'],
     request=LoginSerializer,
     responses={
         200: OpenApiResponse(
@@ -51,7 +51,7 @@ def auth_view(request):
 
 
 @extend_schema(
-    tags=['Usuarios'],
+    tags=['usuario'],
     request=CreateUserSerializer,
     responses={
         201: OpenApiResponse(
@@ -76,7 +76,7 @@ def create_user(request):
 
 
 @extend_schema(
-    tags=['Usuarios'],
+    tags=['usuario'],
     request=UpdateUserSerializer,
     responses={
         200: OpenApiResponse(
@@ -101,7 +101,7 @@ def update_user(request):
 
 
 @extend_schema(
-    tags=['Usuarios'],
+    tags=['usuario'],
     parameters=[
         {
             "name": "search",
@@ -173,11 +173,24 @@ def get_users(request):
 
 
 @extend_schema(
-    tags=['Usuarios'],
+    tags=['usuario'],
     request=RoleChangeSerializer,
     responses={
-        200: OpenApiResponse(description="Rol actualizado exitosamente"),
-        400: OpenApiResponse(description="Error de validación"),
+        200: OpenApiResponse(
+            description="Rol actualizado exitosamente",
+            response={
+                "type": "object",
+                "properties": {
+                    "message": {"type": "string"},
+                    "username": {"type": "string"},
+                    "is_superuser": {"type": "boolean"},
+                },
+            },
+        ),
+        400: OpenApiResponse(description="Error de validación — is_superuser requerido o tipo inválido"),
+        403: OpenApiResponse(description="No autorizado — no eres superusuario o intentas modificar tu propio rol"),
+        404: OpenApiResponse(description="Usuario no encontrado"),
+        409: OpenApiResponse(description="Conflicto — no puedes degradar al último administrador"),
     },
 )
 @api_view(['PUT'])
@@ -188,6 +201,6 @@ def change_user_role(request, username):
     result = UsuarioService.cambiar_rol(
         actor_user=request.user,
         target_username=username,
-        new_role=serializer.validated_data['role'],
+        is_superuser=serializer.validated_data['is_superuser'],
     )
     return Response(result, status=status.HTTP_200_OK)

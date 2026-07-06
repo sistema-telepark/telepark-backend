@@ -124,7 +124,7 @@ class UsuarioService:
         return qs
 
     @staticmethod
-    def cambiar_rol(actor_user, target_username, new_role):
+    def cambiar_rol(actor_user, target_username, is_superuser):
         try:
             target = User.objects.get(username=target_username)
         except User.DoesNotExist:
@@ -133,22 +133,18 @@ class UsuarioService:
         if actor_user == target:
             raise PermissionDenied('No puedes modificar tu propio rol')
 
-        if new_role == 'terapeuta':
+        if not is_superuser:
             admin_count = User.objects.filter(is_superuser=True, is_active=True).count()
             if admin_count == 1 and target.is_superuser:
                 raise Conflict('No puedes degradar al último administrador del sistema')
 
-        if new_role == 'admin':
-            target.is_superuser = True
-            target.is_staff = True
-        elif new_role == 'terapeuta':
-            target.is_superuser = False
-            target.is_staff = False
+        target.is_superuser = is_superuser
+        target.is_staff = is_superuser
 
         target.save()
 
         return {
-            'message': f'Rol actualizado a {new_role}',
+            'message': f'Rol actualizado a {"admin" if is_superuser else "terapeuta"}',
             'username': target.username,
-            'role': new_role,
+            'is_superuser': is_superuser,
         }

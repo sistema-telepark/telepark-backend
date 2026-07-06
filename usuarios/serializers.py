@@ -38,7 +38,7 @@ class UpdateUserSerializer(serializers.Serializer):
 
 
 class RoleChangeSerializer(serializers.Serializer):
-    role = serializers.ChoiceField(choices=['admin', 'terapeuta'])
+    is_superuser = serializers.BooleanField()
 
 
 class UserListOutputSerializer(serializers.Serializer):
