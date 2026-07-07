@@ -55,7 +55,11 @@ done
 echo "Verificando configuracion de Django..."
 python manage.py check --deploy 2>&1 | grep -v "WARNINGS" || true
 
-# Aplicar migraciones pre-generadas (bakeadas en la imagen)
+# Generar migraciones a partir de los modelos (auto-detecta cambios)
+echo "Ejecutando makemigrations..."
+python manage.py makemigrations --noinput
+
+# Aplicar migraciones a la base de datos
 echo "Ejecutando migrate..."
 python manage.py migrate
 

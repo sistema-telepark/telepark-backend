@@ -28,14 +28,13 @@ RUN pip install --upgrade pip setuptools wheel \
 # Copiar el proyecto
 COPY . .
 
-# Las migraciones vienen incluidas en el proyecto (bakeadas en la imagen)
-# El entrypoint solo ejecuta migrate, no makemigrations
+# Las migraciones se auto-generan en entrypoint.sh (makemigrations --noinput)
 
 # Crear directorio static si no existe
 RUN mkdir -p static
 
 # Puerto de exposición
-EXPOSE 8000
+EXPOSE 8080
 
 # Entrypoint
 COPY entrypoint.sh /entrypoint.sh
