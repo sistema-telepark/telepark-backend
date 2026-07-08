@@ -3,13 +3,15 @@ from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
-from rest_framework.exceptions import ValidationError, AuthenticationFailed, PermissionDenied, NotFound, APIException
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
-class Conflict(APIException):
-    status_code = 409
-    default_detail = 'Conflicto'
+from core.exceptions import (
+    AuthenticationError,
+    ValidationError,
+    NotFoundException,
+    PermissionDeniedError,
+    ConflictError,
+)
 
 
 class UsuarioService:
@@ -23,13 +25,13 @@ class UsuarioService:
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            raise AuthenticationFailed('Credenciales inválidas')
+            raise AuthenticationError('Credenciales inválidas')
 
         if not check_password(password, user.password):
-            raise AuthenticationFailed('Credenciales inválidas')
+            raise AuthenticationError('Credenciales inválidas')
 
         if not user.is_active:
-            raise AuthenticationFailed('El usuario está deshabilitado')
+            raise AuthenticationError('El usuario está deshabilitado')
 
         token = RefreshToken.for_user(user)
 
@@ -128,15 +130,15 @@ class UsuarioService:
         try:
             target = User.objects.get(username=target_username)
         except User.DoesNotExist:
-            raise NotFound('Usuario no encontrado')
+            raise NotFoundException('Usuario no encontrado')
 
         if actor_user == target:
-            raise PermissionDenied('No puedes modificar tu propio rol')
+            raise PermissionDeniedError('No puedes modificar tu propio rol')
 
         if not is_superuser:
             admin_count = User.objects.filter(is_superuser=True, is_active=True).count()
             if admin_count == 1 and target.is_superuser:
-                raise Conflict('No puedes degradar al último administrador del sistema')
+                raise ConflictError('No puedes degradar al último administrador del sistema')
 
         target.is_superuser = is_superuser
         target.is_staff = is_superuser

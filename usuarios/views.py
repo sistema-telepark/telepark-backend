@@ -5,6 +5,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from core.exceptions import (
+    AuthenticationError,
+    ValidationError,
+    NotFoundException,
+    PermissionDeniedError,
+    ConflictError,
+)
 from core.permission import IsSuperuser
 from usuarios.serializers import (
     LoginSerializer,
@@ -46,7 +53,10 @@ class TokenRefreshViewWrapper(TokenRefreshView):
 def auth_view(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    result = UsuarioService.autenticar(serializer.validated_data)
+    try:
+        result = UsuarioService.autenticar(serializer.validated_data)
+    except AuthenticationError as e:
+        return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
     return Response(result, status=status.HTTP_200_OK)
 
 
@@ -71,7 +81,12 @@ def auth_view(request):
 def create_user(request):
     serializer = CreateUserSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    result = UsuarioService.crear(serializer.validated_data)
+    try:
+        result = UsuarioService.crear(serializer.validated_data)
+    except ValidationError as e:
+        if e.args and isinstance(e.args[0], dict):
+            return Response(e.args[0], status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     return Response(result, status=status.HTTP_201_CREATED)
 
 
@@ -96,7 +111,12 @@ def create_user(request):
 def update_user(request):
     serializer = UpdateUserSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    result = UsuarioService.actualizar(serializer.validated_data)
+    try:
+        result = UsuarioService.actualizar(serializer.validated_data)
+    except ValidationError as e:
+        if e.args and isinstance(e.args[0], dict):
+            return Response(e.args[0], status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     return Response(result, status=status.HTTP_200_OK)
 
 
@@ -198,9 +218,16 @@ def get_users(request):
 def change_user_role(request, username):
     serializer = RoleChangeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    result = UsuarioService.cambiar_rol(
-        actor_user=request.user,
-        target_username=username,
-        is_superuser=serializer.validated_data['is_superuser'],
-    )
+    try:
+        result = UsuarioService.cambiar_rol(
+            actor_user=request.user,
+            target_username=username,
+            is_superuser=serializer.validated_data['is_superuser'],
+        )
+    except NotFoundException as e:
+        return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+    except PermissionDeniedError as e:
+        return Response({"detail": str(e)}, status=status.HTTP_403_FORBIDDEN)
+    except ConflictError as e:
+        return Response({"detail": str(e)}, status=status.HTTP_409_CONFLICT)
     return Response(result, status=status.HTTP_200_OK)
