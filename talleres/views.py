@@ -41,8 +41,10 @@ _valorvariableuo_service = ValorVariableUOService()
 )
 class TallerViewSet(viewsets.ModelViewSet):
     serializer_class = TallerSerializer
-    queryset = _taller_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _taller_service.listar()
 
 
 @extend_schema_view(
@@ -55,8 +57,10 @@ class TallerViewSet(viewsets.ModelViewSet):
 )
 class ClaseTallerViewSet(viewsets.ModelViewSet):
     serializer_class = ClaseTallerSerializer
-    queryset = _clasetaller_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _clasetaller_service.listar()
 
 
 @extend_schema_view(
@@ -69,8 +73,10 @@ class ClaseTallerViewSet(viewsets.ModelViewSet):
 )
 class ActividadViewSet(viewsets.ModelViewSet):
     serializer_class = ActividadSerializer
-    queryset = _actividad_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _actividad_service.listar()
 
 
 @extend_schema_view(
@@ -83,8 +89,10 @@ class ActividadViewSet(viewsets.ModelViewSet):
 )
 class ActividadRealizadaViewSet(viewsets.ModelViewSet):
     serializer_class = ActividadRealizadaSerializer
-    queryset = _actividadrealizada_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _actividadrealizada_service.listar()
 
 
 @extend_schema_view(
@@ -97,8 +105,10 @@ class ActividadRealizadaViewSet(viewsets.ModelViewSet):
 )
 class AsistenciaTallerViewSet(viewsets.ModelViewSet):
     serializer_class = AsistenciaTallerSerializer
-    queryset = _asistenciataller_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _asistenciataller_service.listar()
 
 
 @extend_schema_view(
@@ -111,8 +121,10 @@ class AsistenciaTallerViewSet(viewsets.ModelViewSet):
 )
 class ComportamientoViewSet(viewsets.ModelViewSet):
     serializer_class = ComportamientoSerializer
-    queryset = _comportamiento_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _comportamiento_service.listar()
 
 
 @extend_schema_view(
@@ -125,8 +137,10 @@ class ComportamientoViewSet(viewsets.ModelViewSet):
 )
 class FactorClaseViewSet(viewsets.ModelViewSet):
     serializer_class = FactorClaseSerializer
-    queryset = _factorclase_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _factorclase_service.listar()
 
 
 @extend_schema_view(
@@ -139,8 +153,10 @@ class FactorClaseViewSet(viewsets.ModelViewSet):
 )
 class FactorGlobalViewSet(viewsets.ModelViewSet):
     serializer_class = FactorGlobalSerializer
-    queryset = _factorglobal_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _factorglobal_service.listar()
 
 
 @extend_schema_view(
@@ -153,8 +169,10 @@ class FactorGlobalViewSet(viewsets.ModelViewSet):
 )
 class UnidadObservacionViewSet(viewsets.ModelViewSet):
     serializer_class = UnidadObservacionSerializer
-    queryset = _unidadobservacion_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _unidadobservacion_service.listar()
 
 
 @extend_schema_view(
@@ -167,8 +185,10 @@ class UnidadObservacionViewSet(viewsets.ModelViewSet):
 )
 class VariableUOViewSet(viewsets.ModelViewSet):
     serializer_class = VariableUOSerializer
-    queryset = _variableuo_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _variableuo_service.listar()
 
 
 @extend_schema_view(
@@ -181,5 +201,7 @@ class VariableUOViewSet(viewsets.ModelViewSet):
 )
 class ValorVariableUOViewSet(viewsets.ModelViewSet):
     serializer_class = ValorVariableUOSerializer
-    queryset = _valorvariableuo_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _valorvariableuo_service.listar()

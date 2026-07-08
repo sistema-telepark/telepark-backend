@@ -31,8 +31,10 @@ _municipio_service = MunicipioService()
 )
 class PersonaViewSet(viewsets.ModelViewSet):
     serializer_class = PersonaSerializer
-    queryset = _persona_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _persona_service.listar()
 
 
 @extend_schema_view(
@@ -45,8 +47,10 @@ class PersonaViewSet(viewsets.ModelViewSet):
 )
 class PersonaEPViewSet(viewsets.ModelViewSet):
     serializer_class = PersonaEpSerializer
-    queryset = _personaep_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _personaep_service.listar()
 
 
 @extend_schema_view(
@@ -59,8 +63,10 @@ class PersonaEPViewSet(viewsets.ModelViewSet):
 )
 class PersonaPViewSet(viewsets.ModelViewSet):
     serializer_class = PersonaPSerializer
-    queryset = _personaep_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _personaep_service.listar()
 
 
 @extend_schema_view(
@@ -73,8 +79,10 @@ class PersonaPViewSet(viewsets.ModelViewSet):
 )
 class LocalidadViewSet(viewsets.ModelViewSet):
     serializer_class = LocalidadSerializer
-    queryset = _localidad_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _localidad_service.listar()
 
 
 @extend_schema_view(
@@ -87,8 +95,10 @@ class LocalidadViewSet(viewsets.ModelViewSet):
 )
 class DireccionViewSet(viewsets.ModelViewSet):
     serializer_class = DireccionSerializer
-    queryset = _direccion_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _direccion_service.listar()
 
 
 @extend_schema_view(
@@ -101,8 +111,10 @@ class DireccionViewSet(viewsets.ModelViewSet):
 )
 class TipoParentescoViewSet(viewsets.ModelViewSet):
     serializer_class = TipoparentescoSerializer
-    queryset = _tipoparentesco_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _tipoparentesco_service.listar()
 
 
 @extend_schema_view(
@@ -115,5 +127,7 @@ class TipoParentescoViewSet(viewsets.ModelViewSet):
 )
 class MunicipioViewSet(viewsets.ModelViewSet):
     serializer_class = MunicipioSerializer
-    queryset = _municipio_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _municipio_service.listar()

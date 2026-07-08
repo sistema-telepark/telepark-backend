@@ -24,8 +24,10 @@ _os_service = OsService()
 )
 class ObraSocialViewSet(viewsets.ModelViewSet):
     serializer_class = ObraSocialSerializer
-    queryset = _obrasocial_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _obrasocial_service.listar()
 
 
 @extend_schema_view(
@@ -39,8 +41,10 @@ class ObraSocialViewSet(viewsets.ModelViewSet):
 )
 class OSViewSet(viewsets.ModelViewSet):
     serializer_class = OSSerializer
-    queryset = _os_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _os_service.listar()
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='personaep', url_name='personaep')

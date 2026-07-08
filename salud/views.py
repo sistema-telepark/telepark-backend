@@ -34,8 +34,10 @@ _indicacion_service = IndicacionService()
 )
 class DiagnosticoViewSet(viewsets.ModelViewSet):
     serializer_class = DiagnosticoSerializer
-    queryset = _diagnostico_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _diagnostico_service.listar()
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='personaep', url_name='personaep')
@@ -56,8 +58,10 @@ class DiagnosticoViewSet(viewsets.ModelViewSet):
 )
 class EvolucionViewSet(viewsets.ModelViewSet):
     serializer_class = EvolucionSerializer
-    queryset = _evolucion_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _evolucion_service.listar()
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='personaep', url_name='personaep')
@@ -77,8 +81,10 @@ class EvolucionViewSet(viewsets.ModelViewSet):
 )
 class EnfermedadViewSet(viewsets.ModelViewSet):
     serializer_class = EnfermedadSerializer
-    queryset = _enfermedad_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _enfermedad_service.listar()
 
 
 @extend_schema_view(
@@ -91,8 +97,10 @@ class EnfermedadViewSet(viewsets.ModelViewSet):
 )
 class MedicamentoViewSet(viewsets.ModelViewSet):
     serializer_class = MedicamentoSerializer
-    queryset = _medicamento_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _medicamento_service.listar()
 
 
 @extend_schema_view(
@@ -106,8 +114,10 @@ class MedicamentoViewSet(viewsets.ModelViewSet):
 )
 class IndicacionViewSet(viewsets.ModelViewSet):
     serializer_class = IndicacionSerializer
-    queryset = _indicacion_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _indicacion_service.listar()
 
     @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
             url_path='personaep', url_name='personaep')

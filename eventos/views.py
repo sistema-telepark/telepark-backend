@@ -20,8 +20,10 @@ _tipoevento_service = TipoEventoService()
 )
 class EventoViewSet(viewsets.ModelViewSet):
     serializer_class = EventoSerializer
-    queryset = _evento_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _evento_service.listar()
 
 
 @extend_schema_view(
@@ -34,5 +36,7 @@ class EventoViewSet(viewsets.ModelViewSet):
 )
 class TipoEventoViewSet(viewsets.ModelViewSet):
     serializer_class = TipoEventoSerializer
-    queryset = _tipoevento_service.listar()
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return _tipoevento_service.listar()
