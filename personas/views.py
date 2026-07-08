@@ -2,6 +2,8 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from core.mixins import ModelPKMixin
+
 from .serializers import (
     DireccionSerializer, LocalidadSerializer,
     MunicipioSerializer, PersonaEpSerializer,
@@ -29,7 +31,8 @@ _municipio_service = MunicipioService()
     partial_update=extend_schema(tags=['personas']),
     destroy=extend_schema(tags=['personas']),
 )
-class PersonaViewSet(viewsets.ModelViewSet):
+class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _persona_service
     serializer_class = PersonaSerializer
     permission_classes = [IsAuthenticated]
 
@@ -45,7 +48,8 @@ class PersonaViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['personas']),
     destroy=extend_schema(tags=['personas']),
 )
-class PersonaEPViewSet(viewsets.ModelViewSet):
+class PersonaEPViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _personaep_service
     serializer_class = PersonaEpSerializer
     permission_classes = [IsAuthenticated]
 
@@ -61,7 +65,8 @@ class PersonaEPViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['personas']),
     destroy=extend_schema(tags=['personas']),
 )
-class PersonaPViewSet(viewsets.ModelViewSet):
+class PersonaPViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _personaep_service
     serializer_class = PersonaPSerializer
     permission_classes = [IsAuthenticated]
 
@@ -77,7 +82,8 @@ class PersonaPViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['personas']),
     destroy=extend_schema(tags=['personas']),
 )
-class LocalidadViewSet(viewsets.ModelViewSet):
+class LocalidadViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _localidad_service
     serializer_class = LocalidadSerializer
     permission_classes = [IsAuthenticated]
 
@@ -93,7 +99,8 @@ class LocalidadViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['personas']),
     destroy=extend_schema(tags=['personas']),
 )
-class DireccionViewSet(viewsets.ModelViewSet):
+class DireccionViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _direccion_service
     serializer_class = DireccionSerializer
     permission_classes = [IsAuthenticated]
 
@@ -109,7 +116,8 @@ class DireccionViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['personas']),
     destroy=extend_schema(tags=['personas']),
 )
-class TipoParentescoViewSet(viewsets.ModelViewSet):
+class TipoParentescoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _tipoparentesco_service
     serializer_class = TipoparentescoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -125,7 +133,8 @@ class TipoParentescoViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['personas']),
     destroy=extend_schema(tags=['personas']),
 )
-class MunicipioViewSet(viewsets.ModelViewSet):
+class MunicipioViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _municipio_service
     serializer_class = MunicipioSerializer
     permission_classes = [IsAuthenticated]
 

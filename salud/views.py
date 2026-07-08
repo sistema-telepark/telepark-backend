@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from core.mixins import ModelPKMixin
+
 from .serializers import (
     EvolucionSerializer, DiagnosticoEpSerializer, DiagnosticoSerializer,
     MedicamentoSerializer, IndicacionEpSerializer,
@@ -32,7 +34,8 @@ _indicacion_service = IndicacionService()
     destroy=extend_schema(tags=['salud']),
     list_diagnosticoP=extend_schema(tags=['salud']),
 )
-class DiagnosticoViewSet(viewsets.ModelViewSet):
+class DiagnosticoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _diagnostico_service
     serializer_class = DiagnosticoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -56,7 +59,8 @@ class DiagnosticoViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(tags=['salud']),
     list_evolucionP=extend_schema(tags=['salud']),
 )
-class EvolucionViewSet(viewsets.ModelViewSet):
+class EvolucionViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _evolucion_service
     serializer_class = EvolucionSerializer
     permission_classes = [IsAuthenticated]
 
@@ -79,7 +83,8 @@ class EvolucionViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['salud']),
     destroy=extend_schema(tags=['salud']),
 )
-class EnfermedadViewSet(viewsets.ModelViewSet):
+class EnfermedadViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _enfermedad_service
     serializer_class = EnfermedadSerializer
     permission_classes = [IsAuthenticated]
 
@@ -95,7 +100,8 @@ class EnfermedadViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['salud']),
     destroy=extend_schema(tags=['salud']),
 )
-class MedicamentoViewSet(viewsets.ModelViewSet):
+class MedicamentoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _medicamento_service
     serializer_class = MedicamentoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -112,7 +118,8 @@ class MedicamentoViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(tags=['salud']),
     list_indicacionP=extend_schema(tags=['salud']),
 )
-class IndicacionViewSet(viewsets.ModelViewSet):
+class IndicacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _indicacion_service
     serializer_class = IndicacionSerializer
     permission_classes = [IsAuthenticated]
 

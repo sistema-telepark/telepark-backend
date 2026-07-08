@@ -109,7 +109,7 @@ class UsuarioService:
 
     @staticmethod
     def listar(filters=None):
-        qs = User.objects.all()
+        qs = User.objects.all().order_by('id')
         if filters:
             if 'is_superuser' in filters:
                 qs = qs.filter(is_superuser=filters['is_superuser'])

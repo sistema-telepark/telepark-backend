@@ -2,6 +2,8 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from core.mixins import ModelPKMixin
+
 from .serializers import EventoSerializer, TipoEventoSerializer
 from .services import EventoService, TipoEventoService
 
@@ -18,7 +20,8 @@ _tipoevento_service = TipoEventoService()
     partial_update=extend_schema(tags=['eventos']),
     destroy=extend_schema(tags=['eventos']),
 )
-class EventoViewSet(viewsets.ModelViewSet):
+class EventoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _evento_service
     serializer_class = EventoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -34,7 +37,8 @@ class EventoViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['eventos']),
     destroy=extend_schema(tags=['eventos']),
 )
-class TipoEventoViewSet(viewsets.ModelViewSet):
+class TipoEventoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _tipoevento_service
     serializer_class = TipoEventoSerializer
     permission_classes = [IsAuthenticated]
 

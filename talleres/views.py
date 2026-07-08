@@ -2,6 +2,8 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from core.mixins import ModelPKMixin
+
 from .serializers import (
     TallerSerializer, ClaseTallerSerializer, ActividadSerializer,
     ActividadRealizadaSerializer, AsistenciaTallerSerializer,
@@ -39,7 +41,8 @@ _valorvariableuo_service = ValorVariableUOService()
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class TallerViewSet(viewsets.ModelViewSet):
+class TallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _taller_service
     serializer_class = TallerSerializer
     permission_classes = [IsAuthenticated]
 
@@ -55,7 +58,8 @@ class TallerViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class ClaseTallerViewSet(viewsets.ModelViewSet):
+class ClaseTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _clasetaller_service
     serializer_class = ClaseTallerSerializer
     permission_classes = [IsAuthenticated]
 
@@ -71,7 +75,8 @@ class ClaseTallerViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class ActividadViewSet(viewsets.ModelViewSet):
+class ActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _actividad_service
     serializer_class = ActividadSerializer
     permission_classes = [IsAuthenticated]
 
@@ -87,7 +92,8 @@ class ActividadViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class ActividadRealizadaViewSet(viewsets.ModelViewSet):
+class ActividadRealizadaViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _actividadrealizada_service
     serializer_class = ActividadRealizadaSerializer
     permission_classes = [IsAuthenticated]
 
@@ -103,7 +109,8 @@ class ActividadRealizadaViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class AsistenciaTallerViewSet(viewsets.ModelViewSet):
+class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _asistenciataller_service
     serializer_class = AsistenciaTallerSerializer
     permission_classes = [IsAuthenticated]
 
@@ -119,7 +126,8 @@ class AsistenciaTallerViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class ComportamientoViewSet(viewsets.ModelViewSet):
+class ComportamientoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _comportamiento_service
     serializer_class = ComportamientoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -135,7 +143,8 @@ class ComportamientoViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class FactorClaseViewSet(viewsets.ModelViewSet):
+class FactorClaseViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _factorclase_service
     serializer_class = FactorClaseSerializer
     permission_classes = [IsAuthenticated]
 
@@ -151,7 +160,8 @@ class FactorClaseViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class FactorGlobalViewSet(viewsets.ModelViewSet):
+class FactorGlobalViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _factorglobal_service
     serializer_class = FactorGlobalSerializer
     permission_classes = [IsAuthenticated]
 
@@ -167,7 +177,8 @@ class FactorGlobalViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class UnidadObservacionViewSet(viewsets.ModelViewSet):
+class UnidadObservacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _unidadobservacion_service
     serializer_class = UnidadObservacionSerializer
     permission_classes = [IsAuthenticated]
 
@@ -183,7 +194,8 @@ class UnidadObservacionViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class VariableUOViewSet(viewsets.ModelViewSet):
+class VariableUOViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _variableuo_service
     serializer_class = VariableUOSerializer
     permission_classes = [IsAuthenticated]
 
@@ -199,7 +211,8 @@ class VariableUOViewSet(viewsets.ModelViewSet):
     partial_update=extend_schema(tags=['talleres']),
     destroy=extend_schema(tags=['talleres']),
 )
-class ValorVariableUOViewSet(viewsets.ModelViewSet):
+class ValorVariableUOViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    service = _valorvariableuo_service
     serializer_class = ValorVariableUOSerializer
     permission_classes = [IsAuthenticated]
 
