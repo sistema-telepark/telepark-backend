@@ -9,7 +9,7 @@ class TipoEventoSerializer(serializers.ModelSerializer):
 
 
 class EventoSerializer(serializers.ModelSerializer):
-    tipoEvento = TipoEventoSerializer(many=False, read_only=True)
+    tipoEvento = TipoEventoSerializer(many=False, read_only=True, source='idtipoevento')
 
     class Meta:
         model = Evento

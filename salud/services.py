@@ -44,7 +44,7 @@ class DiagnosticoService(BaseService):
     model = Diagnostico
 
     def filtrar_por_persona(self, personaep_pk):
-        return Diagnostico.objects.filter(idpersonaep=personaep_pk)
+        return Diagnostico.objects.filter(idpersonaep=personaep_pk).select_related('idenfermedad')
 
 
 class EvolucionService(BaseService):
@@ -66,4 +66,4 @@ class IndicacionService(BaseService):
     model = Indicacionmedicamento
 
     def filtrar_por_persona(self, personaep_pk):
-        return Indicacionmedicamento.objects.filter(idpersonaep=personaep_pk)
+        return Indicacionmedicamento.objects.filter(idpersonaep=personaep_pk).select_related('idmedicamento')

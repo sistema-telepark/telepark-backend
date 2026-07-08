@@ -46,4 +46,4 @@ class OsService(BaseService):
     model = Os
 
     def filtrar_por_persona(self, personaep_pk):
-        return Os.objects.filter(idpersonaep=personaep_pk)
+        return Os.objects.filter(idpersonaep=personaep_pk).select_related('idobrasocial')

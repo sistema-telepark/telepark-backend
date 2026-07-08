@@ -41,6 +41,9 @@ class BaseService:
 class EventoService(BaseService):
     model = Evento
 
+    def listar(self):
+        return self.model.objects.all().select_related('idtipoevento')
+
 
 class TipoEventoService(BaseService):
     model = Tipoevento
