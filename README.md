@@ -18,7 +18,7 @@ API REST para la gestión integral de personas, obra social, talleres, salud y e
 Monolito modular (**modulith**) con 7 apps organizadas en dos capas:
 
 **Infraestructura interna**
-- `usuarios` — autenticación JWT, registro y gestión de usuarios (wrapper sobre `django.contrib.auth.User`)
+- `autenticacion` — autenticación JWT, registro y gestión de usuarios (wrapper sobre `django.contrib.auth.User`)
 - `core` — router central, middleware de errores, permisos, health check
 
 **Dominio de negocio**
@@ -107,7 +107,7 @@ python manage.py migrate                     # Aplicar migrations
 ```
 telepark-backend/
 ├── core/                  # Infraestructura compartida
-├── usuarios/              # Autenticación y usuarios
+├── autenticacion/              # Autenticación y usuarios
 ├── personas/              # Módulo raíz del dominio (6 modelos)
 ├── salud/                 # Módulo salud (5 modelos)
 ├── eventos/               # Módulo eventos (2 modelos)

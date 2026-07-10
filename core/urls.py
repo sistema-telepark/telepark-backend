@@ -3,8 +3,8 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 from core.views import health_check
 
 urlpatterns = [
-    # Autenticación y gestión de usuarios — delegado al módulo usuarios
-    path('', include('usuarios.urls')),
+    # Autenticación y gestión de usuarios — delegado al módulo autenticacion
+    path('', include('autenticacion.urls')),
     path('api/health', health_check, name='health_check'),
 
     # Documentación OpenAPI / Swagger

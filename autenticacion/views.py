@@ -13,24 +13,24 @@ from core.exceptions import (
     ConflictError,
 )
 from core.permission import IsSuperuser
-from usuarios.serializers import (
+from autenticacion.serializers import (
     LoginSerializer,
     CreateUserSerializer,
     UpdateUserSerializer,
     RoleChangeSerializer,
     UserListOutputSerializer,
 )
-from usuarios.services import UsuarioService
+from autenticacion.services import UsuarioService
 
 
-@extend_schema_view(post=extend_schema(tags=['usuarios']))
+@extend_schema_view(post=extend_schema(tags=['autenticacion']))
 class TokenRefreshViewWrapper(TokenRefreshView):
     """Wrapper de TokenRefreshView que agrega el tag 'usuario' en Swagger."""
     pass
 
 
 @extend_schema(
-    tags=['usuarios'],
+    tags=['autenticacion'],
     request=LoginSerializer,
     responses={
         200: OpenApiResponse(
@@ -61,7 +61,7 @@ def auth_view(request):
 
 
 @extend_schema(
-    tags=['usuarios'],
+    tags=['autenticacion'],
     request=CreateUserSerializer,
     responses={
         201: OpenApiResponse(
@@ -91,7 +91,7 @@ def create_user(request):
 
 
 @extend_schema(
-    tags=['usuarios'],
+    tags=['autenticacion'],
     request=UpdateUserSerializer,
     responses={
         200: OpenApiResponse(
@@ -121,7 +121,7 @@ def update_user(request):
 
 
 @extend_schema(
-    tags=['usuarios'],
+    tags=['autenticacion'],
     parameters=[
         OpenApiParameter(
             name="search",
@@ -193,7 +193,7 @@ def get_users(request):
 
 
 @extend_schema(
-    tags=['usuarios'],
+    tags=['autenticacion'],
     request=RoleChangeSerializer,
     responses={
         200: OpenApiResponse(
