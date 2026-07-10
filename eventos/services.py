@@ -7,7 +7,7 @@ class EventoService(BaseService):
     model = Evento
 
     def listar(self):
-        return self.model.objects.all().select_related('idtipoevento')
+        return self.model.objects.all().select_related('idtipoevento').order_by('idpersonaep', 'idevento')
 
 
 class TipoEventoService(BaseService):

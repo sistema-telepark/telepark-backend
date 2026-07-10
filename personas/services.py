@@ -13,7 +13,7 @@ class PersonaEpService(BaseService):
     model = PersonaEp
 
     def listar(self):
-        return self.model.objects.all().select_related('idpersona')
+        return self.model.objects.all().select_related('idpersona').order_by('idpersona')
 
 
 class DireccionService(BaseService):

@@ -26,6 +26,9 @@ class ActividadRealizadaService(BaseService):
 class AsistenciaTallerService(BaseService):
     model = Asistenciataller
 
+    def listar(self):
+        return self.model.objects.all().order_by('idpersonaep', 'idasistenciataller')
+
 
 class ComportamientoService(BaseService):
     model = Comportamiento

@@ -5,7 +5,7 @@ class BaseService:
     model = None
 
     def listar(self):
-        return self.model.objects.all()
+        return self.model.objects.all().order_by(self.model._meta.pk.name)
 
     def obtener_por_id(self, pk):
         try:
