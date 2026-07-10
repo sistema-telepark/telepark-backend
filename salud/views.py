@@ -84,6 +84,7 @@ class EvolucionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['salud']),
 )
 class EnfermedadViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _enfermedad_service
     serializer_class = EnfermedadSerializer
     permission_classes = [IsAuthenticated]
@@ -101,6 +102,7 @@ class EnfermedadViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['salud']),
 )
 class MedicamentoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _medicamento_service
     serializer_class = MedicamentoSerializer
     permission_classes = [IsAuthenticated]

@@ -127,6 +127,7 @@ class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['talleres']),
 )
 class ComportamientoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _comportamiento_service
     serializer_class = ComportamientoSerializer
     permission_classes = [IsAuthenticated]
@@ -144,6 +145,7 @@ class ComportamientoViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['talleres']),
 )
 class FactorClaseViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _factorclase_service
     serializer_class = FactorClaseSerializer
     permission_classes = [IsAuthenticated]
@@ -161,6 +163,7 @@ class FactorClaseViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['talleres']),
 )
 class FactorGlobalViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _factorglobal_service
     serializer_class = FactorGlobalSerializer
     permission_classes = [IsAuthenticated]
@@ -178,6 +181,7 @@ class FactorGlobalViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['talleres']),
 )
 class UnidadObservacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _unidadobservacion_service
     serializer_class = UnidadObservacionSerializer
     permission_classes = [IsAuthenticated]
@@ -195,6 +199,7 @@ class UnidadObservacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['talleres']),
 )
 class VariableUOViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _variableuo_service
     serializer_class = VariableUOSerializer
     permission_classes = [IsAuthenticated]

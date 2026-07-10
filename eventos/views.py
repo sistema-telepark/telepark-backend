@@ -38,6 +38,7 @@ class EventoViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['eventos']),
 )
 class TipoEventoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _tipoevento_service
     serializer_class = TipoEventoSerializer
     permission_classes = [IsAuthenticated]

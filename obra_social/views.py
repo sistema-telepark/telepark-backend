@@ -25,6 +25,7 @@ _os_service = OsService()
     destroy=extend_schema(tags=['obra_social']),
 )
 class ObraSocialViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _obrasocial_service
     serializer_class = ObraSocialSerializer
     permission_classes = [IsAuthenticated]
@@ -43,6 +44,7 @@ class ObraSocialViewSet(ModelPKMixin, viewsets.ModelViewSet):
     list_obrasocialP=extend_schema(tags=['obra_social']),
 )
 class OSViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _os_service
     serializer_class = OSSerializer
     permission_classes = [IsAuthenticated]

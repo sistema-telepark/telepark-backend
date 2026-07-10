@@ -83,6 +83,7 @@ class PersonaPViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['personas']),
 )
 class LocalidadViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _localidad_service
     serializer_class = LocalidadSerializer
     permission_classes = [IsAuthenticated]
@@ -117,6 +118,7 @@ class DireccionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['personas']),
 )
 class TipoParentescoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _tipoparentesco_service
     serializer_class = TipoparentescoSerializer
     permission_classes = [IsAuthenticated]
@@ -134,6 +136,7 @@ class TipoParentescoViewSet(ModelPKMixin, viewsets.ModelViewSet):
     destroy=extend_schema(tags=['personas']),
 )
 class MunicipioViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    pagination_class = None
     service = _municipio_service
     serializer_class = MunicipioSerializer
     permission_classes = [IsAuthenticated]
