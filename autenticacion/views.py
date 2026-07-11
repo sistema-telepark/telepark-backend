@@ -1,9 +1,8 @@
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simplejwt.views import TokenRefreshView
 
 from core.exceptions import (
     AuthenticationError,
@@ -21,12 +20,6 @@ from autenticacion.serializers import (
     UserListOutputSerializer,
 )
 from autenticacion.services import UsuarioService
-
-
-@extend_schema_view(post=extend_schema(tags=['autenticacion']))
-class TokenRefreshViewWrapper(TokenRefreshView):
-    """Wrapper de TokenRefreshView que agrega el tag 'usuario' en Swagger."""
-    pass
 
 
 @extend_schema(

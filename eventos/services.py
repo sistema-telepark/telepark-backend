@@ -1,4 +1,3 @@
-from core.exceptions import ServiceException, NotFoundException
 from core.services import BaseService
 from .models import Evento, Tipoevento
 

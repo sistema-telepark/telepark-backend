@@ -66,7 +66,8 @@ class Municipio(models.Model):
 
 
 class Tipoparentesco(models.Model):
-    idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='idPersona', primary_key=True)
+    idtipoparentesco = models.AutoField(db_column='idTipoParentesco', primary_key=True)
+    idpersona = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idPersona')
     idpersonaep = models.ForeignKey(PersonaEp, models.DO_NOTHING, db_column='idPersonaEP')
     nombre = models.CharField(max_length=45, blank=True, null=True)
 

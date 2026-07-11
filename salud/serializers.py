@@ -17,18 +17,6 @@ class EnfermedadSerializer(serializers.ModelSerializer):
         fields = ('idenfermedad', 'nombre')
 
 
-class DiagnosticoEpSerializer(serializers.ModelSerializer):
-    idenfermedad = EnfermedadSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = Diagnostico
-        fields = ('iddiagnostico',
-                  'fecha',
-                  'idpersonaep',
-                  'idenfermedad',
-                  'borrado')
-
-
 class DiagnosticoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Diagnostico
@@ -39,25 +27,17 @@ class DiagnosticoSerializer(serializers.ModelSerializer):
                   'borrado')
 
 
+class DiagnosticoEpSerializer(DiagnosticoSerializer):
+    idenfermedad = EnfermedadSerializer(many=False, read_only=True)
+
+    class Meta(DiagnosticoSerializer.Meta):
+        pass
+
+
 class MedicamentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicamento
         fields = ('idmedicamento', 'nombre', 'esantiparkinsoniano', 'eslevodopa')
-
-
-class IndicacionEpSerializer(serializers.ModelSerializer):
-    idmedicamento = MedicamentoSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = Indicacionmedicamento
-        fields = ('idindicacion',
-                  'cantidadmiligramos',
-                  'estavigente',
-                  'fechaprescripcion',
-                  'horadetoma',
-                  'idpersonaep',
-                  'idmedicamento',
-                  'borrado')
 
 
 class IndicacionSerializer(serializers.ModelSerializer):
@@ -71,3 +51,10 @@ class IndicacionSerializer(serializers.ModelSerializer):
                   'idpersonaep',
                   'idmedicamento',
                   'borrado')
+
+
+class IndicacionEpSerializer(IndicacionSerializer):
+    idmedicamento = MedicamentoSerializer(many=False, read_only=True)
+
+    class Meta(IndicacionSerializer.Meta):
+        pass

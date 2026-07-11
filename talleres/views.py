@@ -1,8 +1,7 @@
-from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from core.mixins import ModelPKMixin
+from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 
 from .serializers import (
     TallerSerializer, ClaseTallerSerializer, ActividadSerializer,
@@ -33,193 +32,89 @@ _variableuo_service = VariableUOService()
 _valorvariableuo_service = ValorVariableUOService()
 
 
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
+@auto_tag_schema_view
 class TallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _taller_service
     serializer_class = TallerSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _taller_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
+@auto_tag_schema_view
 class ClaseTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _clasetaller_service
     serializer_class = ClaseTallerSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _clasetaller_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
+@auto_tag_schema_view
 class ActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _actividad_service
     serializer_class = ActividadSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _actividad_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
+@auto_tag_schema_view
 class ActividadRealizadaViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _actividadrealizada_service
     serializer_class = ActividadRealizadaSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _actividadrealizada_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
+@auto_tag_schema_view
 class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _asistenciataller_service
     serializer_class = AsistenciaTallerSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _asistenciataller_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
-class ComportamientoViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class ComportamientoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _comportamiento_service
     serializer_class = ComportamientoSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _comportamiento_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
-class FactorClaseViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class FactorClaseViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _factorclase_service
     serializer_class = FactorClaseSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _factorclase_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
-class FactorGlobalViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class FactorGlobalViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _factorglobal_service
     serializer_class = FactorGlobalSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _factorglobal_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
-class UnidadObservacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class UnidadObservacionViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _unidadobservacion_service
     serializer_class = UnidadObservacionSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _unidadobservacion_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
-class VariableUOViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class VariableUOViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _variableuo_service
     serializer_class = VariableUOSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _variableuo_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['talleres']),
-    retrieve=extend_schema(tags=['talleres']),
-    create=extend_schema(tags=['talleres']),
-    update=extend_schema(tags=['talleres']),
-    partial_update=extend_schema(tags=['talleres']),
-    destroy=extend_schema(tags=['talleres']),
-)
+@auto_tag_schema_view
 class ValorVariableUOViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
     service = _valorvariableuo_service
     serializer_class = ValorVariableUOSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return _valorvariableuo_service.listar()

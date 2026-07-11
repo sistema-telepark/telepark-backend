@@ -1,4 +1,4 @@
-from core.exceptions import ServiceException, NotFoundException
+from core.exceptions import NotFoundException
 
 
 class BaseService:
@@ -28,3 +28,9 @@ class BaseService:
     def eliminar(self, pk):
         obj = self.obtener_por_id(pk)
         obj.delete()
+
+    def filtrar_por_persona(self, personaep_pk, select_related_fields=None):
+        qs = self.model.objects.filter(idpersonaep=personaep_pk)
+        if select_related_fields:
+            qs = qs.select_related(*select_related_fields)
+        return qs

@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
         User.objects.create_superuser(
             username='admin',
-            email='admin@telepark.com',
+            email=os.getenv("ADMIN_EMAIL", "admin@telepark.com"),
             password=password,
             first_name='Admin',
             last_name='Sistema',

@@ -1,8 +1,7 @@
-from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from core.mixins import ModelPKMixin
+from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 
 from .serializers import (
     DireccionSerializer, LocalidadSerializer,
@@ -23,123 +22,57 @@ _localidad_service = LocalidadService()
 _municipio_service = MunicipioService()
 
 
-@extend_schema_view(
-    list=extend_schema(tags=['personas']),
-    retrieve=extend_schema(tags=['personas']),
-    create=extend_schema(tags=['personas']),
-    update=extend_schema(tags=['personas']),
-    partial_update=extend_schema(tags=['personas']),
-    destroy=extend_schema(tags=['personas']),
-)
+@auto_tag_schema_view
 class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'personas'
     service = _persona_service
     serializer_class = PersonaSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _persona_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['personas']),
-    retrieve=extend_schema(tags=['personas']),
-    create=extend_schema(tags=['personas']),
-    update=extend_schema(tags=['personas']),
-    partial_update=extend_schema(tags=['personas']),
-    destroy=extend_schema(tags=['personas']),
-)
+@auto_tag_schema_view
 class PersonaEPViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'personas'
     service = _personaep_service
     serializer_class = PersonaEpSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _personaep_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['personas']),
-    retrieve=extend_schema(tags=['personas']),
-    create=extend_schema(tags=['personas']),
-    update=extend_schema(tags=['personas']),
-    partial_update=extend_schema(tags=['personas']),
-    destroy=extend_schema(tags=['personas']),
-)
+@auto_tag_schema_view
 class PersonaPViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'personas'
     service = _personaep_service
     serializer_class = PersonaPSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _personaep_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['personas']),
-    retrieve=extend_schema(tags=['personas']),
-    create=extend_schema(tags=['personas']),
-    update=extend_schema(tags=['personas']),
-    partial_update=extend_schema(tags=['personas']),
-    destroy=extend_schema(tags=['personas']),
-)
-class LocalidadViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class LocalidadViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'personas'
     service = _localidad_service
     serializer_class = LocalidadSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _localidad_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['personas']),
-    retrieve=extend_schema(tags=['personas']),
-    create=extend_schema(tags=['personas']),
-    update=extend_schema(tags=['personas']),
-    partial_update=extend_schema(tags=['personas']),
-    destroy=extend_schema(tags=['personas']),
-)
+@auto_tag_schema_view
 class DireccionViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'personas'
     service = _direccion_service
     serializer_class = DireccionSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _direccion_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['personas']),
-    retrieve=extend_schema(tags=['personas']),
-    create=extend_schema(tags=['personas']),
-    update=extend_schema(tags=['personas']),
-    partial_update=extend_schema(tags=['personas']),
-    destroy=extend_schema(tags=['personas']),
-)
-class TipoParentescoViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class TipoParentescoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'personas'
     service = _tipoparentesco_service
     serializer_class = TipoparentescoSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _tipoparentesco_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['personas']),
-    retrieve=extend_schema(tags=['personas']),
-    create=extend_schema(tags=['personas']),
-    update=extend_schema(tags=['personas']),
-    partial_update=extend_schema(tags=['personas']),
-    destroy=extend_schema(tags=['personas']),
-)
-class MunicipioViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class MunicipioViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'personas'
     service = _municipio_service
     serializer_class = MunicipioSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return _municipio_service.listar()

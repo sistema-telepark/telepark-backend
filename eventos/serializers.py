@@ -9,8 +9,8 @@ class TipoEventoSerializer(serializers.ModelSerializer):
 
 
 class EventoSerializer(serializers.ModelSerializer):
-    tipoEvento = TipoEventoSerializer(many=False, read_only=True, source='idtipoevento')
+    tipo_evento = TipoEventoSerializer(many=False, read_only=True, source='idtipoevento')
 
     class Meta:
         model = Evento
-        fields = ('idevento', 'fechadesde', 'fechahasta', 'motivo', 'idpersonaep', 'idtipoevento', 'tipoEvento', 'borrado')
+        fields = ('idevento', 'fechadesde', 'fechahasta', 'motivo', 'idpersonaep', 'idtipoevento', 'tipo_evento', 'borrado')

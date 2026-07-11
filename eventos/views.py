@@ -1,8 +1,7 @@
-from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from core.mixins import ModelPKMixin
+from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 
 from .serializers import EventoSerializer, TipoEventoSerializer
 from .services import EventoService, TipoEventoService
@@ -12,36 +11,17 @@ _evento_service = EventoService()
 _tipoevento_service = TipoEventoService()
 
 
-@extend_schema_view(
-    list=extend_schema(tags=['eventos']),
-    retrieve=extend_schema(tags=['eventos']),
-    create=extend_schema(tags=['eventos']),
-    update=extend_schema(tags=['eventos']),
-    partial_update=extend_schema(tags=['eventos']),
-    destroy=extend_schema(tags=['eventos']),
-)
+@auto_tag_schema_view
 class EventoViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'eventos'
     service = _evento_service
     serializer_class = EventoSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return _evento_service.listar()
 
-
-@extend_schema_view(
-    list=extend_schema(tags=['eventos']),
-    retrieve=extend_schema(tags=['eventos']),
-    create=extend_schema(tags=['eventos']),
-    update=extend_schema(tags=['eventos']),
-    partial_update=extend_schema(tags=['eventos']),
-    destroy=extend_schema(tags=['eventos']),
-)
-class TipoEventoViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    pagination_class = None
+@auto_tag_schema_view
+class TipoEventoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'eventos'
     service = _tipoevento_service
     serializer_class = TipoEventoSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return _tipoevento_service.listar()

@@ -2,8 +2,6 @@ from django.db import connections, DEFAULT_DB_ALIAS
 from django.db.utils import OperationalError
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
-from rest_framework.request import Request
-from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 
 

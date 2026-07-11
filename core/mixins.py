@@ -1,18 +1,37 @@
-# ModelPKMixin: exposes model PK type for drf-spectacular path parameter inference.
-# Solves W001 warnings when ViewSets use get_queryset() via services
-# instead of a class-level queryset attribute.
-# Usage:
-#     class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
-#         service = _persona_service  # must have .model attribute
+from drf_spectacular.utils import extend_schema_view, extend_schema
+
+
 class ModelPKMixin:
     lookup_field = 'pk'
     service = None
+    app_tag = None
 
     @property
     def queryset(self):
-        # Returns empty queryset for spectacular introspection only.
-        # No DB query is executed — just provides model metadata
-        # so spectacular can infer the PK type as integer.
         if self.service is not None and self.service.model is not None:
             return self.service.model.objects.none()
         return None
+
+    def get_queryset(self):
+        if self.service is not None:
+            return self.service.listar()
+        return self.queryset
+
+
+class NoPaginationMixin:
+    pagination_class = None
+
+
+def auto_tag_schema_view(cls):
+    if hasattr(cls, 'app_tag') and cls.app_tag:
+        tag = cls.app_tag
+        decorator = extend_schema_view(
+            list=extend_schema(tags=[tag]),
+            retrieve=extend_schema(tags=[tag]),
+            create=extend_schema(tags=[tag]),
+            update=extend_schema(tags=[tag]),
+            partial_update=extend_schema(tags=[tag]),
+            destroy=extend_schema(tags=[tag]),
+        )
+        return decorator(cls)
+    return cls

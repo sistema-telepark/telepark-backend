@@ -8,15 +8,14 @@ class ObraSocialSerializer(serializers.ModelSerializer):
         fields = ('idobrasocial', 'nombre', 'esestatal')
 
 
-class OSEpSerializer(serializers.ModelSerializer):
-    idobrasocial = ObraSocialSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = Os
-        fields = ('idos', 'idpersonaep', 'idobrasocial', 'borrado')
-
-
 class OSSerializer(serializers.ModelSerializer):
     class Meta:
         model = Os
         fields = ('idos', 'idpersonaep', 'idobrasocial', 'borrado')
+
+
+class OSEpSerializer(OSSerializer):
+    idobrasocial = ObraSocialSerializer(many=False, read_only=True)
+
+    class Meta(OSSerializer.Meta):
+        pass
