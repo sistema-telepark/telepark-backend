@@ -1,7 +1,7 @@
 # ============================================================
 # Dockerfile — Telepark Backend
 # Base: python:3.14-slim (single stage)
-# Django 6.0.6 + DRF 3.17.1 + MySQL 8.0
+# Django 6.0.6 + DRF 3.17.1 + MySQL 8.4
 # ============================================================
 
 FROM python:3.14-slim

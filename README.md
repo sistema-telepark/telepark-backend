@@ -9,7 +9,7 @@ API REST para la gestión integral de personas, obra social, talleres, salud y e
 | Python | 3.14.2 |
 | Django | 6.0.6 |
 | Django REST Framework | 3.17.1 |
-| MySQL | 8.0 |
+| MySQL | 8.4 |
 | djangorestframework-simplejwt | 5.4.0 |
 | drf-spectacular | 0.29.0 |
 
