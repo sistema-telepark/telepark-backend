@@ -1,7 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
+
+from drf_spectacular.utils import extend_schema
 
 from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 
@@ -31,12 +33,6 @@ class DiagnosticoViewSet(ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = DiagnosticoSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
-            url_path='personaep', url_name='personaep')
-    def list_diagnosticoP(self, request, pk):
-        diagnosticos = _diagnostico_service.filtrar_por_persona(pk, select_related_fields=['idenfermedad'])
-        serializer = DiagnosticoEpSerializer(diagnosticos, many=True)
-        return Response(serializer.data)
 
 
 @auto_tag_schema_view
@@ -46,12 +42,6 @@ class EvolucionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = EvolucionSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
-            url_path='personaep', url_name='personaep')
-    def list_evolucionP(self, request, pk):
-        evoluciones = _evolucion_service.filtrar_por_persona(pk)
-        serializer = EvolucionSerializer(evoluciones, many=True)
-        return Response(serializer.data)
 
 
 @auto_tag_schema_view
@@ -77,9 +67,40 @@ class IndicacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = IndicacionSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
-            url_path='personaep', url_name='personaep')
-    def list_indicacionP(self, request, pk):
-        indicaciones = _indicacion_service.filtrar_por_persona(pk, select_related_fields=['idmedicamento'])
-        serializer = IndicacionEpSerializer(indicaciones, many=True)
+
+@extend_schema(tags=['salud'])
+class DiagnosticoPorPersonaEpView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DiagnosticoEpSerializer
+    queryset = _diagnostico_service.model.objects.none()
+
+    def get(self, request, personaep_pk):
+        diagnosticos = _diagnostico_service.filtrar_por_persona(personaep_pk, select_related_fields=['idenfermedad'])
+        serializer = self.get_serializer(diagnosticos, many=True)
         return Response(serializer.data)
+
+
+@extend_schema(tags=['salud'])
+class EvolucionPorPersonaEpView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EvolucionSerializer
+    queryset = _evolucion_service.model.objects.none()
+
+    def get(self, request, personaep_pk):
+        evoluciones = _evolucion_service.filtrar_por_persona(personaep_pk)
+        serializer = self.get_serializer(evoluciones, many=True)
+        return Response(serializer.data)
+
+
+@extend_schema(tags=['salud'])
+class IndicacionPorPersonaEpView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = IndicacionEpSerializer
+    queryset = _indicacion_service.model.objects.none()
+
+    def get(self, request, personaep_pk):
+        indicaciones = _indicacion_service.filtrar_por_persona(personaep_pk, select_related_fields=['idmedicamento'])
+        serializer = self.get_serializer(indicaciones, many=True)
+        return Response(serializer.data)
+
+

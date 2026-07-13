@@ -1,7 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView
+
+from drf_spectacular.utils import extend_schema
 
 from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 
@@ -30,9 +32,14 @@ class OSViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = OSSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(methods=['get'], detail=True, permission_classes=[IsAuthenticated],
-            url_path='personaep', url_name='personaep')
-    def list_obrasocialP(self, request, pk):
-        obrasociales = _os_service.filtrar_por_persona(pk, select_related_fields=['idobrasocial'])
-        serializer = OSEpSerializer(obrasociales, many=True)
+
+@extend_schema(tags=['obra_social'])
+class OsPorPersonaEpView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OSEpSerializer
+    queryset = _os_service.model.objects.none()
+
+    def get(self, request, personaep_pk):
+        obrasociales = _os_service.filtrar_por_persona(personaep_pk, select_related_fields=['idobrasocial'])
+        serializer = self.get_serializer(obrasociales, many=True)
         return Response(serializer.data)

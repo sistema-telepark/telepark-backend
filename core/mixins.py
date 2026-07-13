@@ -33,5 +33,12 @@ def auto_tag_schema_view(cls):
             partial_update=extend_schema(tags=[tag]),
             destroy=extend_schema(tags=[tag]),
         )
-        return decorator(cls)
+        cls = decorator(cls)
+        # También etiqueta @action methods (los que tienen atributo 'actions')
+        for attr_name in dir(cls):
+            method = getattr(cls, attr_name)
+            if (callable(method) and hasattr(method, 'actions')
+                    and not hasattr(method, '_schema')):
+                setattr(cls, attr_name, extend_schema(tags=[tag])(method))
+        return cls
     return cls
