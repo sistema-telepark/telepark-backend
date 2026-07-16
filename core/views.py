@@ -90,7 +90,6 @@ def api_root(request, format=None):
         "personas": _clean_dict({
             "persona": _safe_reverse("persona-list", request, format),
             "personaEp": _safe_reverse("personaEp-list", request, format),
-            "personaP": _safe_reverse("personaP-list", request, format),
             "direccion": _safe_reverse("direccion-list", request, format),
             "tipoparentesco": _safe_reverse("tipoparentesco-list", request, format),
             "localidad": _safe_reverse("localidad-list", request, format),

@@ -1,9 +1,9 @@
 ﻿# MEMORIA DE BASELINE DE PROYECTO
 
 > **Metadatos de Control de Vigencia**
-> - **Fecha de Analisis:** 2026-07-13
-> - **Origen del Escaneo:** `16e9215222680d07ab3b520c5c20c3eedd5a47a6` (HEAD)
-> - **Verificacion:** `git rev-parse HEAD` -> `16e9215222680d07ab3b520c5c20c3eedd5a47a6`
+> - **Fecha de Analisis:** 2026-07-16
+> - **Origen del Escaneo:** `b68ed42625ff34888d4bc65f59eb8a8265a2ab89` (HEAD)
+> - **Verificacion:** `git rev-parse HEAD` -> `b68ed42625ff34888d4bc65f59eb8a8265a2ab89`
 
 ---
 
@@ -11,13 +11,13 @@
 
 Telepark Backend es un sistema **Django 6.0.6 / DRF 3.17.1 / MySQL 8.4** compuesto por **7 apps Django** (autenticacion, core, personas, salud, eventos, obra_social, talleres) que implementan un backend REST para gestion de personas, salud, eventos, obras sociales y talleres terapeuticos. El proyecto se ejecuta en Docker con auto-generacion de migraciones en entrypoint.
 
-**Cambios post-cc251eb (2 commits):**
+**Cambios post-16e9215 (2 commits):**
 
-- **Commit `61f41c5`** — Refactor de endpoints `personaEp`: los 4 endpoints `@action` en salud y obra_social (rutas semanticamente incorrectas `/api/{recurso}/{pk}/personaep`) fueron reemplazados por **4 APIViews** con rutas correctas bajo `/api/personaEp/{personaep_pk}/`. Se actualizo `auto_tag_schema_view` en `core/mixins.py` para etiquetar tambien `@action` residuales. El `docker-compose.yml` fue actualizado de MySQL 8.0 a 8.4 en este commit.
+- **Commit `4cd1d45`** — Regeneracion del baseline anterior desde `cc251eb` tras los commits `61f41c5` y `16e9215`. No afecta codigo fuente.
 
-- **Commit `16e9215`** — Upgrade MySQL 8.0 -> 8.4 en `Dockerfile` y `README.md`. Sequito de seguridad en `bootstrap_admin.py`: la contrasena de admin ya no se imprime en stdout.
+- **Commit `b68ed42`** — Nuevo endpoint `GET /api/` (API Root global) que lista todos los recursos disponibles agrupados por modulo, con `ApiRootPermission` (AllowAny en dev, IsAuthenticated en prod). Se agrego redirect `GET /` -> `/api/`. Correccion menor de capitalizacion en nombres de ruta: `personaep-*` -> `personaEp-*`.
 
-**Estado actual:** 27 ViewSets (14 con paginacion global, 13 con opt-out por ser catalogos), 6 function views (5 auth + 1 health), 0 endpoints `@action`, 4 APIViews (GenericAPIView) para sub-recursos de PersonaEp. Migraciones auto-generadas en entrypoint.sh.
+**Estado actual:** 27 ViewSets (14 con paginacion global, 13 con opt-out por ser catalogos), 7 function views (5 auth + 1 health + 1 api_root), 0 endpoints `@action`, 4 APIViews (GenericAPIView) para sub-recursos de PersonaEp. Migraciones auto-generadas en entrypoint.sh.
 
 **Deuda tecnica remanente:** (1) ausencia total de tests, (2) `SECRET_KEY` con fallback hardcodeado en docker-compose, (3) `BaseService.actualizar()` sin `update_fields`, (4) `EvolucionService.filtrar_por_persona()` sin `select_related`, (5) paginacion manual en `get_users` de autenticacion (inconsistencia con patron global), (6) 4 APIViews de sub-recursos sin paginacion, (7) `CORS_ALLOWED_ORIGINS` vulnerable a `[None]` si falta env var.
 
@@ -37,7 +37,7 @@ Telepark Backend es un sistema **Django 6.0.6 / DRF 3.17.1 / MySQL 8.4** compues
 | python-dotenv | 1.0.1 | Env vars |
 | PyJWT | 2.10.1 | Token JWT |
 | cryptography | 44.0.0 | Crypto subyacente |
-| MySQL Server | 8.4.x | Docker, puerto host `3307` (upgraded from 8.0 en 61f41c5/16e9215) |
+| MySQL Server | 8.4.x | Docker, puerto host `3307` |
 | Docker | -- | Dockerfile + docker-compose.yml (puerto host `8081`) |
 | Build | pip | `requirements.txt` con versiones fijas |
 
@@ -54,10 +54,11 @@ Telepark Backend es un sistema **Django 6.0.6 / DRF 3.17.1 / MySQL 8.4** compues
 |  URLs (urls.py c/app) -- DefaultRouter, rutas /api/*              |
 |  core/urls.py -- router central que agrega todos los             |
 |                  modulos + auth + docs + health +                 |
+|                  API Root + redirect / -> /api/ +                 |
 |                  rutas /api/personaEp/{pk}/* (APIViews)           |
 +------------------------------------------------------------------+
 |  Views (views.py) -- 27 ModelViewSet                             |
-|                       + 6 function views + 1 TokenRefreshView     |
+|                       + 7 function views + 1 TokenRefreshView     |
 |                       + 4 APIViews (GenericAPIView)               |
 |      -> todos heredan de ModelPKMixin                             |
 |      -> service = _xxx_service para introspeccion                 |
@@ -80,7 +81,7 @@ Telepark Backend es un sistema **Django 6.0.6 / DRF 3.17.1 / MySQL 8.4** compues
 
 ```
 autenticacion/     (auth wrapper, sin models propios) -> django.contrib.auth.User
-core/              (infra: middleware, permissions, router, health, BaseService, exceptions, mixins)
+core/              (infra: middleware, permissions, router, health, BaseService, exceptions, mixins, API Root)
 personas/          (6 modelos) <- raiz de dominio, sin dependencias externas
 salud/             (5 modelos) -> personas (FK a PersonaEp)
 eventos/           (2 modelos) -> personas (FK a PersonaEp)
@@ -93,7 +94,7 @@ talleres/          (11 modelos) -> personas (FK a PersonaEp)
 | Modulo | Services | Views | Serializers | Models | Mixins |
 |---|---|---|---|---|---|
 | autenticacion | `UsuarioService` (5 metodos static) | 5 @api_view + 1 TokenRefreshView | 5 serializers | -- (usa `django.contrib.auth.User`) | -- |
-| core | `BaseService` (6 metodos CRUD) + 5 excepciones | 1 function view (`health_check`) | -- | -- | `ModelPKMixin`, `NoPaginationMixin`, `auto_tag_schema_view` |
+| core | `BaseService` (6 metodos CRUD) + 5 excepciones | 2 function views (`health_check`, `api_root`) | -- | -- | `ModelPKMixin`, `NoPaginationMixin`, `auto_tag_schema_view` |
 | personas | 6 services (herencia `core.BaseService`) | 7 ModelViewSet | 7 serializers | 6 modelos | -- |
 | salud | 5 services (herencia `core.BaseService`) | 5 ModelViewSet + 3 APIViews | 7 serializers | 5 modelos | -- |
 | eventos | 2 services (herencia `core.BaseService`) | 2 ModelViewSet | 2 serializers | 2 modelos | -- |
@@ -167,6 +168,7 @@ talleres/          (11 modelos) -> personas (FK a PersonaEp)
 | ViewSets con opt-out (catalogos) | 13 | `NoPaginationMixin` (`pagination_class = None`) |
 | Function views manuales | 1 | `PageNumberPagination` explicito (page_size=50) en `get_users` |
 | APIView endpoints (sub-recursos PersonaEp) | 4 | Sin paginacion explicita |
+| API Root (system) | 1 | N/A (navegacion via `_safe_reverse`) |
 
 ### 5.2. Personas -- 7 ViewSets
 
@@ -247,6 +249,8 @@ Endpoint APIView (sub-recurso PersonaEp):
 
 | Metodo | Ruta | Vista | Permiso | Paginacion |
 |---|---|---|---|---|
+| GET | `/` | `RedirectView` (-> `/api/`) | AllowAny | N/A |
+| GET | `/api/` | `api_root` | `ApiRootPermission` (AllowAny en dev, IsAuthenticated en prod) | N/A |
 | GET | `/api/health` | `health_check` | AllowAny | N/A |
 
 ### 6.2. Autenticacion
@@ -360,7 +364,7 @@ REST_FRAMEWORK = {
 
 ### 7.4. Base de Datos (settings.py:102-111)
 
-- Motor: MySQL 8.4 (upgraded from 8.0 en commits 61f41c5/16e9215)
+- Motor: MySQL 8.4
 - Host/Port desde env vars (Docker: db:3306, Host: localhost:3307)
 
 ### 7.5. Middleware (settings.py:67-77)
@@ -504,11 +508,11 @@ Todos heredan de `core.BaseService`:
 
 - **3-layer:** Views/Serializers -> Services -> Models. Desacoplamiento de DRF de Services verificado.
 - **Cross-module FKs** usan string refs: `models.ForeignKey('personas.PersonaEp', ...)`
-- **Router centralizado:** `core/urls.py` agrega `DefaultRouter`s de cada app + auth + docs + rutas directas de APIViews
+- **Router centralizado:** `core/urls.py` agrega `DefaultRouter`s de cada app + auth + docs + API Root + redirect `/` -> `/api/` + rutas directas de APIViews
 - **Trailing slashes deshabilitados:** `DefaultRouter(trailing_slash=False)` en cada modulo
 - **Rutas bajo `/api/`**
 - **Autenticacion:** SimpleJWT (JWTAuthentication global via `REST_FRAMEWORK`)
-- **Autorizacion:** `IsAuthenticated` para ViewSets de dominio, `IsSuperuser` para endpoints de gestion de usuarios
+- **Autorizacion:** `IsAuthenticated` para ViewSets de dominio, `IsSuperuser` para endpoints de gestion de usuarios, `ApiRootPermission` para API Root (AllowAny en dev, IsAuthenticated en prod)
 - **Paginacion global:** `PageNumberPagination` (page_size=50) con opt-out via `NoPaginationMixin` en 13 catalogos
 - **Orden deterministico:** `BaseService.listar()` inyecta `.order_by(PK)`; servicios con FK a PersonaEp usan orden compuesto `idpersonaep` + PK
 - **Middleware de errores:** `core.middleware.ExceptionMiddleware` captura excepciones `ServiceException` -> JSON con codigo HTTP correcto (404, 400, 403, 409, 401); resto -> 500
@@ -520,12 +524,14 @@ Todos heredan de `core.BaseService`:
 - **Convencion de nombres:** modelos y campos en snake_case con `db_column` en camelCase para reflejar MySQL legacy. Todos los nombres de campo de API en snake_case (incluyendo `tipo_evento` corregido).
 - **Endpoint de sub-recursos PersonaEp:** las rutas `/api/personaEp/{personaep_pk}/` reemplazaron los `@action` con path semantico incorrecto. Ahora `{personaep_pk}` es el PK real de PersonaEp.
 - **bootstrap_admin:** la contrasena de admin ya no se imprime en stdout (seguridad). `ADMIN_BOOTSTRAP_PASSWORD` ignorada en prod (genera token aleatorio).
+- **API Root global:** `GET /api/` lista todos los recursos via `reverse()` con fallback silencioso (`_safe_reverse` captura `NoReverseMatch`).
+- **Redirect `/` -> `/api/`:** usa `RedirectView` con `permanent=False` (temporal, evita cacheos agresivos en cliente).
 
 ---
 
 ## 10. Deuda Tecnica Conocida
 
-### 10.1. Estado Post-Refactor (acumulado desde cc251eb + correcciones 61f41c5 + 16e9215)
+### 10.1. Estado Post-Refactor (acumulado desde cc251eb + correcciones 61f41c5 + 16e9215 + b68ed42)
 
 | Hallazgo | Commit | Estado Actual |
 |---|---|---|
@@ -540,28 +546,10 @@ Todos heredan de `core.BaseService`:
 | App `usuarios` nombrada inconsistentemente | `136b758` | CORREGIDO |
 | Sin paginacion global en ViewSets | `82f8202` | CORREGIDO |
 | `UnorderedObjectListWarning` en 14 ViewSets paginados | `e65fbcd` | CORREGIDO |
-| TD-01: 27 copias de `@extend_schema_view` repetido | `cc251eb` | CORREGIDO (via `auto_tag_schema_view`) |
-| TD-02: `Tipoparentesco` con OneToOneField como PK | `cc251eb` | CORREGIDO (AutoField + ForeignKey) |
-| TD-03: 26 `get_queryset()` identicos | `cc251eb` | CORREGIDO (centralizado en ModelPKMixin) |
-| TD-04: ExceptionMiddleware siempre devuelve 500 | `cc251eb` | CORREGIDO (mapeo a 404, 400, 403, 409, 401) |
-| TD-05: CSRF_TRUSTED_ORIGINS con `[None]` potencial | `cc251eb` | CORREGIDO (default + split) |
-| TD-06: `tipoEvento` camelCase | `cc251eb` | CORREGIDO (`tipo_evento`) |
-| TD-07: Unused imports en core/views.py | `cc251eb` | CORREGIDO |
-| TD-08: `ServiceException` importado sin uso en 6 archivos | `cc251eb` | CORREGIDO |
-| TD-09: `TokenRefreshViewWrapper` innecesario | `cc251eb` | CORREGIDO (decorador directo en urls.py) |
-| TD-10: 13 `pagination_class = None` repetidos | `cc251eb` | CORREGIDO (via `NoPaginationMixin`) |
-| TD-11: Pares de serializers casi identicos | `cc251eb` | CORREGIDO (herencia existente ya implementada) |
-| TD-12: 4 `filtrar_por_persona` con misma logica | `cc251eb` | CORREGIDO (centralizado en BaseService) |
-| TD-13: `STATIC_URL` duplicado | `cc251eb` | CORREGIDO |
-| TD-14: Directorio `static/` vacio | Persiste | No afecta funcionalidad |
-| TD-15: Directorio `BD/` con artefactos | Persiste | No afecta funcionalidad |
-| TD-16: `package-lock.json` huerfano | Persiste | No afecta funcionalidad |
-| TD-17: `.pyc` huerfanos | Persiste | No afecta funcionalidad |
-| TD-18: Email hardcodeado `admin@telepark.com` | `cc251eb` | CORREGIDO (via `ADMIN_EMAIL` env var) |
-| TD-19: `mimetypes.add_type` innecesario | `cc251eb` | CORREGIDO |
-| TD-20: Mezcla `os.path`/`pathlib.Path` | `cc251eb` | CORREGIDO (uso consistente de `BASE_DIR / ...`) |
-| TD-21: Password de admin expuesta en stdout en bootstrap_admin | `16e9215` | CORREGIDO (removida la impresion) |
-| D05: 4 @action con path semantico incorrecto | `61f41c5` | CORREGIDO (reemplazados por APIViews con ruta correcta) |
+| TD-01 a TD-20 (deuda tecnica refactor cc251eb) | `cc251eb` | CORREGIDO |
+| D05: 4 @action con path semantico incorrecto | `61f41c5` | CORREGIDO |
+| TD-21: Password de admin expuesta en stdout | `16e9215` | CORREGIDO |
+| D14: Nombres de ruta `personaep-*` con inconsistencia de capitalizacion | `b68ed42` | CORREGIDO (ahora `personaEp-*` consistente) |
 
 ### 10.2. Deuda Tecnica Vigente (Post-HEAD)
 
@@ -601,74 +589,69 @@ Todos heredan de `core.BaseService`:
 | Path semantico @action | CORREGIDO (D05 resuelto en 61f41c5) |
 | Password admin en stdout | CORREGIDO (16e9215) |
 | CORS config | Vulnerable a `[None]` (D11) |
+| API Root global | Agregado en b68ed42 -- navegacion via reverse() con fallback seguro |
+| Nombres de ruta personaEp | CORREGIDO (personaep-* -> personaEp-* en b68ed42) |
 | Mantenibilidad | Alta -- deuda reducida significativamente |
 
 ---
 
 ## 11. Registro de Cambios Respecto al Baseline Anterior
 
-### 11.1. Baseline HEAD (16e9215) -- Endpoints PersonaEp + MySQL 8.4
+### 11.1. Baseline HEAD (b68ed42) -- API Root Global + Redirect /
 
-**Baseline anterior:** `cc251eb51a1095ed193d5bcde89a907f7f636c29` (refactor: correcciones de deuda tecnica)
-**Baseline actual:** `16e9215222680d07ab3b520c5c20c3eedd5a47a6` (chore: upgrade MySQL 8.0 -> 8.4)
+**Baseline anterior:** `16e9215222680d07ab3b520c5c20c3eedd5a47a6` (chore: upgrade MySQL 8.0 -> 8.4)
+**Baseline actual:** `b68ed42625ff34888d4bc65f59eb8a8265a2ab89` (feat: api root global en /api/ con redirect / -> /api/)
 
-#### Commit 61f41c5 -- Endpoints PersonaEp reubicados
+#### Commit b68ed42 -- API Root global + redirect
 
 **Archivos Modificados:**
 
 | Modulo | Archivos | Cambio |
 |---|---|---|
-| `core/` | `urls.py` | Se agregaron imports de `DiagnosticoPorPersonaEpView`, `EvolucionPorPersonaEpView`, `IndicacionPorPersonaEpView` (salud) y `OsPorPersonaEpView` (obra_social). Se agregaron 4 rutas directas bajo `/api/personaEp/{personaep_pk}/`. |
-| `core/` | `mixins.py` | `auto_tag_schema_view` ahora tambien etiqueta metodos `@action` residuales (defensivo, aunque no quedan). |
-| `salud/` | `views.py` | Se eliminaron 3 `@action` endpoints (`DiagnosticoViewSet.personaep`, `EvolucionViewSet.personaep`, `IndicacionViewSet.personaep`). Se agregaron 3 clases `GenericAPIView`: `DiagnosticoPorPersonaEpView`, `EvolucionPorPersonaEpView`, `IndicacionPorPersonaEpView`. Nuevos imports: `GenericAPIView`, `extend_schema`. |
-| `obra_social/` | `views.py` | Se elimino 1 `@action` endpoint (`OSViewSet.personaep`). Se agrego `OsPorPersonaEpView` (GenericAPIView). Nuevos imports: `GenericAPIView`, `extend_schema`. |
-| `docker-compose.yml` | `docker-compose.yml` | MySQL 8.0 -> 8.4 (incidental en este commit). |
-
-**Commit 16e9215 -- MySQL 8.4 + Seguridad en bootstrap_admin**
-
-| Modulo | Archivos | Cambio |
-|---|---|---|
-| `Dockerfile` | `Dockerfile` | Comentario de cabecera: MySQL 8.0 -> 8.4. |
-| `README.md` | `README.md` | Tabla de stack: MySQL 8.0 -> 8.4. |
-| `autenticacion/` | `management/commands/bootstrap_admin.py` | Se removio la impresion de la contrasena en stdout: `f'Admin...Password: {password}'` -> `'Admin creado exitosamente.'` |
+| `core/` | `views.py` | Se agregaron `ApiRootPermission` (BasePermission), helpers `_safe_reverse` y `_clean_dict`. Nueva function view `api_root` con tag 'sistema' que lista todos los endpoints agrupados por modulo via `reverse()`. |
+| `core/` | `urls.py` | Se agregaron redirect `/` -> `/api/` (`RedirectView`) y ruta `GET /api/` -> `api_root`. Se corrigio capitalizacion de nombres de ruta: `personaep-*` -> `personaEp-*`. |
 
 #### Impacto en Metricas
 
-| Metrica | Anterior (cc251eb) | Actual (16e9215) |
+| Metrica | Anterior (16e9215) | Actual (b68ed42) |
 |---|---|---|
-| Endpoints @action | 4 | **0** (eliminados) |
-| APIViews (GenericAPIView) | 0 | **4** (agregados) |
-| Total endpoints de sub-recursos | 4 (@action, path incorrecto) | 4 (APIViews, path correcto `/api/personaEp/{pk}/`) |
+| Function views | 6 (5 auth + 1 health) | **7** (5 auth + 1 health + 1 api_root) |
+| Endpoints @action | 0 | 0 (sin cambios) |
+| APIViews (GenericAPIView) | 4 | 4 (sin cambios) |
 | ViewSets | 27 | 27 (sin cambios) |
 | Services | 28 | 28 (sin cambios) |
 | Serializers | 35 | 35 (sin cambios) |
 | Modelos | 26 | 26 (sin cambios) |
 | Dependencias externas | 0 | 0 (sin cambios) |
-| Versión MySQL | 8.0 | **8.4** |
 | Version Python/Django/DRF | 3.14.2/6.0.6/3.17.1 | Sin cambios |
 
 #### Deuda Resuelta vs. Nueva en HEAD
 
 | ID | Estado | Descripcion |
 |---|---|---|
-| D05 | **RESUELTO** | 4 @action con path semanticamente incorrecto (`/api/{recurso}/{pk}/personaep`). Reemplazados por APIViews con ruta correcta `/api/personaEp/{personaep_pk}/{recurso}` en commit 61f41c5. |
-| D10 | **RE-CLASIFICADO** | Ya no son 4 @action sin paginacion, sino 4 APIViews sin paginacion. La inconsistencia persiste pero con implementacion distinta. |
-| D13 (nuevo) | **RESUELTO** | Password de admin en stdout. Corregido en 16e9215: `bootstrap_admin.py` ya no imprime la contrasena. |
+| D14 | **RESUELTO** | Nombres de ruta `personaep-*` con capitalizacion inconsistente. Corregido en b68ed42: ahora `personaEp-*` en `core/urls.py`. |
 | D01..D03 | Persisten | Tests, SECRET_KEY, update_fields -- fuera de alcance. |
-| D07 | Persiste | EvolucionService.filtrar_por_persona() sin select_related (ahora en EvolucionPorPersonaEpView en lugar de @action). |
+| D07 | Persiste | EvolucionService.filtrar_por_persona() sin select_related. |
 | D09 | Persiste | Paginacion manual en get_users (fuera de alcance). |
+| D10 | Persiste | 4 APIViews sin paginar. |
 | D11 | Persiste | CORS_ALLOWED_ORIGINS vulnerable a `[None]`. |
 | D12 | Persiste | ALLOWED_HOSTS.split(",") fragil. |
 
-### 11.2. Baseline cc251eb -- Correccion de Deuda Tecnica (TD-01 a TD-20)
+### 11.2. Baseline 16e9215 -- Endpoints PersonaEp + MySQL 8.4
+
+**Resumen:** Refactor de endpoints `@action` a APIViews con ruta correcta `/api/personaEp/{pk}/`. Upgrade MySQL 8.0 -> 8.4. Seguridad en bootstrap_admin (password ya no se imprime en stdout).
+
+**Archivos:** `core/urls.py`, `core/mixins.py`, `salud/views.py`, `obra_social/views.py`, `docker-compose.yml`, `Dockerfile`, `README.md`, `autenticacion/management/commands/bootstrap_admin.py`
+
+### 11.3. Baseline cc251eb -- Correccion de Deuda Tecnica (TD-01 a TD-20)
 
 **Resumen:** Correccion de 20 items de deuda tecnica: centralizacion de `@extend_schema_view`, eliminacion de `get_queryset()` redundante via `ModelPKMixin`, sustitucion de `pagination_class = None` por `NoPaginationMixin`, mapeo de `ServiceException` en middleware, correccion del modelo `Tipoparentesco`, saneamiento de `settings.py`, renombre `tipoEvento` -> `tipo_evento`, etc.
 
-### 11.3. Baseline e65fbcd -- Orden Determinista en Paginacion (historico)
+### 11.4. Baseline e65fbcd -- Orden Determinista en Paginacion (historico)
 
 **Resumen:** `BaseService.listar()` ahora inyecta `order_by(PK)` automaticamente para todos los servicios. 5 servicios con FK a PersonaEp sobreescriben `listar()` con orden compuesto `(idpersonaep, PK)`.
 
-### 11.4. Baseline 82f8202 -- Paginacion Global (historico)
+### 11.5. Baseline 82f8202 -- Paginacion Global (historico)
 
 **Resumen:** Se agrego `DEFAULT_PAGINATION_CLASS = PageNumberPagination` y `PAGE_SIZE = 50`. 14 ViewSets pagan automaticamente. 13 catalogos excluidos.
 
@@ -678,26 +661,25 @@ Todos heredan de `core.BaseService`:
 
 | Metrica | Valor |
 |---|---|
-| Archivos Python | 70 |
-| Lineas de codigo Python | ~2030 |
+| Archivos Python | ~70 |
+| Lineas de codigo Python | ~2130 |
 | Apps Django | 7 |
 | Modelos | 26 |
 | ViewSets | 27 |
-| Endpoints @action | **0** (eliminados en 61f41c5) |
-| APIViews (GenericAPIView) | **4** (agregados en 61f41c5) |
-| Function views | 6 (5 auth + 1 health) |
+| Endpoints @action | **0** |
+| APIViews (GenericAPIView) | **4** |
+| Function views | **7** (5 auth + 1 health + 1 api_root) |
 | Services | 26 de dominio + 1 UsuarioService (static) + 1 BaseService (base) |
 | Serializers | 35 |
 | Excepciones de dominio | 5 + 1 base (ServiceException) |
 | Mixins | 3 (ModelPKMixin, NoPaginationMixin, auto_tag_schema_view) |
 | Dependencias externas | 0 (monolito modular, sin event bus ni colas) |
-| Version MySQL | 8.4 (upgraded from 8.0) |
+| Version MySQL | 8.4 |
 
 ## Apendice B: Pendientes Post-Refactor
 
 - Items D01 (tests), D02 (SECRET_KEY), D03 (update_fields) identificados como deuda estructural desde el baseline inicial y no cubiertos en ningun ciclo de refactor.
 - Items D07 (Evolucion N+1), D09 (paginacion manual), D10 (APIViews sin paginar) de prioridad media/baja.
 - Items D11, D12 de deteccion en escaneo cc251eb.
-- Item D05 (path semantico @action) resuelto en 61f41c5.
-- Item D13 (password admin en stdout) resuelto en 16e9215.
+- Item D14 (capitalizacion personaEp) resuelto en b68ed42.
 - No hay linter, formatter ni type checker configurados (fuera de alcance).

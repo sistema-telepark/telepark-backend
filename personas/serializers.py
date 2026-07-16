@@ -11,27 +11,7 @@ class PersonaSerializer(serializers.ModelSerializer):
 class PersonaEpSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonaEp
-        fields = ('activataller',
-                  'escolaridadcompleta',
-                  'fechainicio',
-                  'fechanacimiento',
-                  'maximaescolaridadalcanzada',
-                  'sexo',
-                  'tieneacompanante',
-                  'tienecuidador',
-                  'vivesolo',
-                  'ocupacionprevia',
-                  'ocupacionactual',
-                  'idpersona',
-                  'idreferente')
-
-
-class PersonaPSerializer(serializers.ModelSerializer):
-    idpersona = PersonaSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = PersonaEp
-        fields = ('sexo', 'idpersona')
+        fields = '__all__'
 
 
 class DireccionSerializer(serializers.ModelSerializer):

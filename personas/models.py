@@ -14,7 +14,11 @@ class Persona(models.Model):
         db_table = 'persona'
 
 
-class PersonaEp(models.Model):
+class PersonaEp(Persona):
+    persona_ptr = models.OneToOneField(
+        Persona, models.DO_NOTHING, db_column='idPersona',
+        parent_link=True, primary_key=True
+    )
     activataller = models.IntegerField(db_column='activaTaller', blank=True, null=True)
     escolaridadcompleta = models.IntegerField(db_column='escolaridadCompleta', blank=True, null=True)
     fechainicio = models.DateTimeField(db_column='fechaInicio')
@@ -26,12 +30,12 @@ class PersonaEp(models.Model):
     vivesolo = models.IntegerField(db_column='viveSolo')
     ocupacionprevia = models.CharField(db_column='ocupacionPrevia', max_length=45)
     ocupacionactual = models.CharField(db_column='ocupacionActual', max_length=45)
-    idpersona = models.OneToOneField(Persona, models.DO_NOTHING, db_column='idPersona', primary_key=True)
-    idreferente = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idReferente', related_name='+')
+    idreferente = models.ForeignKey(
+        Persona, models.DO_NOTHING, db_column='idReferente', related_name='+'
+    )
 
     class Meta:
         db_table = 'persona_ep'
-        unique_together = (('idpersona', 'idreferente'),)
 
 
 class Direccion(models.Model):
@@ -68,7 +72,7 @@ class Municipio(models.Model):
 class Tipoparentesco(models.Model):
     idtipoparentesco = models.AutoField(db_column='idTipoParentesco', primary_key=True)
     idpersona = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idPersona')
-    idpersonaep = models.ForeignKey(PersonaEp, models.DO_NOTHING, db_column='idPersonaEP')
+    idpersonaep = models.ForeignKey(PersonaEp, models.DO_NOTHING, db_column='idPersonaEP', related_name='+')
     nombre = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:

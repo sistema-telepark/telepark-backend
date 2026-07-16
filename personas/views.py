@@ -6,7 +6,7 @@ from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 from .serializers import (
     DireccionSerializer, LocalidadSerializer,
     MunicipioSerializer, PersonaEpSerializer,
-    PersonaSerializer, PersonaPSerializer, TipoparentescoSerializer,
+    PersonaSerializer, TipoparentescoSerializer,
 )
 from .services import (
     PersonaService, PersonaEpService, DireccionService,
@@ -36,15 +36,6 @@ class PersonaEPViewSet(ModelPKMixin, viewsets.ModelViewSet):
     service = _personaep_service
     serializer_class = PersonaEpSerializer
     permission_classes = [IsAuthenticated]
-
-
-@auto_tag_schema_view
-class PersonaPViewSet(ModelPKMixin, viewsets.ModelViewSet):
-    app_tag = 'personas'
-    service = _personaep_service
-    serializer_class = PersonaPSerializer
-    permission_classes = [IsAuthenticated]
-
 
 @auto_tag_schema_view
 class LocalidadViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
