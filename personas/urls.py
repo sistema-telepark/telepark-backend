@@ -1,17 +1,17 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from .views import (
     PersonaViewSet, PersonaEPViewSet,
     DireccionViewSet, TipoParentescoViewSet,
     LocalidadViewSet, MunicipioViewSet,
 )
 
-router = DefaultRouter(trailing_slash=False)
+router = SimpleRouter(trailing_slash=False)
 
-router.register(r'api/persona', PersonaViewSet, basename='persona')
-router.register(r'api/personaEp', PersonaEPViewSet, basename='personaEp')
-router.register(r'api/direccion', DireccionViewSet, basename='direccion')
-router.register(r'api/tipoparentesco', TipoParentescoViewSet, basename='tipoparentesco')
-router.register(r'api/localidad', LocalidadViewSet, basename='localidad')
-router.register(r'api/municipio', MunicipioViewSet, basename='municipio')
+router.register(r'api/v1/personas', PersonaViewSet, basename='personas')
+router.register(r'api/v1/personas-ep', PersonaEPViewSet, basename='personas-ep')
+router.register(r'api/v1/direcciones', DireccionViewSet, basename='direcciones')
+router.register(r'api/v1/tipos-parentesco', TipoParentescoViewSet, basename='tipos-parentesco')
+router.register(r'api/v1/localidades', LocalidadViewSet, basename='localidades')
+router.register(r'api/v1/municipios', MunicipioViewSet, basename='municipios')
 
 urlpatterns = router.urls

@@ -1,9 +1,9 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from .views import ObraSocialViewSet, OSViewSet
 
-router = DefaultRouter(trailing_slash=False)
+router = SimpleRouter(trailing_slash=False)
 
-router.register(r'api/obrasocial', ObraSocialViewSet, basename='obrasocial')
-router.register(r'api/os', OSViewSet, basename='os')
+router.register(r'api/v1/obras-sociales', ObraSocialViewSet, basename='obras-sociales')
+router.register(r'api/v1/coberturas', OSViewSet, basename='coberturas')
 
 urlpatterns = router.urls

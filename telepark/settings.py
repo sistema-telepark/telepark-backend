@@ -126,7 +126,7 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API REST del sistema Telepark — módulos: autenticacion, personas, salud, eventos, obra_social, talleres',
     'VERSION': '1.0.0',
     'CONTACT': {'email': 'admin@telepark.com'},
-    'SCHEMA_PATH_PREFIX': r'/api/',
+    'SCHEMA_PATH_PREFIX': r'/api/v1/',
     'SERVE_INCLUDE_SCHEMA': False,
     'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'] if DEBUG else ['rest_framework.permissions.IsAdminUser'],
     'SECURITY': [{'BearerAuth': []}],

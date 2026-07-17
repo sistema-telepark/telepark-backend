@@ -74,8 +74,9 @@ class UsuarioService:
         return {'message': 'Usuario creado correctamente'}
 
     @staticmethod
-    def actualizar(data):
-        username = data.get('user')
+    def actualizar(data, username=None):
+        if username is None:
+            username = data.get('user')
 
         try:
             user = User.objects.get(username=username)
@@ -150,3 +151,19 @@ class UsuarioService:
             'username': target.username,
             'is_superuser': is_superuser,
         }
+
+    @staticmethod
+    def obtener(username):
+        try:
+            return User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise NotFoundException('Usuario no encontrado')
+
+    @staticmethod
+    def eliminar(username):
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise NotFoundException('Usuario no encontrado')
+        user.delete()
+        return {'message': 'Usuario eliminado correctamente'}

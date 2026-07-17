@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework_simplejwt.views import TokenRefreshView
 from autenticacion import views
@@ -8,10 +8,11 @@ refresh_view = extend_schema_view(
 )(TokenRefreshView).as_view()
 
 urlpatterns = [
-    path('api/login', views.auth_view, name='login'),
-    path('api/create_user', views.create_user, name='create_user'),
-    path('api/refresh_token', refresh_view, name='token_refresh'),
-    path('api/users', views.get_users, name='get_users'),
-    path('api/update_user', views.update_user, name='update_user'),
-    path('api/users/<str:username>/role', views.change_user_role, name='change_user_role'),
+    # Autenticación
+    path('api/v1/auth/login', views.auth_view, name='auth-login'),
+    path('api/v1/auth/refresh', refresh_view, name='auth-refresh'),
+
+    # Recurso unificado de usuarios (CRUD completo)
+    path('api/v1/usuarios', views.usuarios_list, name='usuarios-list'),
+    path('api/v1/usuarios/<str:username>', views.usuarios_detail, name='usuarios-detail'),
 ]

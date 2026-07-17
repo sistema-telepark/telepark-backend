@@ -67,6 +67,44 @@ def health_check(request):
         return JsonResponse(result, status=503)
 
 
+def custom_404_view(request, exception=None):
+    """Handler 404 personalizado con mensajes en español para REQ-VRS-09.
+
+    Responde con JSON detallando la ruta solicitada y, cuando es una ruta
+    legacy conocida, sugiere el endpoint equivalente en /api/v1/.
+    """
+    path = getattr(request, 'path', '')
+
+    # Mapa de rutas legacy conocidas → sugerencia
+    LEGACY_ROUTES = {
+        '/api/v1/update_user': 'Para crear o actualizar usuarios use POST/PUT /api/v1/usuarios',
+        '/api/v1/create_user': 'Para crear usuarios use POST /api/v1/usuarios',
+        '/api/v1/delete_user': 'Para eliminar usuarios use DELETE /api/v1/usuarios/{username}',
+        '/api/v1/get_user': 'Para obtener usuarios use GET /api/v1/usuarios o GET /api/v1/usuarios/{username}',
+        '/api/v1/login': 'Para autenticarse use POST /api/v1/auth/login',
+        '/api/v1/refresh': 'Para renovar el token use POST /api/v1/auth/refresh',
+        '/api/v1/register': 'Para registrar usuarios use POST /api/v1/usuarios',
+        '/api/os': 'Para consultar obras sociales use GET /api/v1/obras-sociales',
+        '/api/v1/os': 'Para consultar obras sociales use GET /api/v1/obras-sociales',
+        '/api/v1/personasEp': 'Para consultar personas use GET /api/v1/personas-ep',
+        '/api/v1/personaEp': 'Para consultar personas use GET /api/v1/personas-ep',
+        '/api/v1/users': 'Para gestionar usuarios use /api/v1/usuarios',
+    }
+
+    suggestion = LEGACY_ROUTES.get(path)
+    if suggestion:
+        detail = (
+            f"La ruta '{path}' ya no existe en la nueva estructura. "
+            f"{suggestion}."
+        )
+    else:
+        detail = (
+            f"La ruta solicitada no existe en la API versionada /api/v1/"
+        )
+
+    return JsonResponse({"detail": detail}, status=404)
+
+
 @extend_schema(
     tags=['sistema'],
     description=(
@@ -80,55 +118,52 @@ def health_check(request):
 def api_root(request, format=None):
     return Response({
         "auth": _clean_dict({
-            "login": _safe_reverse("login", request, format),
-            "create_user": _safe_reverse("create_user", request, format),
-            "users": _safe_reverse("get_users", request, format),
-            "update_user": _safe_reverse("update_user", request, format),
-            "refresh_token": _safe_reverse("token_refresh", request, format),
-            "change_role": _safe_reverse("change_user_role", request, format),
+            "login": _safe_reverse("auth-login", request, format),
+            "refresh_token": _safe_reverse("auth-refresh", request, format),
+            "usuarios": _safe_reverse("usuarios-list", request, format),
         }),
         "personas": _clean_dict({
-            "persona": _safe_reverse("persona-list", request, format),
-            "personaEp": _safe_reverse("personaEp-list", request, format),
-            "direccion": _safe_reverse("direccion-list", request, format),
-            "tipoparentesco": _safe_reverse("tipoparentesco-list", request, format),
-            "localidad": _safe_reverse("localidad-list", request, format),
-            "municipio": _safe_reverse("municipio-list", request, format),
-            "diagnostico_por_personaEp": _safe_reverse("personaEp-diagnostico", request, format),
-            "evolucion_por_personaEp": _safe_reverse("personaEp-evolucion", request, format),
-            "indicacion_por_personaEp": _safe_reverse("personaEp-indicacion", request, format),
-            "os_por_personaEp": _safe_reverse("personaEp-os", request, format),
+            "personas": _safe_reverse("personas-list", request, format),
+            "personas_ep": _safe_reverse("personas-ep-list", request, format),
+            "direcciones": _safe_reverse("direcciones-list", request, format),
+            "tipos_parentesco": _safe_reverse("tipos-parentesco-list", request, format),
+            "localidades": _safe_reverse("localidades-list", request, format),
+            "municipios": _safe_reverse("municipios-list", request, format),
+            "diagnosticos_por_persona_ep": _safe_reverse("personas-ep-diagnosticos", request, format),
+            "evoluciones_por_persona_ep": _safe_reverse("personas-ep-evoluciones", request, format),
+            "indicaciones_por_persona_ep": _safe_reverse("personas-ep-indicaciones", request, format),
+            "coberturas_por_persona_ep": _safe_reverse("personas-ep-coberturas", request, format),
         }),
         "salud": _clean_dict({
-            "diagnostico": _safe_reverse("diagnostico-list", request, format),
-            "evolucion": _safe_reverse("evolucion-list", request, format),
-            "enfermedad": _safe_reverse("enfermedad-list", request, format),
-            "medicamento": _safe_reverse("medicamento-list", request, format),
-            "indicacion": _safe_reverse("indicacionmedicamento-list", request, format),
+            "diagnosticos": _safe_reverse("diagnosticos-list", request, format),
+            "evoluciones": _safe_reverse("evoluciones-list", request, format),
+            "enfermedades": _safe_reverse("enfermedades-list", request, format),
+            "medicamentos": _safe_reverse("medicamentos-list", request, format),
+            "indicaciones": _safe_reverse("indicaciones-list", request, format),
         }),
         "eventos": _clean_dict({
-            "evento": _safe_reverse("evento-list", request, format),
-            "tipoevento": _safe_reverse("tipoevento-list", request, format),
+            "eventos": _safe_reverse("eventos-list", request, format),
+            "tipos_evento": _safe_reverse("tipos-evento-list", request, format),
         }),
         "obra_social": _clean_dict({
-            "obrasocial": _safe_reverse("obrasocial-list", request, format),
-            "os": _safe_reverse("os-list", request, format),
+            "obras_sociales": _safe_reverse("obras-sociales-list", request, format),
+            "coberturas": _safe_reverse("coberturas-list", request, format),
         }),
         "talleres": _clean_dict({
-            "taller": _safe_reverse("taller-list", request, format),
-            "clasetaller": _safe_reverse("clasetaller-list", request, format),
-            "actividad": _safe_reverse("actividad-list", request, format),
-            "actividadrealizada": _safe_reverse("actividadrealizada-list", request, format),
-            "asistenciataller": _safe_reverse("asistenciataller-list", request, format),
-            "comportamiento": _safe_reverse("comportamiento-list", request, format),
-            "factorclase": _safe_reverse("factorclase-list", request, format),
-            "factorglobal": _safe_reverse("factorglobal-list", request, format),
-            "unidadobservacion": _safe_reverse("unidadobservacion-list", request, format),
-            "variableuo": _safe_reverse("variableuo-list", request, format),
-            "valorvariableuo": _safe_reverse("valorvariableuo-list", request, format),
+            "talleres": _safe_reverse("talleres-list", request, format),
+            "clases_taller": _safe_reverse("clases-taller-list", request, format),
+            "actividades": _safe_reverse("actividades-list", request, format),
+            "actividades_realizadas": _safe_reverse("actividades-realizadas-list", request, format),
+            "asistencias_taller": _safe_reverse("asistencias-taller-list", request, format),
+            "comportamientos": _safe_reverse("comportamientos-list", request, format),
+            "factores_clase": _safe_reverse("factores-clase-list", request, format),
+            "factores_globales": _safe_reverse("factores-globales-list", request, format),
+            "unidades_observacion": _safe_reverse("unidades-observacion-list", request, format),
+            "variables_uo": _safe_reverse("variables-uo-list", request, format),
+            "valores_variable_uo": _safe_reverse("valores-variable-uo-list", request, format),
         }),
         "system": _clean_dict({
-            "health": _safe_reverse("health_check", request, format),
+            "health": _safe_reverse("health-check", request, format),
             "swagger": _safe_reverse("swagger-ui", request, format),
             "redoc": _safe_reverse("redoc", request, format),
             "schema": _safe_reverse("schema", request, format),

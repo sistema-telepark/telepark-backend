@@ -1,9 +1,9 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import SimpleRouter
 from .views import EventoViewSet, TipoEventoViewSet
 
-router = DefaultRouter(trailing_slash=False)
+router = SimpleRouter(trailing_slash=False)
 
-router.register(r'api/evento', EventoViewSet, basename='evento')
-router.register(r'api/tipoevento', TipoEventoViewSet, basename='tipoevento')
+router.register(r'api/v1/eventos', EventoViewSet, basename='eventos')
+router.register(r'api/v1/tipos-evento', TipoEventoViewSet, basename='tipos-evento')
 
 urlpatterns = router.urls
