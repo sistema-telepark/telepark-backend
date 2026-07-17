@@ -74,12 +74,12 @@ class UsuarioService:
         return {'message': 'Usuario creado correctamente'}
 
     @staticmethod
-    def actualizar(data, username=None):
-        if username is None:
-            username = data.get('user')
+    def actualizar(data, user_id=None):
+        if user_id is None:
+            user_id = data.get('user')
 
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             raise ValidationError('Usuario no encontrado')
 
@@ -127,9 +127,9 @@ class UsuarioService:
         return qs
 
     @staticmethod
-    def cambiar_rol(actor_user, target_username, is_superuser):
+    def cambiar_rol(actor_user, target_id, is_superuser):
         try:
-            target = User.objects.get(username=target_username)
+            target = User.objects.get(pk=target_id)
         except User.DoesNotExist:
             raise NotFoundException('Usuario no encontrado')
 
@@ -153,16 +153,16 @@ class UsuarioService:
         }
 
     @staticmethod
-    def obtener(username):
+    def obtener_por_id(user_id):
         try:
-            return User.objects.get(username=username)
+            return User.objects.get(pk=user_id)
         except User.DoesNotExist:
             raise NotFoundException('Usuario no encontrado')
 
     @staticmethod
-    def eliminar(username):
+    def eliminar(user_id):
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             raise NotFoundException('Usuario no encontrado')
         user.delete()

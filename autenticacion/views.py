@@ -226,10 +226,10 @@ def usuarios_list(request):
 )
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes([IsSuperuser])
-def usuarios_detail(request, username):
+def usuarios_detail(request, idusuario):
     if request.method == 'GET':
         try:
-            user = UsuarioService.obtener(username)
+            user = UsuarioService.obtener_por_id(idusuario)
             serializer = UserListOutputSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except NotFoundException as e:
@@ -241,7 +241,7 @@ def usuarios_detail(request, username):
         try:
             result = UsuarioService.actualizar(
                 serializer.validated_data,
-                username=username,
+                user_id=idusuario,
             )
         except ValidationError as e:
             if e.args and isinstance(e.args[0], dict):
@@ -255,7 +255,7 @@ def usuarios_detail(request, username):
         try:
             result = UsuarioService.cambiar_rol(
                 actor_user=request.user,
-                target_username=username,
+                target_id=idusuario,
                 is_superuser=serializer.validated_data['is_superuser'],
             )
         except NotFoundException as e:
@@ -267,13 +267,13 @@ def usuarios_detail(request, username):
         return Response(result, status=status.HTTP_200_OK)
 
     elif request.method == 'DELETE':
-        if request.user.username == username:
+        if request.user.id == idusuario:
             return Response(
                 {"detail": "No puedes eliminar tu propio usuario"},
                 status=status.HTTP_403_FORBIDDEN,
             )
         try:
-            UsuarioService.eliminar(username)
+            UsuarioService.eliminar(idusuario)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except NotFoundException as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)

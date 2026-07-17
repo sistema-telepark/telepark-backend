@@ -22,7 +22,7 @@ class CreateUserSerializer(serializers.Serializer):
 
 
 class UpdateUserSerializer(serializers.Serializer):
-    user = serializers.CharField(required=False, help_text="Obsoleto — el username se toma de la URL")
+    user = serializers.CharField(required=False, help_text="Obsoleto — el ID del usuario se toma de la URL")
     email = serializers.CharField(required=False)
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)

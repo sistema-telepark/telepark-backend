@@ -79,8 +79,8 @@ def custom_404_view(request, exception=None):
     LEGACY_ROUTES = {
         '/api/v1/update_user': 'Para crear o actualizar usuarios use POST/PUT /api/v1/usuarios',
         '/api/v1/create_user': 'Para crear usuarios use POST /api/v1/usuarios',
-        '/api/v1/delete_user': 'Para eliminar usuarios use DELETE /api/v1/usuarios/{username}',
-        '/api/v1/get_user': 'Para obtener usuarios use GET /api/v1/usuarios o GET /api/v1/usuarios/{username}',
+        '/api/v1/delete_user': 'Para eliminar usuarios use DELETE /api/v1/usuarios/{idusuario}',
+        '/api/v1/get_user': 'Para obtener usuarios use GET /api/v1/usuarios o GET /api/v1/usuarios/{idusuario}',
         '/api/v1/login': 'Para autenticarse use POST /api/v1/auth/login',
         '/api/v1/refresh': 'Para renovar el token use POST /api/v1/auth/refresh',
         '/api/v1/register': 'Para registrar usuarios use POST /api/v1/usuarios',

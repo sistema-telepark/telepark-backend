@@ -14,5 +14,5 @@ urlpatterns = [
 
     # Recurso unificado de usuarios (CRUD completo)
     path('api/v1/usuarios', views.usuarios_list, name='usuarios-list'),
-    path('api/v1/usuarios/<str:username>', views.usuarios_detail, name='usuarios-detail'),
+    path('api/v1/usuarios/<int:idusuario>', views.usuarios_detail, name='usuarios-detail'),
 ]
