@@ -42,6 +42,7 @@ class RoleChangeSerializer(serializers.Serializer):
 
 
 class UserListOutputSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     username = serializers.CharField()
     first_name = serializers.CharField()
     last_name = serializers.CharField()
