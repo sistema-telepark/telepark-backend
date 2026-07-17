@@ -86,9 +86,9 @@ Con `drf-spectacular`:
 
 | Ruta | Descripción |
 |---|---|
-| `/api/schema/swagger-ui/` | Swagger UI interactivo |
-| `/api/schema/redoc/` | ReDoc |
-| `/api/schema/` | Esquema OpenAPI 3.0 (YAML) |
+| `/schema/swagger-ui/` | Swagger UI interactivo |
+| `/schema/redoc/` | ReDoc |
+| `/schema/` | Esquema OpenAPI 3.0 (YAML) |
 
 En `dev` son públicas; en `prod` requieren `IsAdminUser`.
 

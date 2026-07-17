@@ -18,10 +18,10 @@ urlpatterns = [
     # Health check versionado
     path('api/v1/health', health_check, name='health-check'),
 
-    # Documentación OpenAPI / Swagger (rutas de sistema, sin versionar)
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    # Documentación OpenAPI / Swagger (rutas de sistema, sin prefijo /api/)
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     # Módulos de dominio (rutas versionadas)
     path('', include('personas.urls')),
