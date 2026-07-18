@@ -13,6 +13,10 @@ class PersonaEpSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonaEp
         fields = '__all__'
+        extra_kwargs = {
+            'sexo': {'required': True, 'allow_null': False},
+            'fechanacimiento': {'required': True, 'allow_null': False},
+        }
 
 
 class DireccionSerializer(serializers.ModelSerializer):

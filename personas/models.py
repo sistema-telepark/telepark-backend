@@ -9,8 +9,8 @@ class Persona(models.Model):
     iddireccion = models.ForeignKey('Direccion', models.DO_NOTHING, db_column='idDireccion', blank=True, null=True)
     borrado = models.IntegerField(db_column='borrado')
     espaciente = models.IntegerField(db_column='esPaciente')
-    sexo = models.CharField(max_length=45)
-    fechanacimiento = models.DateField(db_column='fechaNacimiento')
+    sexo = models.CharField(max_length=45, blank=True, null=True)
+    fechanacimiento = models.DateField(db_column='fechaNacimiento', blank=True, null=True)
 
     class Meta:
         db_table = 'persona'
