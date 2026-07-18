@@ -4,13 +4,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
 
-from core.exceptions import (
-    AuthenticationError,
-    ValidationError,
-    NotFoundException,
-    PermissionDeniedError,
-    ConflictError,
-)
 from core.permission import IsSuperuser
 from autenticacion.serializers import (
     LoginSerializer,
@@ -19,7 +12,15 @@ from autenticacion.serializers import (
     RoleChangeSerializer,
     UserListOutputSerializer,
 )
-from autenticacion.services import UsuarioService
+from autenticacion.helpers import (
+    autenticar,
+    crear_usuario,
+    actualizar_usuario,
+    listar_usuarios,
+    cambiar_rol,
+    obtener_usuario_por_id,
+    eliminar_usuario,
+)
 
 
 @extend_schema(
@@ -47,8 +48,8 @@ def auth_view(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     try:
-        result = UsuarioService.autenticar(serializer.validated_data)
-    except AuthenticationError as e:
+        result = autenticar(serializer.validated_data)
+    except ValueError as e:
         return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
     return Response(result, status=status.HTTP_200_OK)
 
@@ -137,7 +138,7 @@ def usuarios_list(request):
                 else:
                     filters[param] = value
 
-        users = UsuarioService.listar(filters=filters)
+        users = listar_usuarios(filters=filters)
         paginator = PageNumberPagination()
         paginator.page_size = 50
         result_page = paginator.paginate_queryset(users, request)
@@ -148,8 +149,8 @@ def usuarios_list(request):
         serializer = CreateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            result = UsuarioService.crear(serializer.validated_data)
-        except ValidationError as e:
+            result = crear_usuario(serializer.validated_data)
+        except ValueError as e:
             if e.args and isinstance(e.args[0], dict):
                 return Response(e.args[0], status=status.HTTP_400_BAD_REQUEST)
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -229,21 +230,21 @@ def usuarios_list(request):
 def usuarios_detail(request, idusuario):
     if request.method == 'GET':
         try:
-            user = UsuarioService.obtener_por_id(idusuario)
+            user = obtener_usuario_por_id(idusuario)
             serializer = UserListOutputSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except NotFoundException as e:
+        except LookupError as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'PUT':
         serializer = UpdateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            result = UsuarioService.actualizar(
+            result = actualizar_usuario(
                 serializer.validated_data,
                 user_id=idusuario,
             )
-        except ValidationError as e:
+        except ValueError as e:
             if e.args and isinstance(e.args[0], dict):
                 return Response(e.args[0], status=status.HTTP_400_BAD_REQUEST)
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -253,16 +254,16 @@ def usuarios_detail(request, idusuario):
         serializer = RoleChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            result = UsuarioService.cambiar_rol(
+            result = cambiar_rol(
                 actor_user=request.user,
                 target_id=idusuario,
                 is_superuser=serializer.validated_data['is_superuser'],
             )
-        except NotFoundException as e:
+        except LookupError as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
-        except PermissionDeniedError as e:
+        except PermissionError as e:
             return Response({"detail": str(e)}, status=status.HTTP_403_FORBIDDEN)
-        except ConflictError as e:
+        except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_409_CONFLICT)
         return Response(result, status=status.HTTP_200_OK)
 
@@ -273,7 +274,7 @@ def usuarios_detail(request, idusuario):
                 status=status.HTTP_403_FORBIDDEN,
             )
         try:
-            UsuarioService.eliminar(idusuario)
+            eliminar_usuario(idusuario)
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except NotFoundException as e:
+        except LookupError as e:
             return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)

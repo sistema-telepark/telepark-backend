@@ -8,24 +8,16 @@ from .serializers import (
     MunicipioSerializer, PersonaEpSerializer,
     PersonaSerializer, TipoparentescoSerializer,
 )
-from .services import (
-    PersonaService, PersonaEpService, DireccionService,
-    TipoParentescoService, LocalidadService, MunicipioService,
+from .models import (
+    Persona, PersonaEp, Direccion,
+    Tipoparentesco, Localidad, Municipio,
 )
-
-
-_persona_service = PersonaService()
-_personaep_service = PersonaEpService()
-_direccion_service = DireccionService()
-_tipoparentesco_service = TipoParentescoService()
-_localidad_service = LocalidadService()
-_municipio_service = MunicipioService()
 
 
 @auto_tag_schema_view
 class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
-    service = _persona_service
+    manager = Persona.objects
     serializer_class = PersonaSerializer
     permission_classes = [IsAuthenticated]
 
@@ -33,14 +25,14 @@ class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
 @auto_tag_schema_view
 class PersonaEPViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
-    service = _personaep_service
+    manager = PersonaEp.objects
     serializer_class = PersonaEpSerializer
     permission_classes = [IsAuthenticated]
 
 @auto_tag_schema_view
 class LocalidadViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
-    service = _localidad_service
+    manager = Localidad.objects
     serializer_class = LocalidadSerializer
     permission_classes = [IsAuthenticated]
 
@@ -48,7 +40,7 @@ class LocalidadViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 @auto_tag_schema_view
 class DireccionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
-    service = _direccion_service
+    manager = Direccion.objects
     serializer_class = DireccionSerializer
     permission_classes = [IsAuthenticated]
 
@@ -56,7 +48,7 @@ class DireccionViewSet(ModelPKMixin, viewsets.ModelViewSet):
 @auto_tag_schema_view
 class TipoParentescoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
-    service = _tipoparentesco_service
+    manager = Tipoparentesco.objects
     serializer_class = TipoparentescoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -64,6 +56,6 @@ class TipoParentescoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewS
 @auto_tag_schema_view
 class MunicipioViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
-    service = _municipio_service
+    manager = Municipio.objects
     serializer_class = MunicipioSerializer
     permission_classes = [IsAuthenticated]

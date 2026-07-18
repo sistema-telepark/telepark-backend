@@ -3,18 +3,18 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 
 class ModelPKMixin:
     lookup_field = 'pk'
-    service = None
+    manager = None
     app_tag = None
 
     @property
     def queryset(self):
-        if self.service is not None and self.service.model is not None:
-            return self.service.model.objects.none()
+        if self.manager is not None and hasattr(self.manager, 'model'):
+            return self.manager.model.objects.none()
         return None
 
     def get_queryset(self):
-        if self.service is not None:
-            return self.service.listar()
+        if self.manager is not None:
+            return self.manager.listar_ordenado()
         return self.queryset
 
 

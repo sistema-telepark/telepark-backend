@@ -4,17 +4,13 @@ from rest_framework.permissions import IsAuthenticated
 from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 
 from .serializers import EventoSerializer, TipoEventoSerializer
-from .services import EventoService, TipoEventoService
-
-
-_evento_service = EventoService()
-_tipoevento_service = TipoEventoService()
+from .models import Evento, Tipoevento
 
 
 @auto_tag_schema_view
 class EventoViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'eventos'
-    service = _evento_service
+    manager = Evento.objects
     serializer_class = EventoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -22,6 +18,6 @@ class EventoViewSet(ModelPKMixin, viewsets.ModelViewSet):
 @auto_tag_schema_view
 class TipoEventoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'eventos'
-    service = _tipoevento_service
+    manager = Tipoevento.objects
     serializer_class = TipoEventoSerializer
     permission_classes = [IsAuthenticated]

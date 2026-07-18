@@ -1,5 +1,31 @@
 from django.db import models
 
+from core.managers import OrdenadoManager
+
+
+class PersonaManager(OrdenadoManager):
+    """Manager para Persona con orden determinístico por PK."""
+
+
+class PersonaEpManager(OrdenadoManager):
+    """Manager para PersonaEp con orden determinístico por PK."""
+
+
+class DireccionManager(OrdenadoManager):
+    """Manager para Direccion con orden determinístico por PK."""
+
+
+class LocalidadManager(OrdenadoManager):
+    """Manager para Localidad con orden determinístico por PK."""
+
+
+class MunicipioManager(OrdenadoManager):
+    """Manager para Municipio con orden determinístico por PK."""
+
+
+class TipoParentescoManager(OrdenadoManager):
+    """Manager para Tipoparentesco con orden determinístico por PK."""
+
 
 class Persona(models.Model):
     idpersona = models.AutoField(db_column='idPersona', primary_key=True)
@@ -11,6 +37,8 @@ class Persona(models.Model):
     espaciente = models.IntegerField(db_column='esPaciente')
     sexo = models.CharField(max_length=45, blank=True, null=True)
     fechanacimiento = models.DateField(db_column='fechaNacimiento', blank=True, null=True)
+
+    objects = PersonaManager()
 
     class Meta:
         db_table = 'persona'
@@ -34,6 +62,8 @@ class PersonaEp(Persona):
         Persona, models.DO_NOTHING, db_column='idReferente', related_name='+'
     )
 
+    objects = PersonaEpManager()
+
     class Meta:
         db_table = 'persona_ep'
 
@@ -46,6 +76,8 @@ class Direccion(models.Model):
     piso = models.IntegerField(blank=True, null=True)
     idlocalidad = models.ForeignKey('Localidad', models.DO_NOTHING, db_column='idLocalidad', blank=True, null=True)
 
+    objects = DireccionManager()
+
     class Meta:
         db_table = 'direccion'
 
@@ -56,6 +88,8 @@ class Localidad(models.Model):
     codigopostal = models.IntegerField(db_column='codigoPostal')
     idmunicipio = models.ForeignKey('Municipio', models.DO_NOTHING, db_column='idMunicipio', blank=True, null=True)
 
+    objects = LocalidadManager()
+
     class Meta:
         db_table = 'localidad'
 
@@ -64,6 +98,8 @@ class Municipio(models.Model):
     idmunicipio = models.AutoField(db_column='idMunicipio', primary_key=True)
     nombre = models.CharField(max_length=45)
     provincia = models.CharField(max_length=45)
+
+    objects = MunicipioManager()
 
     class Meta:
         db_table = 'municipio'
@@ -74,6 +110,8 @@ class Tipoparentesco(models.Model):
     idpersona = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idPersona')
     idpersonaep = models.ForeignKey(PersonaEp, models.DO_NOTHING, db_column='idPersonaEP', related_name='+')
     nombre = models.CharField(max_length=45, blank=True, null=True)
+
+    objects = TipoParentescoManager()
 
     class Meta:
         db_table = 'tipoparentesco'
