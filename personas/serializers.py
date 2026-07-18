@@ -5,7 +5,7 @@ from .models import Persona, PersonaEp, Direccion, Localidad, Municipio, Tipopar
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
-        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado', 'espaciente')
+        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado', 'espaciente', 'sexo', 'fechanacimiento')
         extra_kwargs = {'iddireccion': {'allow_null': True, 'required': False}}
 
 

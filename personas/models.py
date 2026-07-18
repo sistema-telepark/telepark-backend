@@ -9,6 +9,8 @@ class Persona(models.Model):
     iddireccion = models.ForeignKey('Direccion', models.DO_NOTHING, db_column='idDireccion', blank=True, null=True)
     borrado = models.IntegerField(db_column='borrado')
     espaciente = models.IntegerField(db_column='esPaciente')
+    sexo = models.CharField(max_length=45)
+    fechanacimiento = models.DateField(db_column='fechaNacimiento')
 
     class Meta:
         db_table = 'persona'
@@ -22,9 +24,7 @@ class PersonaEp(Persona):
     activataller = models.IntegerField(db_column='activaTaller', blank=True, null=True)
     escolaridadcompleta = models.IntegerField(db_column='escolaridadCompleta', blank=True, null=True)
     fechainicio = models.DateTimeField(db_column='fechaInicio')
-    fechanacimiento = models.DateField(db_column='fechaNacimiento')
     maximaescolaridadalcanzada = models.CharField(db_column='maximaEscolaridadAlcanzada', max_length=45, blank=True, null=True)
-    sexo = models.CharField(max_length=45)
     tieneacompanante = models.IntegerField(db_column='tieneAcompanante')
     tienecuidador = models.IntegerField(db_column='tieneCuidador')
     vivesolo = models.IntegerField(db_column='viveSolo')
