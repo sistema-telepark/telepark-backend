@@ -66,7 +66,7 @@ class DiagnosticoPorPersonaEpView(GenericAPIView):
     queryset = Diagnostico.objects.none()
 
     def get(self, request, personaep_pk):
-        diagnosticos = Diagnostico.objects.filtrar_por_persona(personaep_pk, select_related_fields=['idenfermedad'])
+        diagnosticos = Diagnostico.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idenfermedad'])
         serializer = self.get_serializer(diagnosticos, many=True)
         return Response(serializer.data)
 
@@ -78,7 +78,7 @@ class EvolucionPorPersonaEpView(GenericAPIView):
     queryset = Evolucion.objects.none()
 
     def get(self, request, personaep_pk):
-        evoluciones = Evolucion.objects.filtrar_por_persona(personaep_pk)
+        evoluciones = Evolucion.objects.filtrar_por_persona_ep(personaep_pk)
         serializer = self.get_serializer(evoluciones, many=True)
         return Response(serializer.data)
 
@@ -90,7 +90,7 @@ class IndicacionPorPersonaEpView(GenericAPIView):
     queryset = Indicacionmedicamento.objects.none()
 
     def get(self, request, personaep_pk):
-        indicaciones = Indicacionmedicamento.objects.filtrar_por_persona(personaep_pk, select_related_fields=['idmedicamento'])
+        indicaciones = Indicacionmedicamento.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idmedicamento'])
         serializer = self.get_serializer(indicaciones, many=True)
         return Response(serializer.data)
 

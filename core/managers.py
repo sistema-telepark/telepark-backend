@@ -2,18 +2,13 @@ from django.db import models
 
 
 class OrdenadoManager(models.Manager):
-    """Manager base que provee listar_ordenado() por PK y filtrar_por_persona().
-
-    Es la alternativa Django nativa a BaseService — reemplaza el CRUD genérico
-    con métodos de Manager, que es el lugar que Django prescribe para lógica
-    de consultas (table-level).
-    """
+    """Manager base de lógica de consultas con orden determinístico por PK."""
 
     def listar_ordenado(self):
         """Retorna todos los registros ordenados por PK (orden determinístico)."""
         return self.all().order_by(self.model._meta.pk.name)
 
-    def filtrar_por_persona(self, personaep_pk, select_related_fields=None):
+    def filtrar_por_persona_ep(self, personaep_pk, select_related_fields=None):
         """Filtra registros por FK a PersonaEp, con select_related opcional.
 
         Args:

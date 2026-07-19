@@ -36,6 +36,6 @@ class OsPorPersonaEpView(GenericAPIView):
     queryset = Os.objects.none()
 
     def get(self, request, personaep_pk):
-        obrasociales = Os.objects.filtrar_por_persona(personaep_pk, select_related_fields=['idobrasocial'])
+        obrasociales = Os.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idobrasocial'])
         serializer = self.get_serializer(obrasociales, many=True)
         return Response(serializer.data)

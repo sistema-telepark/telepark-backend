@@ -2,7 +2,6 @@ from django.db import models
 
 from core.managers import OrdenadoManager
 
-
 class TallerManager(OrdenadoManager):
     """Manager para Taller con orden por PK."""
 
