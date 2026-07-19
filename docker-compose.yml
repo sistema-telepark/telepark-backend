@@ -4,10 +4,10 @@ services:
     container_name: telepark-db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-teleparkbackend}
-      MYSQL_USER: ${DB_USER:-teleparkUser}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-teleparkUser}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
@@ -31,14 +31,14 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: "3306"
-      DB_DATABASE: ${DB_DATABASE:-teleparkbackend}
-      DB_USER: ${DB_USER:-teleparkUser}
-      DB_PASSWORD: ${DB_PASSWORD:-teleparkUser}
-      SECRET_KEY: ${SECRET_KEY:-django-insecure-dev-key-not-for-production}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
-      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:8000}
-      SITE_URL: ${SITE_URL:-http://localhost:8081}
-      ENV: ${ENV:-dev}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
+      SITE_URL: ${SITE_URL}
+      ENV: ${ENV}
     ports:
       - "8081:8080"
     volumes:
