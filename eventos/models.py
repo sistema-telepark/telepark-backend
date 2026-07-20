@@ -10,17 +10,13 @@ class EventoManager(OrdenadoManager):
         return self.all().select_related('idtipoevento').order_by('idpersonaep', 'idevento')
 
 
-class TipoEventoManager(OrdenadoManager):
-    """Manager para Tipoevento con orden por PK."""
-
-
 class Tipoevento(models.Model):
     idtipoevento = models.AutoField(db_column='idTipoEvento', primary_key=True)
     nombre = models.CharField(max_length=45, blank=True, null=True)
     desactivataller = models.IntegerField(db_column='desactivaTaller', blank=True, null=True)
     borrado = models.IntegerField(db_column='borrado')
 
-    objects = TipoEventoManager()
+    objects = OrdenadoManager()
 
     class Meta:
         db_table = 'tipoevento'

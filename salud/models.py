@@ -17,15 +17,7 @@ class EvolucionManager(OrdenadoManager):
         return self.all().order_by('idpersonaep', 'idevolucion')
 
 
-class EnfermedadManager(OrdenadoManager):
-    """Manager para Enfermedad — solo orden por PK."""
-
-
-class MedicamentoManager(OrdenadoManager):
-    """Manager para Medicamento — solo orden por PK."""
-
-
-class IndicacionManager(OrdenadoManager):
+class IndicacionmedicamentoManager(OrdenadoManager):
     """Manager para Indicacionmedicamento con orden por idpersonaep + idindicacion."""
 
     def listar_ordenado(self):
@@ -36,7 +28,7 @@ class Enfermedad(models.Model):
     idenfermedad = models.AutoField(db_column='idEnfermedad', primary_key=True)
     nombre = models.CharField(max_length=45)
 
-    objects = EnfermedadManager()
+    objects = OrdenadoManager()
 
     class Meta:
         db_table = 'enfermedad'
@@ -74,7 +66,7 @@ class Medicamento(models.Model):
     esantiparkinsoniano = models.IntegerField(db_column='esAntiparkinsoniano', blank=True, null=True)
     eslevodopa = models.IntegerField(db_column='esLevodopa', blank=True, null=True)
 
-    objects = MedicamentoManager()
+    objects = OrdenadoManager()
 
     class Meta:
         db_table = 'medicamento'
@@ -90,7 +82,7 @@ class Indicacionmedicamento(models.Model):
     idmedicamento = models.ForeignKey(Medicamento, models.DO_NOTHING, db_column='idMedicamento')
     borrado = models.IntegerField(db_column='borrado')
 
-    objects = IndicacionManager()
+    objects = IndicacionmedicamentoManager()
 
     class Meta:
         db_table = 'indicacionmedicamento'
