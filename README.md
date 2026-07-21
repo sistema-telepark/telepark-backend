@@ -72,7 +72,7 @@ python manage.py runserver
 | `DB_PORT` | Puerto de MySQL | `3306` |
 | `DB_DATABASE` | Nombre de la BD | `teleparkbackend` |
 | `DB_USER` | Usuario de MySQL | `teleparkUser` |
-| `DB_PASSWORD` | Contraseña de MySQL | `teleparkUser` |
+| `DB_PASSWORD` | Contraseña de MySQL | — |
 | `SECRET_KEY` | Clave secreta de Django | — |
 | `SITE_URL` | URL del sitio | `http://localhost:8081` |
 | `CSRF_TRUSTED_ORIGINS` | Orígenes CSRF permitidos | `http://localhost:8080` |
@@ -96,7 +96,7 @@ En `dev` son públicas; en `prod` requieren `IsAdminUser`.
 
 ```powershell
 python manage.py check                       # Validación estática
-python manage.py spectacular --validate       # Validar esquema OpenAPI
+python manage.py spectacular --validate      # Validar esquema OpenAPI
 python manage.py bootstrap_admin             # Crear superusuario (idempotente)
 python manage.py makemigrations              # Generar migrations
 python manage.py migrate                     # Aplicar migrations
@@ -107,7 +107,7 @@ python manage.py migrate                     # Aplicar migrations
 ```
 telepark-backend/
 ├── core/                  # Infraestructura compartida
-├── autenticacion/              # Autenticación y usuarios
+├── autenticacion/         # Autenticación y usuarios
 ├── personas/              # Módulo raíz del dominio (6 modelos)
 ├── salud/                 # Módulo salud (5 modelos)
 ├── eventos/               # Módulo eventos (2 modelos)
@@ -115,7 +115,6 @@ telepark-backend/
 ├── talleres/              # Módulo talleres (11 modelos)
 ├── telepark/              # Configuración de Django (settings, urls raíz)
 ├── BD/                    # Assets de diseño de base de datos
-├── .specs/                # Documentación de arquitectura y procesos
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
