@@ -38,7 +38,7 @@ Cada módulo sigue una **capa de 3 niveles**: Views/Serializers → Services →
 docker-compose up
 ```
 
-Servidor en `http://localhost:8081`, MySQL en `localhost:3307`.
+Servidor en `http://localhost:8080`, MySQL en `localhost:3306`.
 
 El entrypoint ejecuta automáticamente: migraciones + bootstrap del superusuario.
 
@@ -74,7 +74,7 @@ python manage.py runserver
 | `DB_USER` | Usuario de MySQL | `teleparkUser` |
 | `DB_PASSWORD` | Contraseña de MySQL | — |
 | `SECRET_KEY` | Clave secreta de Django | — |
-| `SITE_URL` | URL del sitio | `http://localhost:8081` |
+| `SITE_URL` | URL del sitio | `http://localhost:3000` |
 | `CSRF_TRUSTED_ORIGINS` | Orígenes CSRF permitidos | `http://localhost:8080` |
 | `ALLOWED_HOSTS` | Hosts permitidos | `localhost,127.0.0.1` |
 | `ADMIN_BOOTSTRAP_PASSWORD` | Password del superusuario inicial | — |
