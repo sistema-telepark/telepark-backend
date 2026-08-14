@@ -61,9 +61,9 @@ def crear_usuario(data):
         first_name=data.get('first_name'),
         last_name=data.get('last_name'),
         password=password,
-        is_superuser=False,
-        is_staff=False,
-        is_active=True,
+        is_superuser=data.get('is_superuser', False),
+        is_staff=data.get('is_staff', False),
+        is_active=data.get('is_active', True),
     )
 
     return {'message': 'Usuario creado correctamente'}
@@ -99,6 +99,8 @@ def actualizar_usuario(data, user_id=None):
         user.last_name = data['last_name']
     if 'is_active' in data:
         user.is_active = data['is_active']
+    if 'is_superuser' in data:
+        user.is_superuser = data['is_superuser']
 
     user.save()
 
