@@ -49,5 +49,6 @@ class UserListOutputSerializer(serializers.Serializer):
     username = serializers.CharField()
     first_name = serializers.CharField()
     last_name = serializers.CharField()
+    email = serializers.CharField()
     is_superuser = serializers.BooleanField()
     is_active = serializers.BooleanField()
