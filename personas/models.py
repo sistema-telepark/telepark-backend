@@ -70,10 +70,20 @@ class Localidad(models.Model):
         db_table = 'localidad'
 
 
+class Provincia(models.Model):
+    idprovincia = models.AutoField(db_column='idProvincia', primary_key=True)
+    nombre = models.CharField(max_length=45)
+
+    objects = OrdenadoManager()
+
+    class Meta:
+        db_table = 'provincia'
+
+
 class Municipio(models.Model):
     idmunicipio = models.AutoField(db_column='idMunicipio', primary_key=True)
     nombre = models.CharField(max_length=45)
-    provincia = models.CharField(max_length=45)
+    idprovincia = models.ForeignKey('Provincia', models.DO_NOTHING, db_column='idProvincia', blank=True, null=True)
 
     objects = OrdenadoManager()
 

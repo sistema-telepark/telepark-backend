@@ -129,6 +129,7 @@ def api_root(request, format=None):
             "tipos_parentesco": _safe_reverse("tipos-parentesco-list", request, format),
             "localidades": _safe_reverse("localidades-list", request, format),
             "municipios": _safe_reverse("municipios-list", request, format),
+            "provincias": _safe_reverse("provincias-list", request, format),
             "diagnosticos_por_persona_ep": _safe_reverse("personas-ep-diagnosticos", request, format),
             "evoluciones_por_persona_ep": _safe_reverse("personas-ep-evoluciones", request, format),
             "indicaciones_por_persona_ep": _safe_reverse("personas-ep-indicaciones", request, format),

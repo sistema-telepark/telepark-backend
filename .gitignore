@@ -3,6 +3,7 @@
 .venv/
 .vscode/
 .specs/
+specs/
 BD/
 
 AGENTS.md

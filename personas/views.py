@@ -6,11 +6,12 @@ from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 from .serializers import (
     DireccionSerializer, LocalidadSerializer,
     MunicipioSerializer, PersonaEpSerializer,
-    PersonaSerializer, TipoparentescoSerializer,
+    PersonaSerializer, ProvinciaSerializer,
+    TipoparentescoSerializer,
 )
 from .models import (
     Persona, PersonaEp, Direccion,
-    Tipoparentesco, Localidad, Municipio,
+    Tipoparentesco, Localidad, Municipio, Provincia,
 )
 
 
@@ -58,4 +59,12 @@ class MunicipioViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
     manager = Municipio.objects
     serializer_class = MunicipioSerializer
+    permission_classes = [IsAuthenticated]
+
+
+@auto_tag_schema_view
+class ProvinciaViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'personas'
+    manager = Provincia.objects
+    serializer_class = ProvinciaSerializer
     permission_classes = [IsAuthenticated]
