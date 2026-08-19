@@ -191,6 +191,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
+# GeoRef API (E8) — opcional, override solo dev/pruebas (REQ-E8-029)
+GEOREF_API_URL = os.getenv("GEOREF_API_URL", "https://apis.datos.gob.ar/georef/api")
+if not GEOREF_API_URL.startswith("https://"):
+    raise ValueError(
+        "GEOREF_API_URL debe ser HTTPS (SEC-E8-001). "
+        f"Recibido: {GEOREF_API_URL!r}"
+    )
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/

@@ -60,9 +60,10 @@ class Direccion(models.Model):
 
 class Localidad(models.Model):
     idlocalidad = models.AutoField(db_column='idLocalidad', primary_key=True)
-    nombre = models.CharField(max_length=45)
-    codigopostal = models.IntegerField(db_column='codigoPostal')
+    nombre = models.CharField(max_length=120)
+    codigopostal = models.IntegerField(db_column='codigoPostal', null=True, blank=True)
     idmunicipio = models.ForeignKey('Municipio', models.DO_NOTHING, db_column='idMunicipio', blank=True, null=True)
+    id_georef = models.CharField(db_column='idGeoref', unique=True, null=True, blank=True, max_length=20)
 
     objects = OrdenadoManager()
 
@@ -72,7 +73,8 @@ class Localidad(models.Model):
 
 class Provincia(models.Model):
     idprovincia = models.AutoField(db_column='idProvincia', primary_key=True)
-    nombre = models.CharField(max_length=45)
+    nombre = models.CharField(max_length=100)
+    id_georef = models.CharField(db_column='idGeoref', unique=True, null=True, blank=True, max_length=20)
 
     objects = OrdenadoManager()
 
@@ -82,8 +84,9 @@ class Provincia(models.Model):
 
 class Municipio(models.Model):
     idmunicipio = models.AutoField(db_column='idMunicipio', primary_key=True)
-    nombre = models.CharField(max_length=45)
+    nombre = models.CharField(max_length=120)
     idprovincia = models.ForeignKey('Provincia', models.DO_NOTHING, db_column='idProvincia', blank=True, null=True)
+    id_georef = models.CharField(db_column='idGeoref', unique=True, null=True, blank=True, max_length=20)
 
     objects = OrdenadoManager()
 
