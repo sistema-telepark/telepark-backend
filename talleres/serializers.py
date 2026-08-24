@@ -40,7 +40,9 @@ class AsistenciaTallerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asistenciataller
         fields = ('idasistenciataller', 'estado', 'idpersonaep', 'idclasetaller', 'idcomportamiento')
-        extra_kwargs = {'idcomportamiento': {'allow_null': True, 'required': False}}
+        extra_kwargs = {'idcomportamiento': {'allow_null': True, 'required': False},
+                        'idpersonaep': {'allow_null': True, 'required': False},
+                        'idclasetaller': {'allow_null': True, 'required': False}}
 
 
 class FactorClaseSerializer(serializers.ModelSerializer):

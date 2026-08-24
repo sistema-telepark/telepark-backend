@@ -45,7 +45,7 @@ class Actividad(models.Model):
 
 class Actividadrealizada(models.Model):
     idactividad = models.OneToOneField(Actividad, models.DO_NOTHING, db_column='idActividad', primary_key=True)
-    idclasetaller = models.ForeignKey(Clasetaller, models.DO_NOTHING, db_column='idClaseTaller')
+    idclasetaller = models.ForeignKey(Clasetaller, models.CASCADE, db_column='idClaseTaller')
 
     objects = OrdenadoManager()
 
@@ -67,8 +67,8 @@ class Comportamiento(models.Model):
 class Asistenciataller(models.Model):
     idasistenciataller = models.AutoField(db_column='idAsistenciaTaller', primary_key=True)
     estado = models.CharField(max_length=45)
-    idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')
-    idclasetaller = models.ForeignKey(Clasetaller, models.DO_NOTHING, db_column='idClaseTaller')
+    idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP', blank=True, null=True)
+    idclasetaller = models.ForeignKey(Clasetaller, models.SET_NULL, db_column='idClaseTaller', blank=True, null=True)
     idcomportamiento = models.ForeignKey(Comportamiento, models.DO_NOTHING, db_column='idComportamiento', blank=True, null=True)
 
     objects = AsistenciaTallerManager()
@@ -78,7 +78,7 @@ class Asistenciataller(models.Model):
 
 
 class Factorclase(models.Model):
-    idclasetaller = models.OneToOneField(Clasetaller, models.DO_NOTHING, db_column='idClaseTaller', primary_key=True)
+    idclasetaller = models.OneToOneField(Clasetaller, models.CASCADE, db_column='idClaseTaller', primary_key=True)
     idfactorglobal = models.ForeignKey('Factorglobal', models.DO_NOTHING, db_column='idFactorGlobal')
 
     objects = OrdenadoManager()

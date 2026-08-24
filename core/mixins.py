@@ -1,4 +1,9 @@
+import re
+
 from drf_spectacular.utils import extend_schema_view, extend_schema
+from rest_framework.exceptions import ValidationError
+
+_NUMERIC_RE = re.compile(r'^-?\d+$')
 
 
 class ModelPKMixin:
@@ -20,6 +25,43 @@ class ModelPKMixin:
 
 class NoPaginationMixin:
     pagination_class = None
+
+
+class CascadeFilterMixin:
+    """Aplica filtros de cascada y desactiva la paginación cuando están activos."""
+
+    cascade_lookups = {}
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        request = getattr(self, 'request', None)
+        if request is None:
+            return qs
+        for param, lookup in self.cascade_lookups.items():
+            valor = request.query_params.get(param)
+            if valor is None or valor == '':
+                # Param ausente o vacío → tratado como ausente, sin filtro ni error.
+                continue
+            if _NUMERIC_RE.match(valor) is None:
+                raise ValidationError({
+                    'detail': f'El parámetro "{param}" debe ser un ID numérico (recibido: "{valor}").'
+                })
+            if callable(lookup):
+                kwargs = lookup(valor)
+            else:
+                kwargs = {lookup: valor}
+            qs = qs.filter(**kwargs)
+        return qs
+
+    def paginate_queryset(self, queryset):
+        request = getattr(self, 'request', None)
+        if request is not None:
+            for param in self.cascade_lookups:
+                valor = request.query_params.get(param)
+                if valor is not None and valor != '':
+                    # Filtro de cascada activo → array plano (paginación desactivada).
+                    return None
+        return super().paginate_queryset(queryset)
 
 
 def auto_tag_schema_view(cls):

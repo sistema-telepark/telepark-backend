@@ -28,7 +28,9 @@ class DireccionSerializer(serializers.ModelSerializer):
                   'numero',
                   'piso',
                   'idlocalidad')
-        extra_kwargs = {'idlocalidad': {'allow_null': True, 'required': False}}
+        extra_kwargs = {'idlocalidad': {'allow_null': True, 'required': False},
+                        'departamento': {'allow_null': True, 'required': False},
+                        'piso': {'allow_null': True, 'required': False}}
 
 
 class LocalidadSerializer(serializers.ModelSerializer):
