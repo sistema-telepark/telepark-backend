@@ -1,11 +1,11 @@
 # Environments, AGENTS, and IDEs
 .env
 .venv/
+.opencode/
 .vscode/
 .specs/
 specs/
 BD/
-
 AGENTS.md
 
 # Cache

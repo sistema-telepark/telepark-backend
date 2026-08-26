@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 from .models import Persona, PersonaEp, Direccion, Localidad, Municipio, Provincia, Tipoparentesco
 
@@ -7,16 +8,6 @@ class PersonaSerializer(serializers.ModelSerializer):
         model = Persona
         fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado', 'espaciente', 'sexo', 'fechanacimiento')
         extra_kwargs = {'iddireccion': {'allow_null': True, 'required': False}}
-
-
-class PersonaEpSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PersonaEp
-        fields = '__all__'
-        extra_kwargs = {
-            'sexo': {'required': True, 'allow_null': False},
-            'fechanacimiento': {'required': True, 'allow_null': False},
-        }
 
 
 class DireccionSerializer(serializers.ModelSerializer):
@@ -31,6 +22,64 @@ class DireccionSerializer(serializers.ModelSerializer):
         extra_kwargs = {'idlocalidad': {'allow_null': True, 'required': False},
                         'departamento': {'allow_null': True, 'required': False},
                         'piso': {'allow_null': True, 'required': False}}
+
+
+class ReferenteSerializer(serializers.ModelSerializer):
+    direccion = DireccionSerializer(write_only=True, required=False, allow_null=True)
+
+    class Meta:
+        model = Persona
+        fields = ('nombre', 'apellido', 'telefono', 'sexo', 'fechanacimiento', 'direccion')
+        extra_kwargs = {
+            'sexo': {'required': False, 'allow_null': True},
+            'fechanacimiento': {'required': False, 'allow_null': True},
+        }
+
+
+class PersonaEpSerializer(serializers.ModelSerializer):
+    direccion = DireccionSerializer(write_only=True, required=False, allow_null=True)
+    referente = ReferenteSerializer(write_only=True)
+
+    class Meta:
+        model = PersonaEp
+        fields = (
+            'idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion',
+            'borrado', 'espaciente', 'sexo', 'fechanacimiento',
+            'activataller', 'escolaridadcompleta', 'fechainicio',
+            'maximaescolaridadalcanzada', 'tieneacompanante', 'tienecuidador',
+            'vivesolo', 'ocupacionprevia', 'ocupacionactual', 'idreferente',
+            'direccion', 'referente',
+        )
+        extra_kwargs = {
+            'iddireccion': {'read_only': True},
+            'idreferente': {'read_only': True},
+            'borrado': {'read_only': True},
+            'espaciente': {'read_only': True},
+            'sexo': {'required': False, 'allow_null': True},
+            'fechanacimiento': {'required': False, 'allow_null': True},
+        }
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            referente_data = validated_data.pop('referente')
+            direccion_data = validated_data.pop('direccion', None)
+
+            referente_direccion_data = referente_data.pop('direccion', None)
+            referente_direccion = Direccion.objects.create(**referente_direccion_data) if referente_direccion_data else None
+            referente = Persona.objects.create(
+                **referente_data,
+                borrado=0,
+                espaciente=0,
+                iddireccion=referente_direccion,
+            )
+
+            direccion = Direccion.objects.create(**direccion_data) if direccion_data else None
+
+            validated_data['iddireccion'] = direccion
+            validated_data['idreferente'] = referente
+            validated_data['borrado'] = 0
+            validated_data['espaciente'] = 1
+            return super().create(validated_data)
 
 
 class LocalidadSerializer(serializers.ModelSerializer):
