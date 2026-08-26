@@ -44,7 +44,7 @@ class PersonaEpSerializer(serializers.ModelSerializer):
         model = PersonaEp
         fields = (
             'idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion',
-            'borrado', 'espaciente', 'sexo', 'fechanacimiento',
+            'borrado', 'sexo', 'fechanacimiento',
             'activataller', 'escolaridadcompleta', 'fechainicio',
             'maximaescolaridadalcanzada', 'tieneacompanante', 'tienecuidador',
             'vivesolo', 'ocupacionprevia', 'ocupacionactual', 'idreferente',
@@ -54,7 +54,6 @@ class PersonaEpSerializer(serializers.ModelSerializer):
             'iddireccion': {'read_only': True},
             'idreferente': {'read_only': True},
             'borrado': {'read_only': True},
-            'espaciente': {'read_only': True},
             'sexo': {'required': False, 'allow_null': True},
             'fechanacimiento': {'required': False, 'allow_null': True},
         }
