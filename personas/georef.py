@@ -11,6 +11,9 @@ Estrategia en dos fases (decisión HITL 2026-08-19):
 
 Los departamentos se ignoran (decisión del roadmap). Los IDs originales de
 GeoRef se preservan en ``id_georef`` (Opción 1, decisión HITL 2026-08-19).
+El catálogo de localidades se descarga desde ``/localidades-censales`` (INDEC)
+como fuente única (E11, decisión HITL 2026-08-26); la clave de payload es
+``localidades_censales`` (guión bajo), distinta de la ruta del endpoint.
 """
 import json
 import os
@@ -90,8 +93,14 @@ def _get_json(url, params):
         ) from e
 
 
-def _descargar_recurso(endpoint, campos):
+def _descargar_recurso(endpoint, campos, clave=None):
     """Descarga un recurso paginado con ``max=1000``/``inicio`` y ``orden=id``.
+
+    ``clave`` es la key del payload JSON donde vive la lista de items; por
+    defecto coincide con ``endpoint``. Algunos endpoints usan una clave distinta
+    de su ruta (ej. ``/localidades-censales`` → payload ``localidades_censales``),
+    por lo que la clave debe pasarse explícita para no retornar una lista vacía
+    en silencio (REQ-11.1.2, REQ-11.1.4).
 
     Retorna la lista cruda de items de GeoRef (REQ-E8-004, REQ-E8-005).
     """
@@ -109,7 +118,7 @@ def _descargar_recurso(endpoint, campos):
             'aplanar': 'true',
         }
         data = _get_json(f'{url}/{endpoint}', params)
-        items = data.get(endpoint, [])
+        items = data.get(clave or endpoint, [])
         if not items:
             break
         resultados.extend(items)
@@ -151,12 +160,20 @@ def descargar_municipios():
 
 
 def descargar_localidades():
-    """Descarga localidades: ``campos=id,nombre,provincia.id,municipio.id``.
+    """Descarga localidades desde ``/localidades-censales`` (INDEC, fuente única — E11).
+
+    ``campos=id,nombre,provincia.id,municipio.id``. La clave de payload es
+    ``localidades_censales`` (guión bajo), distinta de la ruta del endpoint
+    (guión) — se pasa explícita a ``_descargar_recurso`` (REQ-11.1.1, REQ-11.1.3).
 
     Retorna ``{id, nombre, provincia_id, municipio_id}`` con ``municipio_id``
     nullable (ejidos no colindantes — REQ-E8-025).
     """
-    items = _descargar_recurso('localidades', 'id,nombre,provincia.id,municipio.id')
+    items = _descargar_recurso(
+        'localidades-censales',
+        'id,nombre,provincia.id,municipio.id',
+        clave='localidades_censales',
+    )
     return [_normalizar_item(i, ('id', 'nombre', 'provincia_id', 'municipio_id')) for i in items]
 
 
