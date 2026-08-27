@@ -27,6 +27,22 @@ def _resolver_localidades_por_provincia(valor):
     return {'id_georef__startswith': provincia.id_georef}
 
 
+_CABA_PROVINCIA_GEO_REF = '02'          # Provincia CABA (GeoRef/INDEC)
+_CABA_LOCALIDAD_GEO_REF = '02000010'    # localidad censal única de CABA
+
+
+def _resolver_localidades_por_municipio(valor):
+    """Resuelve el filtro idmunicipio; para comunas de CABA devuelve la localidad censal única."""
+    try:
+        municipio = Municipio.objects.select_related('idprovincia').get(pk=valor)
+    except Municipio.DoesNotExist:
+        return {'pk__in': []}
+    if (municipio.idprovincia is not None
+            and municipio.idprovincia.id_georef == _CABA_PROVINCIA_GEO_REF):
+        return {'id_georef': _CABA_LOCALIDAD_GEO_REF}
+    return {'idmunicipio': valor}
+
+
 @auto_tag_schema_view
 class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
@@ -69,7 +85,7 @@ class LocalidadViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = LocalidadSerializer
     permission_classes = [IsAuthenticated]
     cascade_lookups = {
-        'idmunicipio': 'idmunicipio',
+        'idmunicipio': _resolver_localidades_por_municipio,
         'idprovincia': _resolver_localidades_por_provincia,
     }
 
