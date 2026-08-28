@@ -1,14 +1,16 @@
-"""Helpers modulares para autenticación y gestión de usuarios.
-
-Reemplaza a UsuarioService (clase) con funciones independientes,
-preservando toda la lógica de negocio original.
-"""
+"""Helpers modulares para autenticación y gestión de usuarios."""
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from core.exceptions import (
+    ConflictError,
+    InvalidCredentialsError,
+    ValidationError as DomainValidationError,
+)
 
 
 def autenticar(data):
@@ -19,13 +21,13 @@ def autenticar(data):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        raise ValueError('Credenciales inválidas')
+        raise InvalidCredentialsError('Credenciales inválidas')
 
     if not check_password(password, user.password):
-        raise ValueError('Credenciales inválidas')
+        raise InvalidCredentialsError('Credenciales inválidas')
 
     if not user.is_active:
-        raise ValueError('El usuario está deshabilitado')
+        raise InvalidCredentialsError('El usuario está deshabilitado')
 
     token = RefreshToken.for_user(user)
 
@@ -44,16 +46,16 @@ def crear_usuario(data):
     email = data.get('email')
 
     if User.objects.filter(username=username).exists():
-        raise ValueError('El usuario ya existe')
+        raise DomainValidationError('El usuario ya existe')
 
     if email and User.objects.filter(email=email).exists():
-        raise ValueError({'email': 'El email ya está registrado'})
+        raise DomainValidationError({'email': 'El email ya está registrado'})
 
     password = data.get('password')
     try:
         validate_password(password)
     except DjangoValidationError as e:
-        raise ValueError({'password': list(e.messages)})
+        raise DomainValidationError({'password': list(e.messages)})
 
     User.objects.create_user(
         username=username,
@@ -77,12 +79,12 @@ def actualizar_usuario(data, user_id=None):
     try:
         user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
-        raise ValueError('Usuario no encontrado')
+        raise LookupError('Usuario no encontrado')
 
     if 'email' in data:
         new_email = data['email']
         if User.objects.filter(email=new_email).exclude(pk=user.pk).exists():
-            raise ValueError({'email': 'El email ya está registrado'})
+            raise DomainValidationError({'email': 'El email ya está registrado'})
         user.email = new_email
 
     if 'password' in data:
@@ -90,7 +92,7 @@ def actualizar_usuario(data, user_id=None):
         try:
             validate_password(password)
         except DjangoValidationError as e:
-            raise ValueError({'password': list(e.messages)})
+            raise DomainValidationError({'password': list(e.messages)})
         user.set_password(password)
 
     if 'first_name' in data:
@@ -139,7 +141,7 @@ def cambiar_rol(actor_user, target_id, is_superuser):
     if not is_superuser:
         admin_count = User.objects.filter(is_superuser=True, is_active=True).count()
         if admin_count == 1 and target.is_superuser:
-            raise ValueError('No puedes degradar al último administrador del sistema')
+            raise ConflictError('No puedes degradar al último administrador del sistema')
 
     target.is_superuser = is_superuser
     target.is_staff = is_superuser
