@@ -9,7 +9,9 @@ Estrategia en dos fases (decisión HITL 2026-08-19):
 2. despliegue — ``cargar_georef`` carga desde fixtures (fuente primaria) con
    fallback a la API GeoRef.
 
-Los departamentos se ignoran (decisión del roadmap). Los IDs originales de
+Los departamentos se cargan como municipios solo para provincias sin municipios
+(E13, D-E13.2=A); las localidades homónimas sintéticas completan los municipios
+sin localidad (E13, D-E13.1=A, excl. CABA — E12/ADR-006). Los IDs originales de
 GeoRef se preservan en ``id_georef`` (Opción 1, decisión HITL 2026-08-19).
 El catálogo de localidades se descarga desde ``/localidades-censales`` (INDEC)
 como fuente única (E11, decisión HITL 2026-08-26); la clave de payload es
@@ -159,6 +161,41 @@ def descargar_municipios():
     return [_normalizar_item(i, ('id', 'nombre', 'provincia_id')) for i in items]
 
 
+def descargar_departamentos():
+    """Descarga departamentos: ``campos=id,nombre,provincia.id`` → ``{id, nombre, provincia_id}``.
+
+    Fuente del segundo nivel administrativo para provincias sin municipios
+    (D-E13.2=A, US-13.1). Sin cambios de modelo/API.
+    """
+    items = _descargar_recurso('departamentos', 'id,nombre,provincia.id')
+    return [_normalizar_item(i, ('id', 'nombre', 'provincia_id')) for i in items]
+
+
+def completar_municipios_con_departamentos(municipios, departamentos):
+    """Merge departamentos como municipios solo para provincias con 0 municipios (D-E13.2=A).
+
+    Función pura determinística (sin tocar BD): detecta las provincias que ya
+    tienen municipios a partir de ``municipios``, filtra los departamentos de las
+    provincias restantes (sin municipios) y retorna ``municipios + filtrados``
+    ordenados por ``id``. Los ``id_georef`` de departamentos (ej. ``78007``) no
+    colisionan con municipios reales (prefijo provincial único, solo se cargan en
+    provincias sin municipios).
+    """
+    provincias_con_municipios = {m['provincia_id'] for m in municipios}
+    departamentos_filtrados = [
+        d for d in departamentos
+        if d['provincia_id'] not in provincias_con_municipios
+    ]
+    return sorted(municipios + departamentos_filtrados, key=lambda x: x['id'])
+
+
+def descargar_municipios_completos():
+    """Descarga municipios + departamentos de provincias sin municipios (D-E13.2=A)."""
+    municipios = descargar_municipios()
+    departamentos = descargar_departamentos()
+    return completar_municipios_con_departamentos(municipios, departamentos)
+
+
 def descargar_localidades():
     """Descarga localidades desde ``/localidades-censales`` (INDEC, fuente única — E11).
 
@@ -175,6 +212,63 @@ def descargar_localidades():
         clave='localidades_censales',
     )
     return [_normalizar_item(i, ('id', 'nombre', 'provincia_id', 'municipio_id')) for i in items]
+
+
+def generar_localidades_sinteticas(localidades, municipios):
+    """Crea localidades homónimas sintéticas para municipios sin localidad (D-E13.1=A).
+
+    Función pura determinística (sin tocar BD): para cada municipio sin localidad
+    (y no CABA — Supuesto 1, E12/ADR-006 ya resuelve las comunas), genera una
+    localidad con ``id_georef = f"{municipio_id}0000"`` (ej. municipio ``060707``
+    → ``0607070000``; departamento ``78007`` → ``780070000``). Si el id sintético
+    ya existe → ``GeoRefError`` claro, sin sobreescritura (EARS UNWANTED).
+    Retorna ``localidades + sintéticas`` ordenadas por ``id``.
+    """
+    municipios_con_localidad = {
+        l['municipio_id'] for l in localidades if l.get('municipio_id')
+    }
+    existentes = {l['id'] for l in localidades}
+    sinteticas = []
+    for m in municipios:
+        if m['id'] in municipios_con_localidad:
+            continue
+        if m['provincia_id'] == '02':
+            continue  # CABA — Supuesto 1 (E12/ADR-006)
+        id_sintetico = f"{m['id']}0000"
+        if id_sintetico in existentes:
+            raise GeoRefError(
+                f"Colisión de id_georef sintético {id_sintetico!r} "
+                f"(municipio {m['id']!r} {m['nombre']!r}): ya existe una localidad "
+                'con ese id. No se sobreescribe (EARS UNWANTED).'
+            )
+        sinteticas.append({
+            'id': id_sintetico,
+            'nombre': m['nombre'],
+            'provincia_id': m['provincia_id'],
+            'municipio_id': m['id'],
+        })
+        existentes.add(id_sintetico)
+    return sorted(localidades + sinteticas, key=lambda x: x['id'])
+
+
+def descargar_catalogo_completo():
+    """Descarga el catálogo completo con completitud aplicada (E13).
+
+    Orquesta: provincias → municipios completos (con departamentos de provincias
+    sin municipios) → localidades (+ homónimas sintéticas). Retorna el dict
+    ``{'provincias': [...], 'municipios': [...], 'localidades': [...]}`` listo
+    para ``generar_fixtures``/``cargar_catalogo`` (shapes de dict idénticos a los
+    fixtures; ``cargar_*`` no cambian).
+    """
+    provincias = descargar_provincias()
+    municipios = descargar_municipios_completos()
+    localidades = descargar_localidades()
+    localidades = generar_localidades_sinteticas(localidades, municipios)
+    return {
+        'provincias': provincias,
+        'municipios': municipios,
+        'localidades': localidades,
+    }
 
 
 def _escribir_atomico(ruta, items):
@@ -279,4 +373,25 @@ def cargar_catalogo(datos):
         'provincias': cargar_provincias(datos),
         'municipios': cargar_municipios(datos),
         'localidades': cargar_localidades(datos),
+    }
+
+
+def verificar_completitud():
+    """Verifica la completitud del catálogo en BD (US-13.4).
+
+    Consulta ORM (sin lógica en views — ADR-001, GLOBAL_RULES §1): reporta
+    provincias sin municipios y municipios sin localidades. Las comunas de CABA
+    se excluyen del conteo de municipios sin localidad (Supuesto 1 — E12/ADR-006
+    ya las resuelve vía la localidad censal única ``02000010``).
+    """
+    provincias_sin_municipios = Provincia.objects.filter(municipio__isnull=True).count()
+    municipios_sin_localidades = (
+        Municipio.objects.filter(localidad__isnull=True)
+        .exclude(idprovincia__id_georef='02')
+        .count()
+    )
+    return {
+        'provincias_sin_municipios': provincias_sin_municipios,
+        'municipios_sin_localidades': municipios_sin_localidades,
+        'ok': provincias_sin_municipios == 0 and municipios_sin_localidades == 0,
     }

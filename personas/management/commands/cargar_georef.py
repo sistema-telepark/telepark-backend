@@ -15,9 +15,7 @@ from django.db import transaction
 from personas.georef import (
     GeoRefError,
     cargar_catalogo,
-    descargar_localidades,
-    descargar_municipios,
-    descargar_provincias,
+    descargar_catalogo_completo,
     generar_fixtures,
     leer_fixtures,
 )
@@ -95,12 +93,12 @@ class Command(BaseCommand):
         ))
 
     def _descargar_todo(self):
-        """Descarga provincias, municipios y localidades desde la API GeoRef."""
-        return {
-            'provincias': descargar_provincias(),
-            'municipios': descargar_municipios(),
-            'localidades': descargar_localidades(),
-        }
+        """Descarga el catálogo completo con completitud aplicada (E13).
+
+        Provincias → municipios (+ departamentos de provincias sin municipios) →
+        localidades (+ homónimas sintéticas). Sin tocar BD.
+        """
+        return descargar_catalogo_completo()
 
     def _verificar_guard_integridad(self):
         """Aborta ``--force`` si existe una ``Direccion`` referenciando ``Localidad``.
