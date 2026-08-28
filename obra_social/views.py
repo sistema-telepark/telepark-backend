@@ -5,7 +5,7 @@ from rest_framework.generics import GenericAPIView
 
 from drf_spectacular.utils import extend_schema
 
-from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
+from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEpSubresourceMixin, auto_tag_schema_view
 
 from .serializers import (
     ObraSocialSerializer, OSEpSerializer, OSSerializer,
@@ -30,12 +30,13 @@ class OSViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 
 
 @extend_schema(tags=['obra_social'])
-class OsPorPersonaEpView(GenericAPIView):
+class OsPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = OSEpSerializer
     queryset = Os.objects.none()
 
     def get(self, request, personaep_pk):
+        self.validar_personaep(personaep_pk)
         obrasociales = Os.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idobrasocial'])
         serializer = self.get_serializer(obrasociales, many=True)
         return Response(serializer.data)

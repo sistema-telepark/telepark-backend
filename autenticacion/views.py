@@ -47,10 +47,7 @@ from autenticacion.helpers import (
 def auth_view(request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    try:
-        result = autenticar(serializer.validated_data)
-    except ValueError as e:
-        return Response({"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
+    result = autenticar(serializer.validated_data)
     return Response(result, status=status.HTTP_200_OK)
 
 
@@ -148,12 +145,7 @@ def usuarios_list(request):
     elif request.method == 'POST':
         serializer = CreateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            result = crear_usuario(serializer.validated_data)
-        except ValueError as e:
-            if e.args and isinstance(e.args[0], dict):
-                return Response(e.args[0], status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        result = crear_usuario(serializer.validated_data)
         return Response(result, status=status.HTTP_201_CREATED)
 
 
@@ -192,7 +184,8 @@ def usuarios_list(request):
                     },
                 },
             ),
-            400: OpenApiResponse(description="Datos inválidos o usuario no encontrado"),
+            400: OpenApiResponse(description="Datos inválidos"),
+            404: OpenApiResponse(description="Usuario no encontrado"),
         },
     ),
     patch=extend_schema(
@@ -229,52 +222,31 @@ def usuarios_list(request):
 @permission_classes([IsSuperuser])
 def usuarios_detail(request, idusuario):
     if request.method == 'GET':
-        try:
-            user = obtener_usuario_por_id(idusuario)
-            serializer = UserListOutputSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except LookupError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        user = obtener_usuario_por_id(idusuario)
+        serializer = UserListOutputSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     elif request.method == 'PUT':
         serializer = UpdateUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            result = actualizar_usuario(
-                serializer.validated_data,
-                user_id=idusuario,
-            )
-        except ValueError as e:
-            if e.args and isinstance(e.args[0], dict):
-                return Response(e.args[0], status=status.HTTP_400_BAD_REQUEST)
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        result = actualizar_usuario(
+            serializer.validated_data,
+            user_id=idusuario,
+        )
         return Response(result, status=status.HTTP_200_OK)
 
     elif request.method == 'PATCH':
         serializer = RoleChangeSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            result = cambiar_rol(
-                actor_user=request.user,
-                target_id=idusuario,
-                is_superuser=serializer.validated_data['is_superuser'],
-            )
-        except LookupError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
-        except PermissionError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_403_FORBIDDEN)
-        except ValueError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_409_CONFLICT)
+        result = cambiar_rol(
+            actor_user=request.user,
+            target_id=idusuario,
+            is_superuser=serializer.validated_data['is_superuser'],
+        )
         return Response(result, status=status.HTTP_200_OK)
 
     elif request.method == 'DELETE':
         if request.user.id == idusuario:
-            return Response(
-                {"detail": "No puedes eliminar tu propio usuario"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        try:
-            eliminar_usuario(idusuario)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except LookupError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_404_NOT_FOUND)
+            raise PermissionError('No puedes eliminar tu propio usuario')
+        eliminar_usuario(idusuario)
+        return Response(status=status.HTTP_204_NO_CONTENT)

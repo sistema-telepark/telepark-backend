@@ -1,7 +1,8 @@
 import re
 
+from django.apps import apps
 from drf_spectacular.utils import extend_schema_view, extend_schema
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 
 _NUMERIC_RE = re.compile(r'^-?\d+$')
 
@@ -25,6 +26,16 @@ class ModelPKMixin:
 
 class NoPaginationMixin:
     pagination_class = None
+
+
+class PersonaEpSubresourceMixin:
+    """Valida la existencia del PersonaEp antes de filtrar sub-recursos."""
+
+    def validar_personaep(self, personaep_pk):
+        # `apps.get_model` evita el import circular core → personas.
+        PersonaEp = apps.get_model('personas', 'PersonaEp')
+        if not PersonaEp.objects.filter(pk=personaep_pk).exists():
+            raise NotFound('No encontrado')
 
 
 class CascadeFilterMixin:

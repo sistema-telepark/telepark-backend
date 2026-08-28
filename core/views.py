@@ -68,11 +68,7 @@ def health_check(request):
 
 
 def custom_404_view(request, exception=None):
-    """Handler 404 personalizado con mensajes en español para REQ-VRS-09.
-
-    Responde con JSON detallando la ruta solicitada y, cuando es una ruta
-    legacy conocida, sugiere el endpoint equivalente en /api/v1/.
-    """
+    """Handler 404 personalizado con mensajes."""
     path = getattr(request, 'path', '')
 
     # Mapa de rutas legacy conocidas → sugerencia
@@ -102,7 +98,10 @@ def custom_404_view(request, exception=None):
             f"La ruta solicitada no existe en la API versionada /api/v1/"
         )
 
-    return JsonResponse({"detail": detail}, status=404)
+    return JsonResponse(
+        {"detail": detail, "code": "not_found", "status": 404},
+        status=404,
+    )
 
 
 @extend_schema(
