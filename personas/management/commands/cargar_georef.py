@@ -1,8 +1,8 @@
-"""Comando de gestión ``cargar_georef`` (E8).
+"""Comando de gestión ``cargar_georef``.
 
 Carga el catálogo geográfico GeoRef (provincias, municipios, localidades) de
 forma idempotente. No contiene lógica de descarga/carga inline: delega en
-``personas/georef.py`` (contrato §7, fila "Comando de gestión").
+``personas/georef.py``.
 
 Flags:
 - ``--solo-descargar``: regenera los fixtures JSON desde la API sin tocar la BD.
@@ -78,7 +78,7 @@ class Command(BaseCommand):
         ))
 
     def _solo_descargar(self):
-        """Regenera los fixtures JSON desde la API sin tocar la BD (REQ-E8-011, REQ-E8-020)."""
+        """Regenera los fixtures JSON desde la API sin tocar la BD."""
         try:
             datos = self._descargar_todo()
             generar_fixtures(datos)
@@ -93,7 +93,7 @@ class Command(BaseCommand):
         ))
 
     def _descargar_todo(self):
-        """Descarga el catálogo completo con completitud aplicada (E13).
+        """Descarga el catálogo completo con completitud aplicada.
 
         Provincias → municipios (+ departamentos de provincias sin municipios) →
         localidades (+ homónimas sintéticas). Sin tocar BD.
@@ -103,12 +103,12 @@ class Command(BaseCommand):
     def _verificar_guard_integridad(self):
         """Aborta ``--force`` si existe una ``Direccion`` referenciando ``Localidad``.
 
-        Sin borrar datos (REQ-E8-013, SEC-E8-006).
+        Sin borrar datos.
         """
         if Direccion.objects.filter(idlocalidad__isnull=False).exists():
             raise CommandError(
                 'No se puede forzar la recarga: existen direcciones referenciando localidades. '
-                'Elimine o reasigne esas direcciones antes de usar --force (REQ-E8-013).'
+                'Elimine o reasigne esas direcciones antes de usar --force.'
             )
 
     def _borrar_catalogo(self):

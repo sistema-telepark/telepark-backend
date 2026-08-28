@@ -1,9 +1,9 @@
-"""Comando de gestión ``check_completitud_georef`` (E13, US-13.4).
+"""Comando de gestión ``check_completitud_georef``.
 
 Verifica la completitud del catálogo geográfico en BD: 0 provincias sin
-municipios y 0 municipios sin localidades (CABA excluida — E12/ADR-006).
-Delega en ``personas/georef.verificar_completitud()`` (sin lógica inline —
-ADR-001); imprime un reporte y sale con código ≠ 0 si la completitud falla.
+municipios y 0 municipios sin localidades.
+Delega en ``personas/georef.verificar_completitud()``; imprime un reporte 
+y sale con código ≠ 0 si la completitud falla.
 """
 from django.core.management.base import BaseCommand, CommandError
 
