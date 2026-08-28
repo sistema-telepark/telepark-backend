@@ -6,7 +6,7 @@ from .models import Persona, PersonaEp, Direccion, Localidad, Municipio, Provinc
 class PersonaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Persona
-        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado', 'espaciente', 'sexo', 'fechanacimiento')
+        fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado', 'sexo', 'fechanacimiento')
         extra_kwargs = {'iddireccion': {'allow_null': True, 'required': False}}
 
 
@@ -68,7 +68,6 @@ class PersonaEpSerializer(serializers.ModelSerializer):
             referente = Persona.objects.create(
                 **referente_data,
                 borrado=0,
-                espaciente=0,
                 iddireccion=referente_direccion,
             )
 
@@ -77,7 +76,6 @@ class PersonaEpSerializer(serializers.ModelSerializer):
             validated_data['iddireccion'] = direccion
             validated_data['idreferente'] = referente
             validated_data['borrado'] = 0
-            validated_data['espaciente'] = 1
             return super().create(validated_data)
 
 
