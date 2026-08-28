@@ -1,20 +1,4 @@
-"""Módulo de carga del catálogo geográfico GeoRef (E8).
-
-Funciones standalone (sin clases, sin service layer — ADR-001), siguiendo el
-patrón de ``autenticacion/helpers.py``. Solo ``urllib`` de la stdlib para HTTP
-(REQ-E8-002, SEC-E8-005): PROHIBIDO agregar dependencias nuevas.
-
-Estrategia en dos fases (decisión HITL 2026-08-19):
-1. offline — ``cargar_georef --solo-descargar`` genera fixtures JSON commiteados.
-2. despliegue — ``cargar_georef`` carga desde fixtures (fuente primaria) con
-   fallback a la API GeoRef.
-
-Los departamentos se ignoran (decisión del roadmap). Los IDs originales de
-GeoRef se preservan en ``id_georef`` (Opción 1, decisión HITL 2026-08-19).
-El catálogo de localidades se descarga desde ``/localidades-censales`` (INDEC)
-como fuente única (E11, decisión HITL 2026-08-26); la clave de payload es
-``localidades_censales`` (guión bajo), distinta de la ruta del endpoint.
-"""
+"""Módulo de carga del catálogo geográfico GeoRef."""
 import json
 import os
 import tempfile
@@ -42,22 +26,15 @@ FIXTURE_FILES = {
 
 
 class GeoRefError(Exception):
-    """Error explícito de descarga/carga del catálogo GeoRef.
-
-    Mensaje claro para el operador, sin stacktrace (REQ-E8-006, SEC-E8-004).
-    """
+    """Error explícito de descarga/carga del catálogo GeoRef."""
 
 
 def _validar_url_https(url):
-    """Rechaza con error claro si la URL base no comienza con ``https://``.
-
-    Defensa en profundidad (SEC-E8-001): la validación primaria vive en
-    ``telepark/settings.py`` (fail-fast al arranque).
-    """
+    """Rechaza con error claro si la URL base no comienza con ``https://``."""
     if not url.startswith('https://'):
         raise GeoRefError(
             f'GEOREF_API_URL debe ser HTTPS (recibido: {url!r}). '
-            'URLs http:// o file:// están prohibidas (SEC-E8-001).'
+            'URLs http:// o file:// están prohibidas.'
         )
 
 
@@ -65,7 +42,6 @@ def _get_json(url, params):
     """GET con ``urllib.request``, timeout 30s.
 
     Error HTTP o JSON inválido → ``GeoRefError`` con mensaje claro
-    (REQ-E8-006, SEC-E8-004).
     """
     query = urllib.parse.urlencode(params)
     full_url = f'{url}?{query}'
@@ -100,9 +76,9 @@ def _descargar_recurso(endpoint, campos, clave=None):
     defecto coincide con ``endpoint``. Algunos endpoints usan una clave distinta
     de su ruta (ej. ``/localidades-censales`` → payload ``localidades_censales``),
     por lo que la clave debe pasarse explícita para no retornar una lista vacía
-    en silencio (REQ-11.1.2, REQ-11.1.4).
+    en silencio.
 
-    Retorna la lista cruda de items de GeoRef (REQ-E8-004, REQ-E8-005).
+    Retorna la lista cruda de items de GeoRef.
     """
     url = settings.GEOREF_API_URL
     _validar_url_https(url)
@@ -135,7 +111,7 @@ def _normalizar_item(item, claves):
 
     Con ``aplanar=true`` la API suele devolver ``provincia_id``/``municipio_id``
     directos; si no, se extraen manualmente los anidados ``provincia.id`` /
-    ``municipio.id`` (nota de normalización del plan, S-08).
+    ``municipio.id``.
     """
     normalizado = {clave: item[clave] for clave in claves if clave in item}
 
@@ -159,15 +135,50 @@ def descargar_municipios():
     return [_normalizar_item(i, ('id', 'nombre', 'provincia_id')) for i in items]
 
 
+def descargar_departamentos():
+    """Descarga departamentos: ``campos=id,nombre,provincia.id`` → ``{id, nombre, provincia_id}``.
+
+    Fuente del segundo nivel administrativo para provincias sin municipios.
+    Sin cambios de modelo/API.
+    """
+    items = _descargar_recurso('departamentos', 'id,nombre,provincia.id')
+    return [_normalizar_item(i, ('id', 'nombre', 'provincia_id')) for i in items]
+
+
+def completar_municipios_con_departamentos(municipios, departamentos):
+    """Merge departamentos como municipios solo para provincias con 0 municipios.
+
+    Función pura determinística (sin tocar BD): detecta las provincias que ya
+    tienen municipios a partir de ``municipios``, filtra los departamentos de las
+    provincias restantes (sin municipios) y retorna ``municipios + filtrados``
+    ordenados por ``id``. Los ``id_georef`` de departamentos (ej. ``78007``) no
+    colisionan con municipios reales (prefijo provincial único, solo se cargan en
+    provincias sin municipios).
+    """
+    provincias_con_municipios = {m['provincia_id'] for m in municipios}
+    departamentos_filtrados = [
+        d for d in departamentos
+        if d['provincia_id'] not in provincias_con_municipios
+    ]
+    return sorted(municipios + departamentos_filtrados, key=lambda x: x['id'])
+
+
+def descargar_municipios_completos():
+    """Descarga municipios + departamentos de provincias sin municipios."""
+    municipios = descargar_municipios()
+    departamentos = descargar_departamentos()
+    return completar_municipios_con_departamentos(municipios, departamentos)
+
+
 def descargar_localidades():
-    """Descarga localidades desde ``/localidades-censales`` (INDEC, fuente única — E11).
+    """Descarga localidades desde ``/localidades-censales`` (INDEC, fuente única).
 
     ``campos=id,nombre,provincia.id,municipio.id``. La clave de payload es
     ``localidades_censales`` (guión bajo), distinta de la ruta del endpoint
-    (guión) — se pasa explícita a ``_descargar_recurso`` (REQ-11.1.1, REQ-11.1.3).
+    (guión) — se pasa explícita a ``_descargar_recurso``.
 
     Retorna ``{id, nombre, provincia_id, municipio_id}`` con ``municipio_id``
-    nullable (ejidos no colindantes — REQ-E8-025).
+    nullable (ejidos no colindantes).
     """
     items = _descargar_recurso(
         'localidades-censales',
@@ -175,6 +186,62 @@ def descargar_localidades():
         clave='localidades_censales',
     )
     return [_normalizar_item(i, ('id', 'nombre', 'provincia_id', 'municipio_id')) for i in items]
+
+
+def generar_localidades_sinteticas(localidades, municipios):
+    """Crea localidades homónimas sintéticas para municipios sin localidad.
+
+    Función pura determinística (sin tocar BD): para cada municipio sin localidad
+    (y no CABA), genera una localidad con ``id_georef = f"{municipio_id}0000"`` (ej. municipio ``060707``
+    → ``0607070000``; departamento ``78007`` → ``780070000``). Si el id sintético
+    ya existe → ``GeoRefError`` claro, sin sobreescritura .
+    Retorna ``localidades + sintéticas`` ordenadas por ``id``.
+    """
+    municipios_con_localidad = {
+        l['municipio_id'] for l in localidades if l.get('municipio_id')
+    }
+    existentes = {l['id'] for l in localidades}
+    sinteticas = []
+    for m in municipios:
+        if m['id'] in municipios_con_localidad:
+            continue
+        if m['provincia_id'] == '02':
+            continue  # CABA — Supuesto 1 (E12/ADR-006)
+        id_sintetico = f"{m['id']}0000"
+        if id_sintetico in existentes:
+            raise GeoRefError(
+                f"Colisión de id_georef sintético {id_sintetico!r} "
+                f"(municipio {m['id']!r} {m['nombre']!r}): ya existe una localidad "
+                'con ese id. No se sobreescribe.'
+            )
+        sinteticas.append({
+            'id': id_sintetico,
+            'nombre': m['nombre'],
+            'provincia_id': m['provincia_id'],
+            'municipio_id': m['id'],
+        })
+        existentes.add(id_sintetico)
+    return sorted(localidades + sinteticas, key=lambda x: x['id'])
+
+
+def descargar_catalogo_completo():
+    """Descarga el catálogo completo con completitud aplicada.
+
+    Orquesta: provincias → municipios completos (con departamentos de provincias
+    sin municipios) → localidades (+ homónimas sintéticas). Retorna el dict
+    ``{'provincias': [...], 'municipios': [...], 'localidades': [...]}`` listo
+    para ``generar_fixtures``/``cargar_catalogo`` (shapes de dict idénticos a los
+    fixtures; ``cargar_*`` no cambian).
+    """
+    provincias = descargar_provincias()
+    municipios = descargar_municipios_completos()
+    localidades = descargar_localidades()
+    localidades = generar_localidades_sinteticas(localidades, municipios)
+    return {
+        'provincias': provincias,
+        'municipios': municipios,
+        'localidades': localidades,
+    }
 
 
 def _escribir_atomico(ruta, items):
@@ -191,7 +258,7 @@ def _escribir_atomico(ruta, items):
 
 
 def generar_fixtures(datos):
-    """Escribe los 3 fixtures JSON ordenados por ID GeoRef (REQ-E8-020, REQ-E8-021).
+    """Escribe los 3 fixtures JSON ordenados por ID GeoRef.
 
     ``datos`` es un dict ``{'provincias': [...], 'municipios': [...], 'localidades': [...]}``.
     """
@@ -204,7 +271,7 @@ def generar_fixtures(datos):
 def leer_fixtures():
     """Lee los 3 fixtures locales y retorna los datos normalizados.
 
-    Fuente primaria de carga (REQ-E8-015). Retorna ``None`` si algún fixture
+    Fuente primaria de carga. Retorna ``None`` si algún fixture
     no existe o está vacío (→ fallback a la API).
     """
     datos = {}
@@ -221,7 +288,7 @@ def leer_fixtures():
 
 
 def _bulk_create_en_batches(modelo, objetos):
-    """``bulk_create`` en batches de 1.000 (REQ-E8-014)."""
+    """``bulk_create`` en batches de 1.000."""
     for i in range(0, len(objetos), BATCH_SIZE):
         modelo.objects.bulk_create(objetos[i:i + BATCH_SIZE])
 
@@ -237,7 +304,7 @@ def cargar_provincias(datos):
 
 
 def cargar_municipios(datos):
-    """Persiste municipios resolviendo FK ``idprovincia`` por ``id_georef`` (REQ-E8-008)."""
+    """Persiste municipios resolviendo FK ``idprovincia`` por ``id_georef``."""
     provincias_por_georef = {p.id_georef: p for p in Provincia.objects.all()}
     municipios = []
     for item in datos['municipios']:
@@ -253,8 +320,8 @@ def cargar_municipios(datos):
 def cargar_localidades(datos):
     """Persiste localidades resolviendo FK ``idmunicipio`` por ``id_georef``.
 
-    ``municipio_id`` es nullable (REQ-E8-025); ``codigopostal`` se persiste en
-    ``None`` porque la API GeoRef no expone código postal (S-02).
+    ``municipio_id`` es nullable; ``codigopostal`` se persiste en
+    ``None`` porque la API GeoRef no expone código postal.
     """
     municipios_por_georef = {m.id_georef: m for m in Municipio.objects.all()}
     localidades = []
@@ -272,11 +339,31 @@ def cargar_localidades(datos):
 def cargar_catalogo(datos):
     """Orquesta la carga en el orden provincias → municipios → localidades.
 
-    Retorna conteos determinísticos ``{'provincias': n, 'municipios': n, 'localidades': n}``
-    (REQ-E8-008, REQ-E8-016). Debe ejecutarse dentro de ``transaction.atomic()``.
+    Retorna conteos determinísticos ``{'provincias': n, 'municipios': n, 'localidades': n}``.
+    Debe ejecutarse dentro de ``transaction.atomic()``.
     """
     return {
         'provincias': cargar_provincias(datos),
         'municipios': cargar_municipios(datos),
         'localidades': cargar_localidades(datos),
+    }
+
+
+def verificar_completitud():
+    """Verifica la completitud del catálogo en BD.
+
+    Consulta ORM: reporta
+    provincias sin municipios y municipios sin localidades. Las comunas de CABA
+    se excluyen del conteo de municipios sin localidad.
+    """
+    provincias_sin_municipios = Provincia.objects.filter(municipio__isnull=True).count()
+    municipios_sin_localidades = (
+        Municipio.objects.filter(localidad__isnull=True)
+        .exclude(idprovincia__id_georef='02')
+        .count()
+    )
+    return {
+        'provincias_sin_municipios': provincias_sin_municipios,
+        'municipios_sin_localidades': municipios_sin_localidades,
+        'ok': provincias_sin_municipios == 0 and municipios_sin_localidades == 0,
     }

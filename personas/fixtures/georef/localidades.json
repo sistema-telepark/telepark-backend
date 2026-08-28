@@ -5928,6 +5928,12 @@
     "municipio_id": "142441"
   },
   {
+    "id": "1407910000",
+    "nombre": "Bulnes",
+    "provincia_id": "14",
+    "municipio_id": "140791"
+  },
+  {
     "id": "14084010",
     "nombre": "General Levalle",
     "provincia_id": "14",
@@ -7938,6 +7944,18 @@
     "municipio_id": "141743"
   },
   {
+    "id": "1424970000",
+    "nombre": "Estancia Vieja",
+    "provincia_id": "14",
+    "municipio_id": "142497"
+  },
+  {
+    "id": "1428890000",
+    "nombre": "Conlara",
+    "provincia_id": "14",
+    "municipio_id": "142889"
+  },
+  {
     "id": "18007010",
     "nombre": "Bella Vista",
     "provincia_id": "18",
@@ -8020,6 +8038,12 @@
     "nombre": "Tatacuá",
     "provincia_id": "18",
     "municipio_id": "180056"
+  },
+  {
+    "id": "1803430000",
+    "nombre": "Herlitzka",
+    "provincia_id": "18",
+    "municipio_id": "180343"
   },
   {
     "id": "18035010",
@@ -9624,6 +9648,12 @@
     "municipio_id": null
   },
   {
+    "id": "2681330000",
+    "nombre": "Telsen",
+    "provincia_id": "26",
+    "municipio_id": "268133"
+  },
+  {
     "id": "30008005",
     "nombre": "Aldea San Gregorio",
     "provincia_id": "30",
@@ -10888,6 +10918,582 @@
     "nombre": "Villaguay",
     "provincia_id": "30",
     "municipio_id": "300490"
+  },
+  {
+    "id": "3024110000",
+    "nombre": "Distrito Sexto",
+    "provincia_id": "30",
+    "municipio_id": "302411"
+  },
+  {
+    "id": "3031540000",
+    "nombre": "Comuna Tala",
+    "provincia_id": "30",
+    "municipio_id": "303154"
+  },
+  {
+    "id": "3090050000",
+    "nombre": "San Miguel",
+    "provincia_id": "30",
+    "municipio_id": "309005"
+  },
+  {
+    "id": "3090070000",
+    "nombre": "Colonia San Anselmo y Aledañas",
+    "provincia_id": "30",
+    "municipio_id": "309007"
+  },
+  {
+    "id": "3090450000",
+    "nombre": "El Redomón",
+    "provincia_id": "30",
+    "municipio_id": "309045"
+  },
+  {
+    "id": "3090700000",
+    "nombre": "San Justo",
+    "provincia_id": "30",
+    "municipio_id": "309070"
+  },
+  {
+    "id": "3090900000",
+    "nombre": "Aldea Salto",
+    "provincia_id": "30",
+    "municipio_id": "309090"
+  },
+  {
+    "id": "3091050000",
+    "nombre": "Costa Grande",
+    "provincia_id": "30",
+    "municipio_id": "309105"
+  },
+  {
+    "id": "3091250000",
+    "nombre": "Isletas",
+    "provincia_id": "30",
+    "municipio_id": "309125"
+  },
+  {
+    "id": "3091450000",
+    "nombre": "Colonia Tunas",
+    "provincia_id": "30",
+    "municipio_id": "309145"
+  },
+  {
+    "id": "3091600000",
+    "nombre": "La Fraternidad y Santa Juana",
+    "provincia_id": "30",
+    "municipio_id": "309160"
+  },
+  {
+    "id": "3091650000",
+    "nombre": "Paraje Guayaquil",
+    "provincia_id": "30",
+    "municipio_id": "309165"
+  },
+  {
+    "id": "3091850000",
+    "nombre": "San Roque",
+    "provincia_id": "30",
+    "municipio_id": "309185"
+  },
+  {
+    "id": "3091900000",
+    "nombre": "Arroyo del Medio",
+    "provincia_id": "30",
+    "municipio_id": "309190"
+  },
+  {
+    "id": "3091920000",
+    "nombre": "Arroyo Las Tunas",
+    "provincia_id": "30",
+    "municipio_id": "309192"
+  },
+  {
+    "id": "3091930000",
+    "nombre": "Banderas",
+    "provincia_id": "30",
+    "municipio_id": "309193"
+  },
+  {
+    "id": "3091950000",
+    "nombre": "Distrito Diego López",
+    "provincia_id": "30",
+    "municipio_id": "309195"
+  },
+  {
+    "id": "3092050000",
+    "nombre": "El Gramiyal",
+    "provincia_id": "30",
+    "municipio_id": "309205"
+  },
+  {
+    "id": "3092100000",
+    "nombre": "Loma Limpia",
+    "provincia_id": "30",
+    "municipio_id": "309210"
+  },
+  {
+    "id": "3092200000",
+    "nombre": "Paso Duarte",
+    "provincia_id": "30",
+    "municipio_id": "309220"
+  },
+  {
+    "id": "3092250000",
+    "nombre": "Santa Lucía",
+    "provincia_id": "30",
+    "municipio_id": "309225"
+  },
+  {
+    "id": "3092300000",
+    "nombre": "Distrito Chañar",
+    "provincia_id": "30",
+    "municipio_id": "309230"
+  },
+  {
+    "id": "3092350000",
+    "nombre": "La Esmeralda",
+    "provincia_id": "30",
+    "municipio_id": "309235"
+  },
+  {
+    "id": "3092400000",
+    "nombre": "La Hierra",
+    "provincia_id": "30",
+    "municipio_id": "309240"
+  },
+  {
+    "id": "3092500000",
+    "nombre": "Laguna Benítez",
+    "provincia_id": "30",
+    "municipio_id": "309250"
+  },
+  {
+    "id": "3092550000",
+    "nombre": "Las Mulitas",
+    "provincia_id": "30",
+    "municipio_id": "309255"
+  },
+  {
+    "id": "3092600000",
+    "nombre": "Mulas Grandes",
+    "provincia_id": "30",
+    "municipio_id": "309260"
+  },
+  {
+    "id": "3092750000",
+    "nombre": "Distrito Cuarto",
+    "provincia_id": "30",
+    "municipio_id": "309275"
+  },
+  {
+    "id": "3092800000",
+    "nombre": "Distrito Primero",
+    "provincia_id": "30",
+    "municipio_id": "309280"
+  },
+  {
+    "id": "3092850000",
+    "nombre": "Distrito Quinto",
+    "provincia_id": "30",
+    "municipio_id": "309285"
+  },
+  {
+    "id": "3093000000",
+    "nombre": "González Calderón",
+    "provincia_id": "30",
+    "municipio_id": "309300"
+  },
+  {
+    "id": "3093050000",
+    "nombre": "Monte Redondo",
+    "provincia_id": "30",
+    "municipio_id": "309305"
+  },
+  {
+    "id": "3093100000",
+    "nombre": "Punta del Monte",
+    "provincia_id": "30",
+    "municipio_id": "309310"
+  },
+  {
+    "id": "3093250000",
+    "nombre": "Costa San Antonio",
+    "provincia_id": "30",
+    "municipio_id": "309325"
+  },
+  {
+    "id": "3093300000",
+    "nombre": "Costa Uruguay Norte",
+    "provincia_id": "30",
+    "municipio_id": "309330"
+  },
+  {
+    "id": "3093350000",
+    "nombre": "Costa Uruguay Sur",
+    "provincia_id": "30",
+    "municipio_id": "309335"
+  },
+  {
+    "id": "3093450000",
+    "nombre": "Distrito Talitas",
+    "provincia_id": "30",
+    "municipio_id": "309345"
+  },
+  {
+    "id": "3093750000",
+    "nombre": "Las Mercedes",
+    "provincia_id": "30",
+    "municipio_id": "309375"
+  },
+  {
+    "id": "3093800000",
+    "nombre": "Pastor Britos",
+    "provincia_id": "30",
+    "municipio_id": "309380"
+  },
+  {
+    "id": "3093850000",
+    "nombre": "Perdices",
+    "provincia_id": "30",
+    "municipio_id": "309385"
+  },
+  {
+    "id": "3093950000",
+    "nombre": "Rincón del Cinto",
+    "provincia_id": "30",
+    "municipio_id": "309395"
+  },
+  {
+    "id": "3094000000",
+    "nombre": "Rincón del Gato",
+    "provincia_id": "30",
+    "municipio_id": "309400"
+  },
+  {
+    "id": "3094050000",
+    "nombre": "Médanos",
+    "provincia_id": "30",
+    "municipio_id": "309405"
+  },
+  {
+    "id": "3094150000",
+    "nombre": "Alcaraz Norte",
+    "provincia_id": "30",
+    "municipio_id": "309415"
+  },
+  {
+    "id": "3094200000",
+    "nombre": "Alcaraz Sur",
+    "provincia_id": "30",
+    "municipio_id": "309420"
+  },
+  {
+    "id": "3094300000",
+    "nombre": "Colonia Carrasco",
+    "provincia_id": "30",
+    "municipio_id": "309430"
+  },
+  {
+    "id": "3094350000",
+    "nombre": "Colonia Oficial N° 13",
+    "provincia_id": "30",
+    "municipio_id": "309435"
+  },
+  {
+    "id": "3094400000",
+    "nombre": "Colonia Oficial Nº 3 y 14",
+    "provincia_id": "30",
+    "municipio_id": "309440"
+  },
+  {
+    "id": "3094450000",
+    "nombre": "Colonia Viraró",
+    "provincia_id": "30",
+    "municipio_id": "309445"
+  },
+  {
+    "id": "3094600000",
+    "nombre": "Estaquitas",
+    "provincia_id": "30",
+    "municipio_id": "309460"
+  },
+  {
+    "id": "3094700000",
+    "nombre": "Las Toscas",
+    "provincia_id": "30",
+    "municipio_id": "309470"
+  },
+  {
+    "id": "3094970000",
+    "nombre": "Saucecito",
+    "provincia_id": "30",
+    "municipio_id": "309497"
+  },
+  {
+    "id": "3095150000",
+    "nombre": "Aldea San Miguel",
+    "provincia_id": "30",
+    "municipio_id": "309515"
+  },
+  {
+    "id": "3095200000",
+    "nombre": "Betbeder",
+    "provincia_id": "30",
+    "municipio_id": "309520"
+  },
+  {
+    "id": "3095250000",
+    "nombre": "Crucesitas Octava",
+    "provincia_id": "30",
+    "municipio_id": "309525"
+  },
+  {
+    "id": "3095300000",
+    "nombre": "Crucesitas Séptima",
+    "provincia_id": "30",
+    "municipio_id": "309530"
+  },
+  {
+    "id": "3095350000",
+    "nombre": "Crucesitas Tercera",
+    "provincia_id": "30",
+    "municipio_id": "309535"
+  },
+  {
+    "id": "3095400000",
+    "nombre": "Distrito Chiqueros",
+    "provincia_id": "30",
+    "municipio_id": "309540"
+  },
+  {
+    "id": "3095430000",
+    "nombre": "Distrito Sauce",
+    "provincia_id": "30",
+    "municipio_id": "309543"
+  },
+  {
+    "id": "3095450000",
+    "nombre": "Don Cristóbal I",
+    "provincia_id": "30",
+    "municipio_id": "309545"
+  },
+  {
+    "id": "3095600000",
+    "nombre": "Justo José de Urquiza",
+    "provincia_id": "30",
+    "municipio_id": "309560"
+  },
+  {
+    "id": "3095650000",
+    "nombre": "Laurencena",
+    "provincia_id": "30",
+    "municipio_id": "309565"
+  },
+  {
+    "id": "3095750000",
+    "nombre": "Aldea Eigenfeld",
+    "provincia_id": "30",
+    "municipio_id": "309575"
+  },
+  {
+    "id": "3096050000",
+    "nombre": "Antonio Tomás",
+    "provincia_id": "30",
+    "municipio_id": "309605"
+  },
+  {
+    "id": "3096100000",
+    "nombre": "Arroyo Burgos",
+    "provincia_id": "30",
+    "municipio_id": "309610"
+  },
+  {
+    "id": "3096150000",
+    "nombre": "Arroyo Corralito",
+    "provincia_id": "30",
+    "municipio_id": "309615"
+  },
+  {
+    "id": "3096200000",
+    "nombre": "Arroyo Maturrango",
+    "provincia_id": "30",
+    "municipio_id": "309620"
+  },
+  {
+    "id": "3096250000",
+    "nombre": "Arroyo Palo Seco",
+    "provincia_id": "30",
+    "municipio_id": "309625"
+  },
+  {
+    "id": "3096350000",
+    "nombre": "Colonia Celina",
+    "provincia_id": "30",
+    "municipio_id": "309635"
+  },
+  {
+    "id": "3096500000",
+    "nombre": "Colonia Merou",
+    "provincia_id": "30",
+    "municipio_id": "309650"
+  },
+  {
+    "id": "3096700000",
+    "nombre": "Distrito Tala",
+    "provincia_id": "30",
+    "municipio_id": "309670"
+  },
+  {
+    "id": "3096850000",
+    "nombre": "Espinillo Norte",
+    "provincia_id": "30",
+    "municipio_id": "309685"
+  },
+  {
+    "id": "3097050000",
+    "nombre": "María Grande 2º",
+    "provincia_id": "30",
+    "municipio_id": "309705"
+  },
+  {
+    "id": "3097100000",
+    "nombre": "Paso de la Arena",
+    "provincia_id": "30",
+    "municipio_id": "309710"
+  },
+  {
+    "id": "3097150000",
+    "nombre": "Paso de las Piedras",
+    "provincia_id": "30",
+    "municipio_id": "309715"
+  },
+  {
+    "id": "3097350000",
+    "nombre": "Santa Luisa",
+    "provincia_id": "30",
+    "municipio_id": "309735"
+  },
+  {
+    "id": "3097700000",
+    "nombre": "Colonia Baylina",
+    "provincia_id": "30",
+    "municipio_id": "309770"
+  },
+  {
+    "id": "3097750000",
+    "nombre": "Colonia Oficial Nº 5",
+    "provincia_id": "30",
+    "municipio_id": "309775"
+  },
+  {
+    "id": "3097800000",
+    "nombre": "San Ernesto",
+    "provincia_id": "30",
+    "municipio_id": "309780"
+  },
+  {
+    "id": "3097850000",
+    "nombre": "Walter Moss",
+    "provincia_id": "30",
+    "municipio_id": "309785"
+  },
+  {
+    "id": "3098200000",
+    "nombre": "La Ollita",
+    "provincia_id": "30",
+    "municipio_id": "309820"
+  },
+  {
+    "id": "3098300000",
+    "nombre": "Sauce Sur",
+    "provincia_id": "30",
+    "municipio_id": "309830"
+  },
+  {
+    "id": "3098320000",
+    "nombre": "Arroyo Gená",
+    "provincia_id": "30",
+    "municipio_id": "309832"
+  },
+  {
+    "id": "3098800000",
+    "nombre": "Chilcas",
+    "provincia_id": "30",
+    "municipio_id": "309880"
+  },
+  {
+    "id": "3098850000",
+    "nombre": "Distrito Pajonal",
+    "provincia_id": "30",
+    "municipio_id": "309885"
+  },
+  {
+    "id": "3098900000",
+    "nombre": "Hinojal",
+    "provincia_id": "30",
+    "municipio_id": "309890"
+  },
+  {
+    "id": "3099000000",
+    "nombre": "Molino Doll",
+    "provincia_id": "30",
+    "municipio_id": "309900"
+  },
+  {
+    "id": "3099050000",
+    "nombre": "Montoya",
+    "provincia_id": "30",
+    "municipio_id": "309905"
+  },
+  {
+    "id": "3099170000",
+    "nombre": "Colonia Adivino",
+    "provincia_id": "30",
+    "municipio_id": "309917"
+  },
+  {
+    "id": "3099350000",
+    "nombre": "Lucas Norte",
+    "provincia_id": "30",
+    "municipio_id": "309935"
+  },
+  {
+    "id": "3099400000",
+    "nombre": "Lucas Sur Primero",
+    "provincia_id": "30",
+    "municipio_id": "309940"
+  },
+  {
+    "id": "3099450000",
+    "nombre": "Lucas Sur Segundo",
+    "provincia_id": "30",
+    "municipio_id": "309945"
+  },
+  {
+    "id": "3099500000",
+    "nombre": "Mojones Norte",
+    "provincia_id": "30",
+    "municipio_id": "309950"
+  },
+  {
+    "id": "3099550000",
+    "nombre": "Mojones Sur",
+    "provincia_id": "30",
+    "municipio_id": "309955"
+  },
+  {
+    "id": "3099570000",
+    "nombre": "Paraje Los Algarrobos",
+    "provincia_id": "30",
+    "municipio_id": "309957"
+  },
+  {
+    "id": "3099650000",
+    "nombre": "Raíces Oeste",
+    "provincia_id": "30",
+    "municipio_id": "309965"
   },
   {
     "id": "34007002",
@@ -15624,6 +16230,12 @@
     "municipio_id": "540525"
   },
   {
+    "id": "5800420000",
+    "nombre": "Centenario",
+    "provincia_id": "58",
+    "municipio_id": "580042"
+  },
+  {
     "id": "58007010",
     "nombre": "Aluminé",
     "provincia_id": "58",
@@ -15664,6 +16276,12 @@
     "nombre": "San Patricio del Chañar",
     "provincia_id": "58",
     "municipio_id": "580021"
+  },
+  {
+    "id": "5801890000",
+    "nombre": "Taquimilán",
+    "provincia_id": "58",
+    "municipio_id": "580189"
   },
   {
     "id": "58021010",
@@ -16090,6 +16708,18 @@
     "nombre": "Zapala",
     "provincia_id": "58",
     "municipio_id": "580245"
+  },
+  {
+    "id": "5851330000",
+    "nombre": "Covunco Abajo",
+    "provincia_id": "58",
+    "municipio_id": "585133"
+  },
+  {
+    "id": "5851540000",
+    "nombre": "Villa Puente Picún Leufú",
+    "provincia_id": "58",
+    "municipio_id": "585154"
   },
   {
     "id": "62007010",
@@ -19116,6 +19746,18 @@
     "municipio_id": "746322"
   },
   {
+    "id": "7462100000",
+    "nombre": "Lafinur",
+    "provincia_id": "74",
+    "municipio_id": "746210"
+  },
+  {
+    "id": "780070000",
+    "nombre": "Corpen Aike",
+    "provincia_id": "78",
+    "municipio_id": "78007"
+  },
+  {
     "id": "78007010",
     "nombre": "Comandante Luis Piedrabuena",
     "provincia_id": "78",
@@ -19126,6 +19768,12 @@
     "nombre": "Puerto Santa Cruz",
     "provincia_id": "78",
     "municipio_id": null
+  },
+  {
+    "id": "780140000",
+    "nombre": "Deseado",
+    "provincia_id": "78",
+    "municipio_id": "78014"
   },
   {
     "id": "78014010",
@@ -19182,6 +19830,12 @@
     "municipio_id": null
   },
   {
+    "id": "780210000",
+    "nombre": "Güer Aike",
+    "provincia_id": "78",
+    "municipio_id": "78021"
+  },
+  {
     "id": "78021005",
     "nombre": "Chimen Aike",
     "provincia_id": "78",
@@ -19230,6 +19884,12 @@
     "municipio_id": null
   },
   {
+    "id": "780280000",
+    "nombre": "Lago Argentino",
+    "provincia_id": "78",
+    "municipio_id": "78028"
+  },
+  {
     "id": "78028010",
     "nombre": "El Calafate",
     "provincia_id": "78",
@@ -19248,6 +19908,12 @@
     "municipio_id": null
   },
   {
+    "id": "780350000",
+    "nombre": "Lago Buenos Aires",
+    "provincia_id": "78",
+    "municipio_id": "78035"
+  },
+  {
     "id": "78035010",
     "nombre": "Los Antiguos",
     "provincia_id": "78",
@@ -19260,10 +19926,22 @@
     "municipio_id": null
   },
   {
+    "id": "780420000",
+    "nombre": "Magallanes",
+    "provincia_id": "78",
+    "municipio_id": "78042"
+  },
+  {
     "id": "78042010",
     "nombre": "Puerto San Julián",
     "provincia_id": "78",
     "municipio_id": null
+  },
+  {
+    "id": "780490000",
+    "nombre": "Río Chico",
+    "provincia_id": "78",
+    "municipio_id": "78049"
   },
   {
     "id": "78049010",
@@ -21774,6 +22452,120 @@
     "municipio_id": "820336"
   },
   {
+    "id": "8221610000",
+    "nombre": "Colonia Bigand",
+    "provincia_id": "82",
+    "municipio_id": "822161"
+  },
+  {
+    "id": "8221820000",
+    "nombre": "Colonia Iturraspe",
+    "provincia_id": "82",
+    "municipio_id": "822182"
+  },
+  {
+    "id": "8222450000",
+    "nombre": "Fidela",
+    "provincia_id": "82",
+    "municipio_id": "822245"
+  },
+  {
+    "id": "8222520000",
+    "nombre": "Galisteo",
+    "provincia_id": "82",
+    "municipio_id": "822252"
+  },
+  {
+    "id": "8222660000",
+    "nombre": "Hugentobler",
+    "provincia_id": "82",
+    "municipio_id": "822266"
+  },
+  {
+    "id": "8223010000",
+    "nombre": "Colonia Maua",
+    "provincia_id": "82",
+    "municipio_id": "822301"
+  },
+  {
+    "id": "8231060000",
+    "nombre": "Ituzaingó",
+    "provincia_id": "82",
+    "municipio_id": "823106"
+  },
+  {
+    "id": "8231830000",
+    "nombre": "Rivadavia",
+    "provincia_id": "82",
+    "municipio_id": "823183"
+  },
+  {
+    "id": "8232460000",
+    "nombre": "Santa María Centro",
+    "provincia_id": "82",
+    "municipio_id": "823246"
+  },
+  {
+    "id": "8232530000",
+    "nombre": "Santa María Norte",
+    "provincia_id": "82",
+    "municipio_id": "823253"
+  },
+  {
+    "id": "8232740000",
+    "nombre": "Soutomayor",
+    "provincia_id": "82",
+    "municipio_id": "823274"
+  },
+  {
+    "id": "8233020000",
+    "nombre": "Juan de Garay",
+    "provincia_id": "82",
+    "municipio_id": "823302"
+  },
+  {
+    "id": "8235400000",
+    "nombre": "Dos Rosas y La Legua",
+    "provincia_id": "82",
+    "municipio_id": "823540"
+  },
+  {
+    "id": "8235680000",
+    "nombre": "Colonia Clara",
+    "provincia_id": "82",
+    "municipio_id": "823568"
+  },
+  {
+    "id": "8236170000",
+    "nombre": "Monte Oscuridad",
+    "provincia_id": "82",
+    "municipio_id": "823617"
+  },
+  {
+    "id": "8236380000",
+    "nombre": "Portugalete",
+    "provincia_id": "82",
+    "municipio_id": "823638"
+  },
+  {
+    "id": "8237430000",
+    "nombre": "Campo Piaggio",
+    "provincia_id": "82",
+    "municipio_id": "823743"
+  },
+  {
+    "id": "8238970000",
+    "nombre": "La Camila",
+    "provincia_id": "82",
+    "municipio_id": "823897"
+  },
+  {
+    "id": "860070000",
+    "nombre": "Aguirre",
+    "provincia_id": "86",
+    "municipio_id": "86007"
+  },
+  {
     "id": "86007010",
     "nombre": "Argentina",
     "provincia_id": "86",
@@ -21796,6 +22588,12 @@
     "nombre": "Pinto",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "860140000",
+    "nombre": "Alberdi",
+    "provincia_id": "86",
+    "municipio_id": "86014"
   },
   {
     "id": "86014005",
@@ -21840,6 +22638,12 @@
     "municipio_id": null
   },
   {
+    "id": "860210000",
+    "nombre": "Atamisqui",
+    "provincia_id": "86",
+    "municipio_id": "86021"
+  },
+  {
     "id": "86021010",
     "nombre": "Estación Atamisqui",
     "provincia_id": "86",
@@ -21862,6 +22666,12 @@
     "nombre": "Villa Atamisqui",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "860280000",
+    "nombre": "Avellaneda",
+    "provincia_id": "86",
+    "municipio_id": "86028"
   },
   {
     "id": "86028010",
@@ -21898,6 +22708,12 @@
     "nombre": "Villa Mailín",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "860350000",
+    "nombre": "Banda",
+    "provincia_id": "86",
+    "municipio_id": "86035"
   },
   {
     "id": "86035010",
@@ -22020,6 +22836,12 @@
     "municipio_id": null
   },
   {
+    "id": "860420000",
+    "nombre": "Belgrano",
+    "provincia_id": "86",
+    "municipio_id": "86042"
+  },
+  {
     "id": "86042010",
     "nombre": "Bandera",
     "provincia_id": "86",
@@ -22042,6 +22864,12 @@
     "nombre": "Guardia Escolta",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "860490000",
+    "nombre": "Capital",
+    "provincia_id": "86",
+    "municipio_id": "86049"
   },
   {
     "id": "86049010",
@@ -22128,6 +22956,12 @@
     "municipio_id": null
   },
   {
+    "id": "860560000",
+    "nombre": "Copo",
+    "provincia_id": "86",
+    "municipio_id": "86056"
+  },
+  {
     "id": "86056010",
     "nombre": "El Caburé",
     "provincia_id": "86",
@@ -22168,6 +23002,12 @@
     "nombre": "Urutaú",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "860630000",
+    "nombre": "Choya",
+    "provincia_id": "86",
+    "municipio_id": "86063"
   },
   {
     "id": "86063010",
@@ -22228,6 +23068,12 @@
     "nombre": "Villa La Punta",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "860700000",
+    "nombre": "Figueroa",
+    "provincia_id": "86",
+    "municipio_id": "86070"
   },
   {
     "id": "86070010",
@@ -22302,6 +23148,12 @@
     "municipio_id": null
   },
   {
+    "id": "860770000",
+    "nombre": "General Taboada",
+    "provincia_id": "86",
+    "municipio_id": "86077"
+  },
+  {
     "id": "86077010",
     "nombre": "Añatuya",
     "provincia_id": "86",
@@ -22338,6 +23190,12 @@
     "municipio_id": null
   },
   {
+    "id": "860840000",
+    "nombre": "Guasayán",
+    "provincia_id": "86",
+    "municipio_id": "86084"
+  },
+  {
     "id": "86084004",
     "nombre": "Doña Luisa",
     "provincia_id": "86",
@@ -22366,6 +23224,12 @@
     "nombre": "Villa Guasayán",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "860910000",
+    "nombre": "Jiménez",
+    "provincia_id": "86",
+    "municipio_id": "86091"
   },
   {
     "id": "86091005",
@@ -22452,6 +23316,12 @@
     "municipio_id": null
   },
   {
+    "id": "860980000",
+    "nombre": "Juan Felipe Ibarra",
+    "provincia_id": "86",
+    "municipio_id": "86098"
+  },
+  {
     "id": "86098010",
     "nombre": "El Colorado",
     "provincia_id": "86",
@@ -22494,16 +23364,34 @@
     "municipio_id": null
   },
   {
+    "id": "861050000",
+    "nombre": "Loreto",
+    "provincia_id": "86",
+    "municipio_id": "86105"
+  },
+  {
     "id": "86105010",
     "nombre": "Villa San Martí­n (Est. Loreto)",
     "provincia_id": "86",
     "municipio_id": null
   },
   {
+    "id": "861120000",
+    "nombre": "Mitre",
+    "provincia_id": "86",
+    "municipio_id": "86112"
+  },
+  {
     "id": "86112010",
     "nombre": "Villa Unión",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "861190000",
+    "nombre": "Moreno",
+    "provincia_id": "86",
+    "municipio_id": "86119"
   },
   {
     "id": "86119010",
@@ -22608,6 +23496,12 @@
     "municipio_id": null
   },
   {
+    "id": "861260000",
+    "nombre": "Ojo de Agua",
+    "provincia_id": "86",
+    "municipio_id": "86126"
+  },
+  {
     "id": "86126005",
     "nombre": "Ambargasta",
     "provincia_id": "86",
@@ -22630,6 +23524,12 @@
     "nombre": "Villa Ojo de Agua",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "861330000",
+    "nombre": "Pellegrini",
+    "provincia_id": "86",
+    "municipio_id": "86133"
   },
   {
     "id": "86133005",
@@ -22710,6 +23610,12 @@
     "municipio_id": null
   },
   {
+    "id": "861400000",
+    "nombre": "Quebrachos",
+    "provincia_id": "86",
+    "municipio_id": "86140"
+  },
+  {
     "id": "86140010",
     "nombre": "Ramí­rez de Velazco",
     "provincia_id": "86",
@@ -22732,6 +23638,12 @@
     "nombre": "Villa Quebrachos",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "861470000",
+    "nombre": "Río Hondo",
+    "provincia_id": "86",
+    "municipio_id": "86147"
   },
   {
     "id": "86147007",
@@ -22854,6 +23766,12 @@
     "municipio_id": null
   },
   {
+    "id": "861540000",
+    "nombre": "Rivadavia",
+    "provincia_id": "86",
+    "municipio_id": "86154"
+  },
+  {
     "id": "86154010",
     "nombre": "Colonia Alpina",
     "provincia_id": "86",
@@ -22870,6 +23788,12 @@
     "nombre": "Selva",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "861610000",
+    "nombre": "Robles",
+    "provincia_id": "86",
+    "municipio_id": "86161"
   },
   {
     "id": "86161010",
@@ -22920,6 +23844,12 @@
     "municipio_id": null
   },
   {
+    "id": "861680000",
+    "nombre": "Salavina",
+    "provincia_id": "86",
+    "municipio_id": "86168"
+  },
+  {
     "id": "86168010",
     "nombre": "Chilca Juliana",
     "provincia_id": "86",
@@ -22936,6 +23866,12 @@
     "nombre": "Villa Salavina",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "861750000",
+    "nombre": "San Martín",
+    "provincia_id": "86",
+    "municipio_id": "86175"
   },
   {
     "id": "86175010",
@@ -22962,10 +23898,22 @@
     "municipio_id": null
   },
   {
+    "id": "861820000",
+    "nombre": "Sarmiento",
+    "provincia_id": "86",
+    "municipio_id": "86182"
+  },
+  {
     "id": "86182010",
     "nombre": "Garza",
     "provincia_id": "86",
     "municipio_id": null
+  },
+  {
+    "id": "861890000",
+    "nombre": "Silípica",
+    "provincia_id": "86",
+    "municipio_id": "86189"
   },
   {
     "id": "86189010",
@@ -24076,6 +25024,60 @@
     "nombre": "Yerba Buena - Marcos Paz",
     "provincia_id": "90",
     "municipio_id": "900133"
+  },
+  {
+    "id": "9080070000",
+    "nombre": "7 de Abril",
+    "provincia_id": "90",
+    "municipio_id": "908007"
+  },
+  {
+    "id": "9082170000",
+    "nombre": "Escaba",
+    "provincia_id": "90",
+    "municipio_id": "908217"
+  },
+  {
+    "id": "9082730000",
+    "nombre": "Agua Dulce y La Soledad",
+    "provincia_id": "90",
+    "municipio_id": "908273"
+  },
+  {
+    "id": "9082800000",
+    "nombre": "El Mojón",
+    "provincia_id": "90",
+    "municipio_id": "908280"
+  },
+  {
+    "id": "9084970000",
+    "nombre": "Buena Vista",
+    "provincia_id": "90",
+    "municipio_id": "908497"
+  },
+  {
+    "id": "9085040000",
+    "nombre": "Ciudacita",
+    "provincia_id": "90",
+    "municipio_id": "908504"
+  },
+  {
+    "id": "9085250000",
+    "nombre": "Pampa Mayo",
+    "provincia_id": "90",
+    "municipio_id": "908525"
+  },
+  {
+    "id": "9085600000",
+    "nombre": "Yerba Buena",
+    "provincia_id": "90",
+    "municipio_id": "908560"
+  },
+  {
+    "id": "9085950000",
+    "nombre": "Anca Juli",
+    "provincia_id": "90",
+    "municipio_id": "908595"
   },
   {
     "id": "94008003",

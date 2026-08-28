@@ -8020,6 +8020,41 @@
     "provincia_id": "74"
   },
   {
+    "id": "78007",
+    "nombre": "Corpen Aike",
+    "provincia_id": "78"
+  },
+  {
+    "id": "78014",
+    "nombre": "Deseado",
+    "provincia_id": "78"
+  },
+  {
+    "id": "78021",
+    "nombre": "Güer Aike",
+    "provincia_id": "78"
+  },
+  {
+    "id": "78028",
+    "nombre": "Lago Argentino",
+    "provincia_id": "78"
+  },
+  {
+    "id": "78035",
+    "nombre": "Lago Buenos Aires",
+    "provincia_id": "78"
+  },
+  {
+    "id": "78042",
+    "nombre": "Magallanes",
+    "provincia_id": "78"
+  },
+  {
+    "id": "78049",
+    "nombre": "Río Chico",
+    "provincia_id": "78"
+  },
+  {
     "id": "820007",
     "nombre": "Armstrong",
     "provincia_id": "82"
@@ -9833,6 +9868,141 @@
     "id": "824205",
     "nombre": "Toba",
     "provincia_id": "82"
+  },
+  {
+    "id": "86007",
+    "nombre": "Aguirre",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86014",
+    "nombre": "Alberdi",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86021",
+    "nombre": "Atamisqui",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86028",
+    "nombre": "Avellaneda",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86035",
+    "nombre": "Banda",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86042",
+    "nombre": "Belgrano",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86049",
+    "nombre": "Capital",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86056",
+    "nombre": "Copo",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86063",
+    "nombre": "Choya",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86070",
+    "nombre": "Figueroa",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86077",
+    "nombre": "General Taboada",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86084",
+    "nombre": "Guasayán",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86091",
+    "nombre": "Jiménez",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86098",
+    "nombre": "Juan Felipe Ibarra",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86105",
+    "nombre": "Loreto",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86112",
+    "nombre": "Mitre",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86119",
+    "nombre": "Moreno",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86126",
+    "nombre": "Ojo de Agua",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86133",
+    "nombre": "Pellegrini",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86140",
+    "nombre": "Quebrachos",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86147",
+    "nombre": "Río Hondo",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86154",
+    "nombre": "Rivadavia",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86161",
+    "nombre": "Robles",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86168",
+    "nombre": "Salavina",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86175",
+    "nombre": "San Martín",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86182",
+    "nombre": "Sarmiento",
+    "provincia_id": "86"
+  },
+  {
+    "id": "86189",
+    "nombre": "Silípica",
+    "provincia_id": "86"
   },
   {
     "id": "900007",
