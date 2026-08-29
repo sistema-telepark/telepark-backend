@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from core.permission import IsSuperuser
+from core.schema import error_response
 from autenticacion.serializers import (
     LoginSerializer,
     CreateUserSerializer,
@@ -40,7 +41,8 @@ from autenticacion.helpers import (
                 },
             },
         ),
-        401: OpenApiResponse(description="Credenciales inválidas o usuario inactivo"),
+        400: error_response(400, "Payload inválido (validation_error/parse_error)"),
+        401: error_response(401, "Credenciales inválidas"),
     },
 )
 @api_view(['POST'])
@@ -118,7 +120,7 @@ def auth_view(request):
                     },
                 },
             ),
-            400: OpenApiResponse(description="Datos inválidos o usuario ya existe"),
+            400: error_response(400, "Datos inválidos o usuario ya existe"),
         },
     ),
 )
@@ -168,7 +170,7 @@ def usuarios_list(request):
                     },
                 },
             ),
-            404: OpenApiResponse(description="Usuario no encontrado"),
+            404: error_response(404, "Usuario no encontrado"),
         },
     ),
     put=extend_schema(
@@ -184,8 +186,8 @@ def usuarios_list(request):
                     },
                 },
             ),
-            400: OpenApiResponse(description="Datos inválidos"),
-            404: OpenApiResponse(description="Usuario no encontrado"),
+            400: error_response(400, "Datos inválidos o usuario inexistente"),
+            404: error_response(404, "Usuario no encontrado"),
         },
     ),
     patch=extend_schema(
@@ -203,18 +205,18 @@ def usuarios_list(request):
                     },
                 },
             ),
-            400: OpenApiResponse(description="Error de validación — is_superuser requerido o tipo inválido"),
-            403: OpenApiResponse(description="No autorizado — no eres superusuario o intentas modificar tu propio rol"),
-            404: OpenApiResponse(description="Usuario no encontrado"),
-            409: OpenApiResponse(description="Conflicto — no puedes degradar al último administrador"),
+            400: error_response(400, "Error de validación — is_superuser requerido o tipo inválido"),
+            403: error_response(403, "No autorizado — no eres superusuario o intentas modificar tu propio rol"),
+            404: error_response(404, "Usuario no encontrado"),
+            409: error_response(409, "Conflicto — no puedes degradar al último administrador"),
         },
     ),
     delete=extend_schema(
         tags=['autenticacion'],
         responses={
             204: OpenApiResponse(description="Usuario eliminado exitosamente"),
-            403: OpenApiResponse(description="No puedes eliminar tu propio usuario"),
-            404: OpenApiResponse(description="Usuario no encontrado"),
+            403: error_response(403, "No puedes eliminar tu propio usuario"),
+            404: error_response(404, "Usuario no encontrado"),
         },
     ),
 )

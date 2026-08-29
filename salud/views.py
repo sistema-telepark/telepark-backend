@@ -6,6 +6,7 @@ from rest_framework.generics import GenericAPIView
 from drf_spectacular.utils import extend_schema
 
 from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEpSubresourceMixin, auto_tag_schema_view
+from core.schema import error_response
 
 from .serializers import (
     EvolucionSerializer, DiagnosticoEpSerializer, DiagnosticoSerializer,
@@ -59,7 +60,10 @@ class IndicacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-@extend_schema(tags=['salud'])
+@extend_schema(
+    tags=['salud'],
+    responses={404: error_response(404, "PersonaEp no encontrada")},
+)
 class DiagnosticoPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = DiagnosticoEpSerializer
@@ -72,7 +76,10 @@ class DiagnosticoPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(tags=['salud'])
+@extend_schema(
+    tags=['salud'],
+    responses={404: error_response(404, "PersonaEp no encontrada")},
+)
 class EvolucionPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = EvolucionSerializer
@@ -85,7 +92,10 @@ class EvolucionPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
         return Response(serializer.data)
 
 
-@extend_schema(tags=['salud'])
+@extend_schema(
+    tags=['salud'],
+    responses={404: error_response(404, "PersonaEp no encontrada")},
+)
 class IndicacionPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = IndicacionEpSerializer
