@@ -6,6 +6,7 @@ from rest_framework.generics import GenericAPIView
 from drf_spectacular.utils import extend_schema
 
 from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEpSubresourceMixin, auto_tag_schema_view
+from core.schema import error_response
 
 from .serializers import (
     ObraSocialSerializer, OSEpSerializer, OSSerializer,
@@ -29,7 +30,10 @@ class OSViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-@extend_schema(tags=['obra_social'])
+@extend_schema(
+    tags=['obra_social'],
+    responses={404: error_response(404, "PersonaEp no encontrada")},
+)
 class OsPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = OSEpSerializer

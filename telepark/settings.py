@@ -118,11 +118,11 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
-    # E14: punto único de normalización excepción → {detail, code, status}
+    # Punto único de normalización de excepción → {detail, code, status}
     'EXCEPTION_HANDLER': 'core.handlers.custom_exception_handler',
 }
 
-# Logging (E14, REQ-SEC-004): formatter sin variables locales; logs sanitizados.
+# Logging: formatter sin variables locales; logs sanitizados.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -153,9 +153,13 @@ LOGGING = {
 }
 
 # drf-spectacular OpenAPI 3.0 schema generation
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Telepark API',
-    'DESCRIPTION': 'API REST del sistema Telepark — módulos: autenticacion, personas, salud, eventos, obra_social, talleres',
+    'DESCRIPTION': (
+        'API REST del sistema Telepark — módulos: autenticacion, personas, '
+        'salud, eventos, obra_social, talleres'
+    ),
     'VERSION': '1.0.0',
     'CONTACT': {'email': 'admin@telepark.com'},
     'SCHEMA_PATH_PREFIX': r'/api/v1/',
@@ -175,6 +179,7 @@ SPECTACULAR_SETTINGS = {
         {'name': 'obra_social', 'description': 'Obras sociales y coberturas'},
         {'name': 'talleres', 'description': 'Talleres, actividades, asistencias y observaciones'},
     ],
+    'ENUM_GENERATE_CHECKBEHAVIOR': 'coerce',
 }
 
 # JWT configuration
@@ -223,11 +228,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 
-# GeoRef API (E8) — opcional, override solo dev/pruebas (REQ-E8-029)
+# GeoRef API — opcional, override solo dev/pruebas
 GEOREF_API_URL = os.getenv("GEOREF_API_URL", "https://apis.datos.gob.ar/georef/api")
 if not GEOREF_API_URL.startswith("https://"):
     raise ValueError(
-        "GEOREF_API_URL debe ser HTTPS (SEC-E8-001). "
+        "GEOREF_API_URL debe ser HTTPS. "
         f"Recibido: {GEOREF_API_URL!r}"
     )
 

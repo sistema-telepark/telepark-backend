@@ -12,11 +12,11 @@ from django.conf import settings
 from .models import Localidad, Municipio, Provincia
 
 # Constantes de descarga y carga
-TIMEOUT = 30  # segundos (REQ-E8-007)
-MAX_POR_PAGINA = 1000  # batch ≤ 1.000 (REQ-E8-004, REQ-E8-014)
-BATCH_SIZE = 1000  # bulk_create en batches de 1.000 (REQ-E8-014)
+TIMEOUT = 30  # segundos por petición
+MAX_POR_PAGINA = 1000  # página de la API GeoRef
+BATCH_SIZE = 1000  # bulk_create en batches
 
-# Directorio y archivos de fixtures (fuente primaria — REQ-E8-015, REQ-E8-018)
+# Directorio y archivos de fixtures (fuente primaria de la carga)
 FIXTURES_DIR = Path(__file__).resolve().parent / 'fixtures' / 'georef'
 FIXTURE_FILES = {
     'provincias': 'provincias.json',
@@ -206,7 +206,7 @@ def generar_localidades_sinteticas(localidades, municipios):
         if m['id'] in municipios_con_localidad:
             continue
         if m['provincia_id'] == '02':
-            continue  # CABA — Supuesto 1 (E12/ADR-006)
+            continue  # CABA: usa la única localidad censal del catálogo
         id_sintetico = f"{m['id']}0000"
         if id_sintetico in existentes:
             raise GeoRefError(
