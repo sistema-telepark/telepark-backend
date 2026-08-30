@@ -118,11 +118,11 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
-    # Punto único de normalización de excepción → {detail, code, status}
+    # Normaliza toda respuesta de error a {detail, code, status}.
     'EXCEPTION_HANDLER': 'core.handlers.custom_exception_handler',
 }
 
-# Logging: formatter sin variables locales; logs sanitizados.
+# Logging: formatter sin variables locales.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

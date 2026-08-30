@@ -11,12 +11,11 @@ from django.conf import settings
 
 from .models import Localidad, Municipio, Provincia
 
-# Constantes de descarga y carga
 TIMEOUT = 30  # segundos por petición
 MAX_POR_PAGINA = 1000  # página de la API GeoRef
 BATCH_SIZE = 1000  # bulk_create en batches
 
-# Directorio y archivos de fixtures (fuente primaria de la carga)
+# Directorio y archivos de fixtures locales.
 FIXTURES_DIR = Path(__file__).resolve().parent / 'fixtures' / 'georef'
 FIXTURE_FILES = {
     'provincias': 'provincias.json',

@@ -33,6 +33,5 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(self.style.SUCCESS(
-            ##f'Admin creado exitosamente. Username: admin — Password: {password}'
             'Admin creado exitosamente.'
         ))

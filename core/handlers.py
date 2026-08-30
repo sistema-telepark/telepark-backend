@@ -13,7 +13,7 @@ from core.exceptions import (
     ValidationError as DomainValidationError,
 )
 
-# Normalización de `default_code` de DRF/simplejwt → taxonomía cerrada.
+# Normaliza el `default_code` de DRF/simplejwt a un set cerrado de códigos.
 _CODE_NORMALIZACION = {
     'invalid': 'validation_error',
     'authentication_failed': 'not_authenticated',

@@ -9,13 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 class ExceptionMiddleware(object):
-    """Middleware catch-all final: responde 500 genérico y loguea sanitizado."""
+    """Middleware catch-all final: responde 500 genérico y loguea el error."""
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        # Id de correlación opaco (uuid hex corto, sin PII) para el log de errores.
         request.correlation_id = uuid.uuid4().hex[:12]
         return self.get_response(request)
 
