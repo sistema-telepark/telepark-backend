@@ -77,7 +77,6 @@ def custom_404_view(request, exception=None):
     """Handler 404 personalizado con mensajes."""
     path = getattr(request, 'path', '')
 
-    # Mapa de rutas legacy conocidas → sugerencia
     LEGACY_ROUTES = {
         '/api/v1/update_user': 'Para crear o actualizar usuarios use POST/PUT /api/v1/usuarios',
         '/api/v1/create_user': 'Para crear usuarios use POST /api/v1/usuarios',

@@ -70,7 +70,7 @@ class CascadeFilterMixin:
             for param in self.cascade_lookups:
                 valor = request.query_params.get(param)
                 if valor is not None and valor != '':
-                    # Filtro de cascada activo → array plano (paginación desactivada).
+                    # Filtro activo → array plano (paginación desactivada).
                     return None
         return super().paginate_queryset(queryset)
 

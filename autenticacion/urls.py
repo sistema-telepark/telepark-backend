@@ -8,11 +8,9 @@ refresh_view = extend_schema_view(
 )(TokenRefreshView).as_view()
 
 urlpatterns = [
-    # Autenticación
     path('api/v1/auth/login', views.auth_view, name='auth-login'),
     path('api/v1/auth/refresh', refresh_view, name='auth-refresh'),
 
-    # Recurso unificado de usuarios (CRUD completo)
     path('api/v1/usuarios', views.usuarios_list, name='usuarios-list'),
     path('api/v1/usuarios/<int:idusuario>', views.usuarios_detail, name='usuarios-detail'),
 ]

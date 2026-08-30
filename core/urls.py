@@ -6,31 +6,24 @@ from salud.views import DiagnosticoPorPersonaEpView, EvolucionPorPersonaEpView, 
 from obra_social.views import OsPorPersonaEpView
 
 urlpatterns = [
-    # Redirect / → /api/v1/
     path('', RedirectView.as_view(pattern_name='api-v1-root', permanent=False), name='root-redirect'),
 
-    # API Root versionado
     path('api/v1/', api_root, name='api-v1-root'),
 
-    # Autenticación y gestión de usuarios — delegado al módulo autenticacion
     path('', include('autenticacion.urls')),
 
-    # Health check versionado
     path('api/v1/health', health_check, name='health-check'),
 
-    # Documentación OpenAPI / Swagger (rutas de sistema, sin prefijo /api/)
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
     path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-    # Módulos de dominio (rutas versionadas)
     path('', include('personas.urls')),
     path('', include('salud.urls')),
     path('', include('eventos.urls')),
     path('', include('obra_social.urls')),
     path('', include('talleres.urls')),
 
-    # Sub-recursos PersonaEp versionados
     path('api/v1/personas-ep/<int:personaep_pk>/diagnosticos', DiagnosticoPorPersonaEpView.as_view(), name='personas-ep-diagnosticos'),
     path('api/v1/personas-ep/<int:personaep_pk>/evoluciones', EvolucionPorPersonaEpView.as_view(), name='personas-ep-evoluciones'),
     path('api/v1/personas-ep/<int:personaep_pk>/indicaciones', IndicacionPorPersonaEpView.as_view(), name='personas-ep-indicaciones'),

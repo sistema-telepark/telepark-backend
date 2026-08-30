@@ -3,9 +3,6 @@
 Componentes de respuesta de error {detail, code, status} para referenciar en `extend_schema`.
 """
 
-
-# --- Componentes de respuesta de error ---
-
 ERROR_4XX_SCHEMA = {
     "type": "object",
     "properties": {
@@ -18,7 +15,7 @@ ERROR_4XX_SCHEMA = {
         },
         "code": {
             "type": "string",
-            "description": "Código semántico snake_case (taxonomía cerrada)",
+            "description": "Código semántico snake_case",
             "enum": [
                 "validation_error",
                 "parse_error",
@@ -63,7 +60,6 @@ ERROR_500_SCHEMA = {
     "required": ["detail", "code", "status"],
 }
 
-# Componentes específicos por código para mayor claridad en Swagger
 ERROR_400_SCHEMA = {
     "type": "object",
     "properties": {
@@ -136,8 +132,6 @@ ERROR_429_SCHEMA = {
 }
 
 
-# --- Helpers para usar en extend_schema ---
-
 def error_response(code_http, description=None, schema=None):
     """Genera un OpenApiResponse para un código de error específico.
 
@@ -158,8 +152,6 @@ def error_response(code_http, description=None, schema=None):
     s = schema or schemas_por_codigo.get(code_http, ERROR_4XX_SCHEMA)
     return OpenApiResponse(response=s, description=description or f"Error {code_http}")
 
-
-# --- Componentes de respuesta comunes ---
 
 RESPONSE_SUCCESS_204 = {
     "type": "object",

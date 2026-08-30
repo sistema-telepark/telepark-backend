@@ -65,7 +65,7 @@ python manage.py migrate
 
 echo "Migraciones aplicadas correctamente."
 
-# Cargar catálogo geográfico GeoRef (idempotente; fixtures locales como fuente primaria)
+# Cargar catálogo geográfico GeoRef (idempotente)
 echo "Ejecutando cargar_georef..."
 python manage.py cargar_georef
 
