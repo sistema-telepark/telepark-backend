@@ -1,9 +1,12 @@
 from django.db import transaction
 from rest_framework import serializers
+from core.fields import StrictBooleanField
 from .models import Persona, PersonaEp, Direccion, Localidad, Municipio, Provincia, Tipoparentesco
 
 
 class PersonaSerializer(serializers.ModelSerializer):
+    borrado = StrictBooleanField(required=False, default=False)
+
     class Meta:
         model = Persona
         fields = ('idpersona', 'nombre', 'apellido', 'telefono', 'iddireccion', 'borrado', 'sexo', 'fechanacimiento')
@@ -67,7 +70,7 @@ class PersonaEpSerializer(serializers.ModelSerializer):
             referente_direccion = Direccion.objects.create(**referente_direccion_data) if referente_direccion_data else None
             referente = Persona.objects.create(
                 **referente_data,
-                borrado=0,
+                borrado=False,
                 iddireccion=referente_direccion,
             )
 
@@ -75,7 +78,7 @@ class PersonaEpSerializer(serializers.ModelSerializer):
 
             validated_data['iddireccion'] = direccion
             validated_data['idreferente'] = referente
-            validated_data['borrado'] = 0
+            validated_data['borrado'] = False
             return super().create(validated_data)
 
 
