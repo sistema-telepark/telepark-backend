@@ -9,7 +9,7 @@ class Persona(models.Model):
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=35)
     iddireccion = models.ForeignKey('Direccion', models.DO_NOTHING, db_column='idDireccion', blank=True, null=True)
-    borrado = models.IntegerField(db_column='borrado')
+    borrado = models.BooleanField(db_column='borrado', default=False)
     sexo = models.CharField(max_length=45, blank=True, null=True)
     fechanacimiento = models.DateField(db_column='fechaNacimiento', blank=True, null=True)
 

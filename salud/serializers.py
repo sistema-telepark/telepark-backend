@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from core.fields import StrictBooleanField
 from .models import (
     Diagnostico, Evolucion, Enfermedad,
     Medicamento, Indicacionmedicamento,
@@ -6,6 +7,8 @@ from .models import (
 
 
 class EvolucionSerializer(serializers.ModelSerializer):
+    borrado = StrictBooleanField(required=False, default=False)
+
     class Meta:
         model = Evolucion
         fields = ('idevolucion', 'escalaevolucion', 'fecha', 'idpersonaep', 'borrado')
@@ -18,6 +21,8 @@ class EnfermedadSerializer(serializers.ModelSerializer):
 
 
 class DiagnosticoSerializer(serializers.ModelSerializer):
+    borrado = StrictBooleanField(required=False, default=False)
+
     class Meta:
         model = Diagnostico
         fields = ('iddiagnostico',
@@ -41,6 +46,8 @@ class MedicamentoSerializer(serializers.ModelSerializer):
 
 
 class IndicacionSerializer(serializers.ModelSerializer):
+    borrado = StrictBooleanField(required=False, default=False)
+
     class Meta:
         model = Indicacionmedicamento
         fields = ('idindicacion',

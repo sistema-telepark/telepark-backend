@@ -14,7 +14,7 @@ class Tipoevento(models.Model):
     idtipoevento = models.AutoField(db_column='idTipoEvento', primary_key=True)
     nombre = models.CharField(max_length=45, blank=True, null=True)
     desactivataller = models.IntegerField(db_column='desactivaTaller', blank=True, null=True)
-    borrado = models.IntegerField(db_column='borrado')
+    borrado = models.BooleanField(db_column='borrado', default=False)
 
     objects = OrdenadoManager()
 
@@ -29,7 +29,7 @@ class Evento(models.Model):
     motivo = models.CharField(max_length=256, blank=True, null=True)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')
     idtipoevento = models.ForeignKey(Tipoevento, models.DO_NOTHING, db_column='idTipoEvento')
-    borrado = models.IntegerField(db_column='borrado')
+    borrado = models.BooleanField(db_column='borrado', default=False)
 
     objects = EventoManager()
 

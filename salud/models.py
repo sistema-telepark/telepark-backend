@@ -39,7 +39,7 @@ class Diagnostico(models.Model):
     fecha = models.DateField()
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')
     idenfermedad = models.ForeignKey(Enfermedad, models.DO_NOTHING, db_column='idEnfermedad')
-    borrado = models.IntegerField(db_column='borrado')
+    borrado = models.BooleanField(db_column='borrado', default=False)
 
     objects = DiagnosticoManager()
 
@@ -52,7 +52,7 @@ class Evolucion(models.Model):
     escalaevolucion = models.IntegerField(db_column='escalaEvolucion')
     fecha = models.DateField(blank=True, null=True)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')
-    borrado = models.IntegerField(db_column='borrado')
+    borrado = models.BooleanField(db_column='borrado', default=False)
 
     objects = EvolucionManager()
 
@@ -80,7 +80,7 @@ class Indicacionmedicamento(models.Model):
     horadetoma = models.TimeField(db_column='horaDeToma', blank=True, null=True)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')
     idmedicamento = models.ForeignKey(Medicamento, models.DO_NOTHING, db_column='idMedicamento')
-    borrado = models.IntegerField(db_column='borrado')
+    borrado = models.BooleanField(db_column='borrado', default=False)
 
     objects = IndicacionmedicamentoManager()
 

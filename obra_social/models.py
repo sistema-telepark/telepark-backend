@@ -18,7 +18,7 @@ class Os(models.Model):
     idos = models.AutoField(db_column='idOS', primary_key=True)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')
     idobrasocial = models.ForeignKey(Obrasocial, models.DO_NOTHING, db_column='idObraSocial')
-    borrado = models.IntegerField(db_column='borrado')
+    borrado = models.BooleanField(db_column='borrado', default=False)
 
     objects = OrdenadoManager()
 
