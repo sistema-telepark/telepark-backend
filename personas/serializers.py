@@ -42,6 +42,11 @@ class ReferenteSerializer(serializers.ModelSerializer):
 class PersonaEpSerializer(serializers.ModelSerializer):
     direccion = DireccionSerializer(write_only=True, required=False, allow_null=True)
     referente = ReferenteSerializer(write_only=True)
+    activataller = StrictBooleanField(required=False, default=False)
+    escolaridadcompleta = StrictBooleanField(required=False, default=False)
+    tieneacompanante = StrictBooleanField(required=False, default=False)
+    tienecuidador = StrictBooleanField(required=False, default=False)
+    vivesolo = StrictBooleanField(required=False, default=False)
 
     class Meta:
         model = PersonaEp

@@ -63,8 +63,8 @@ class Evolucion(models.Model):
 class Medicamento(models.Model):
     idmedicamento = models.AutoField(db_column='idMedicamento', primary_key=True)
     nombre = models.CharField(max_length=45)
-    esantiparkinsoniano = models.IntegerField(db_column='esAntiparkinsoniano', blank=True, null=True)
-    eslevodopa = models.IntegerField(db_column='esLevodopa', blank=True, null=True)
+    esantiparkinsoniano = models.BooleanField(db_column='esAntiparkinsoniano', default=False)
+    eslevodopa = models.BooleanField(db_column='esLevodopa', default=False)
 
     objects = OrdenadoManager()
 
@@ -75,7 +75,7 @@ class Medicamento(models.Model):
 class Indicacionmedicamento(models.Model):
     idindicacion = models.AutoField(db_column='idIndicacion', primary_key=True)
     cantidadmiligramos = models.IntegerField(db_column='cantidadMiligramos', blank=True, null=True)
-    estavigente = models.IntegerField(db_column='estaVigente', blank=True, null=True)
+    estavigente = models.BooleanField(db_column='estaVigente', default=False)
     fechaprescripcion = models.DateField(db_column='fechaPrescripcion', blank=True, null=True)
     horadetoma = models.TimeField(db_column='horaDeToma', blank=True, null=True)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')

@@ -4,6 +4,8 @@ from .models import Obrasocial, Os
 
 
 class ObraSocialSerializer(serializers.ModelSerializer):
+    esestatal = StrictBooleanField(required=False, default=False)
+
     class Meta:
         model = Obrasocial
         fields = ('idobrasocial', 'nombre', 'esestatal')

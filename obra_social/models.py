@@ -6,7 +6,7 @@ from core.managers import OrdenadoManager
 class Obrasocial(models.Model):
     idobrasocial = models.AutoField(db_column='idObraSocial', primary_key=True)
     nombre = models.CharField(max_length=45)
-    esestatal = models.IntegerField(db_column='esEstatal', blank=True, null=True)
+    esestatal = models.BooleanField(db_column='esEstatal', default=False)
 
     objects = OrdenadoManager()
 

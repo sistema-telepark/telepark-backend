@@ -13,7 +13,7 @@ class EventoManager(OrdenadoManager):
 class Tipoevento(models.Model):
     idtipoevento = models.AutoField(db_column='idTipoEvento', primary_key=True)
     nombre = models.CharField(max_length=45, blank=True, null=True)
-    desactivataller = models.IntegerField(db_column='desactivaTaller', blank=True, null=True)
+    desactivataller = models.BooleanField(db_column='desactivaTaller', default=False)
     borrado = models.BooleanField(db_column='borrado', default=False)
 
     objects = OrdenadoManager()

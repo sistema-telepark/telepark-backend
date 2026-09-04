@@ -23,7 +23,7 @@ class Taller(models.Model):
 class Clasetaller(models.Model):
     idclasetaller = models.AutoField(db_column='idClaseTaller', primary_key=True)
     fecha = models.DateField()
-    virtual = models.IntegerField()
+    virtual = models.BooleanField(db_column='virtual', default=False)
     idtaller = models.ForeignKey(Taller, models.DO_NOTHING, db_column='idTaller')
 
     objects = OrdenadoManager()
