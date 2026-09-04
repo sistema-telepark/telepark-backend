@@ -5,6 +5,7 @@ from .models import Evento, Tipoevento
 
 class TipoEventoSerializer(serializers.ModelSerializer):
     borrado = StrictBooleanField(required=False, default=False)
+    desactivataller = StrictBooleanField(required=False, default=False)
 
     class Meta:
         model = Tipoevento

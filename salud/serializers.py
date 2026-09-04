@@ -40,6 +40,9 @@ class DiagnosticoEpSerializer(DiagnosticoSerializer):
 
 
 class MedicamentoSerializer(serializers.ModelSerializer):
+    esantiparkinsoniano = StrictBooleanField(required=False, default=False)
+    eslevodopa = StrictBooleanField(required=False, default=False)
+
     class Meta:
         model = Medicamento
         fields = ('idmedicamento', 'nombre', 'esantiparkinsoniano', 'eslevodopa')
@@ -47,6 +50,7 @@ class MedicamentoSerializer(serializers.ModelSerializer):
 
 class IndicacionSerializer(serializers.ModelSerializer):
     borrado = StrictBooleanField(required=False, default=False)
+    estavigente = StrictBooleanField(required=False, default=False)
 
     class Meta:
         model = Indicacionmedicamento

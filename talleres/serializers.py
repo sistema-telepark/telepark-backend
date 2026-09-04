@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from core.fields import StrictBooleanField
 from .models import (
     Taller, Clasetaller, Actividad, Actividadrealizada,
     Asistenciataller, Comportamiento, Factorclase, Factorglobal,
@@ -13,6 +14,8 @@ class TallerSerializer(serializers.ModelSerializer):
 
 
 class ClaseTallerSerializer(serializers.ModelSerializer):
+    virtual = StrictBooleanField(required=False, default=False)
+
     class Meta:
         model = Clasetaller
         fields = ('idclasetaller', 'fecha', 'virtual', 'idtaller')

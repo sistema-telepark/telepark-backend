@@ -24,13 +24,13 @@ class PersonaEp(Persona):
         Persona, models.DO_NOTHING, db_column='idPersona',
         parent_link=True, primary_key=True
     )
-    activataller = models.IntegerField(db_column='activaTaller', blank=True, null=True)
-    escolaridadcompleta = models.IntegerField(db_column='escolaridadCompleta', blank=True, null=True)
+    activataller = models.BooleanField(db_column='activaTaller', default=False)
+    escolaridadcompleta = models.BooleanField(db_column='escolaridadCompleta', default=False)
     fechainicio = models.DateTimeField(db_column='fechaInicio')
     maximaescolaridadalcanzada = models.CharField(db_column='maximaEscolaridadAlcanzada', max_length=45, blank=True, null=True)
-    tieneacompanante = models.IntegerField(db_column='tieneAcompanante')
-    tienecuidador = models.IntegerField(db_column='tieneCuidador')
-    vivesolo = models.IntegerField(db_column='viveSolo')
+    tieneacompanante = models.BooleanField(db_column='tieneAcompanante', default=False)
+    tienecuidador = models.BooleanField(db_column='tieneCuidador', default=False)
+    vivesolo = models.BooleanField(db_column='viveSolo', default=False)
     ocupacionprevia = models.CharField(db_column='ocupacionPrevia', max_length=45)
     ocupacionactual = models.CharField(db_column='ocupacionActual', max_length=45)
     idreferente = models.ForeignKey(
