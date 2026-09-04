@@ -1,6 +1,6 @@
 """Comando de gestión ``cargar_georef``.
 
-Carga el catálogo geográfico GeoRef (provincias, municipios, localidades) de
+Carga el catálogo geográfico GeoRef (provincias, departamentos, localidades) de
 forma idempotente. No contiene lógica de descarga/carga inline: delega en
 ``personas/georef.py``.
 
@@ -19,11 +19,11 @@ from personas.georef import (
     generar_fixtures,
     leer_fixtures,
 )
-from personas.models import Direccion, Localidad, Municipio, Provincia
+from personas.models import Departamento, Direccion, Localidad, Provincia
 
 
 class Command(BaseCommand):
-    help = 'Carga el catálogo geográfico GeoRef (provincias, municipios, localidades) de forma idempotente'
+    help = 'Carga el catálogo geográfico GeoRef (provincias, departamentos, localidades) de forma idempotente'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -73,7 +73,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f'Catálogo geográfico cargado desde {fuente}: '
             f'{conteos["provincias"]} provincias, '
-            f'{conteos["municipios"]} municipios, '
+            f'{conteos["departamentos"]} departamentos, '
             f'{conteos["localidades"]} localidades'
         ))
 
@@ -88,15 +88,14 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             'Fixtures GeoRef regenerados: '
             f'{len(datos["provincias"])} provincias, '
-            f'{len(datos["municipios"])} municipios, '
+            f'{len(datos["departamentos"])} departamentos, '
             f'{len(datos["localidades"])} localidades'
         ))
 
     def _descargar_todo(self):
-        """Descarga el catálogo completo con completitud aplicada.
+        """Descarga el catálogo completo.
 
-        Provincias → municipios (+ departamentos de provincias sin municipios) →
-        localidades (+ homónimas sintéticas). Sin tocar BD.
+        Provincias → departamentos → localidades. Sin tocar BD.
         """
         return descargar_catalogo_completo()
 
@@ -114,5 +113,5 @@ class Command(BaseCommand):
     def _borrar_catalogo(self):
         """Borra el catálogo en orden inverso de dependencia (restricciones FK físicas)."""
         Localidad.objects.all().delete()
-        Municipio.objects.all().delete()
+        Departamento.objects.all().delete()
         Provincia.objects.all().delete()

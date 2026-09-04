@@ -19,27 +19,20 @@ from .models import (
 
 
 def _resolver_localidades_por_provincia(valor):
-    """Resuelve el id_georef de la provincia y filtra localidades por prefijo."""
+    """Resuelve el filtro idprovincia vía join FK localidad → departamento → provincia."""
     try:
-        provincia = Provincia.objects.get(pk=valor)
+        Provincia.objects.get(pk=valor)
     except Provincia.DoesNotExist:
         return {'pk__in': []}
-    return {'id_georef__startswith': provincia.id_georef}
-
-
-_CABA_PROVINCIA_GEO_REF = '02'          # Provincia CABA (GeoRef/INDEC)
-_CABA_LOCALIDAD_GEO_REF = '02000010'    # localidad censal única de CABA
+    return {'iddepartamento__idprovincia': valor}
 
 
 def _resolver_localidades_por_departamento(valor):
-    """Resuelve el filtro iddepartamento; para comunas de CABA devuelve la localidad censal única."""
+    """Resuelve el filtro iddepartamento."""
     try:
-        departamento = Departamento.objects.select_related('idprovincia').get(pk=valor)
+        Departamento.objects.get(pk=valor)
     except Departamento.DoesNotExist:
         return {'pk__in': []}
-    if (departamento.idprovincia is not None
-            and departamento.idprovincia.id_georef == _CABA_PROVINCIA_GEO_REF):
-        return {'id_georef': _CABA_LOCALIDAD_GEO_REF}
     return {'iddepartamento': valor}
 
 
@@ -74,7 +67,7 @@ class PersonaEPViewSet(ModelPKMixin, viewsets.ModelViewSet):
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Filtra localidades por provincia vía prefijo id_georef (incluye ejidos). Con filtro activo la respuesta es array plano.",
+                description="Filtra localidades por provincia (FK departamento → provincia). Con filtro activo la respuesta es array plano.",
             ),
         ],
     ),

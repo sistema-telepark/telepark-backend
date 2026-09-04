@@ -9,7 +9,7 @@ from pathlib import Path
 
 from django.conf import settings
 
-from .models import Localidad, Municipio, Provincia
+from .models import Departamento, Localidad, Provincia
 
 TIMEOUT = 30  # segundos por petición
 MAX_POR_PAGINA = 1000  # página de la API GeoRef
@@ -19,7 +19,7 @@ BATCH_SIZE = 1000  # bulk_create en batches
 FIXTURES_DIR = Path(__file__).resolve().parent / 'fixtures' / 'georef'
 FIXTURE_FILES = {
     'provincias': 'provincias.json',
-    'municipios': 'municipios.json',
+    'departamentos': 'departamentos.json',
     'localidades': 'localidades.json',
 }
 
@@ -72,10 +72,7 @@ def _descargar_recurso(endpoint, campos, clave=None):
     """Descarga un recurso paginado con ``max=1000``/``inicio`` y ``orden=id``.
 
     ``clave`` es la key del payload JSON donde vive la lista de items; por
-    defecto coincide con ``endpoint``. Algunos endpoints usan una clave distinta
-    de su ruta (ej. ``/localidades-censales`` → payload ``localidades_censales``),
-    por lo que la clave debe pasarse explícita para no retornar una lista vacía
-    en silencio.
+    defecto coincide con ``endpoint``.
 
     Retorna la lista cruda de items de GeoRef.
     """
@@ -108,16 +105,16 @@ def _descargar_recurso(endpoint, campos, clave=None):
 def _normalizar_item(item, claves):
     """Normaliza un item de GeoRef al formato de fixture.
 
-    Con ``aplanar=true`` la API suele devolver ``provincia_id``/``municipio_id``
+    Con ``aplanar=true`` la API suele devolver ``provincia_id``/``departamento_id``
     directos; si no, se extraen manualmente los anidados ``provincia.id`` /
-    ``municipio.id``.
+    ``departamento.id``.
     """
     normalizado = {clave: item[clave] for clave in claves if clave in item}
 
     if 'provincia_id' not in normalizado and isinstance(item.get('provincia'), dict):
         normalizado['provincia_id'] = item['provincia'].get('id')
-    if 'municipio_id' not in normalizado and isinstance(item.get('municipio'), dict):
-        normalizado['municipio_id'] = item['municipio'].get('id')
+    if 'departamento_id' not in normalizado and isinstance(item.get('departamento'), dict):
+        normalizado['departamento_id'] = item['departamento'].get('id')
 
     return normalizado
 
@@ -128,117 +125,41 @@ def descargar_provincias():
     return [_normalizar_item(i, ('id', 'nombre')) for i in items]
 
 
-def descargar_municipios():
-    """Descarga municipios: ``campos=id,nombre,provincia.id`` → ``{id, nombre, provincia_id}``."""
-    items = _descargar_recurso('municipios', 'id,nombre,provincia.id')
-    return [_normalizar_item(i, ('id', 'nombre', 'provincia_id')) for i in items]
-
-
 def descargar_departamentos():
-    """Descarga departamentos: ``campos=id,nombre,provincia.id`` → ``{id, nombre, provincia_id}``.
-
-    Fuente del segundo nivel administrativo para provincias sin municipios.
-    Sin cambios de modelo/API.
-    """
+    """Descarga departamentos: ``campos=id,nombre,provincia.id`` → ``{id, nombre, provincia_id}``."""
     items = _descargar_recurso('departamentos', 'id,nombre,provincia.id')
     return [_normalizar_item(i, ('id', 'nombre', 'provincia_id')) for i in items]
 
 
-def completar_municipios_con_departamentos(municipios, departamentos):
-    """Merge departamentos como municipios solo para provincias con 0 municipios.
-
-    Función pura determinística (sin tocar BD): detecta las provincias que ya
-    tienen municipios a partir de ``municipios``, filtra los departamentos de las
-    provincias restantes (sin municipios) y retorna ``municipios + filtrados``
-    ordenados por ``id``. Los ``id_georef`` de departamentos (ej. ``78007``) no
-    colisionan con municipios reales (prefijo provincial único, solo se cargan en
-    provincias sin municipios).
-    """
-    provincias_con_municipios = {m['provincia_id'] for m in municipios}
-    departamentos_filtrados = [
-        d for d in departamentos
-        if d['provincia_id'] not in provincias_con_municipios
-    ]
-    return sorted(municipios + departamentos_filtrados, key=lambda x: x['id'])
-
-
-def descargar_municipios_completos():
-    """Descarga municipios + departamentos de provincias sin municipios."""
-    municipios = descargar_municipios()
-    departamentos = descargar_departamentos()
-    return completar_municipios_con_departamentos(municipios, departamentos)
-
-
 def descargar_localidades():
-    """Descarga localidades desde ``/localidades-censales`` (INDEC, fuente única).
+    """Descarga localidades desde ``/localidades`` (BAHRA).
 
-    ``campos=id,nombre,provincia.id,municipio.id``. La clave de payload es
-    ``localidades_censales`` (guión bajo), distinta de la ruta del endpoint
-    (guión) — se pasa explícita a ``_descargar_recurso``.
+    ``campos=id,nombre,provincia.id,departamento.id``. La clave de payload es
+    ``localidades``.
 
-    Retorna ``{id, nombre, provincia_id, municipio_id}`` con ``municipio_id``
-    nullable (ejidos no colindantes).
+    Retorna ``{id, nombre, provincia_id, departamento_id}``.
     """
     items = _descargar_recurso(
-        'localidades-censales',
-        'id,nombre,provincia.id,municipio.id',
-        clave='localidades_censales',
+        'localidades',
+        'id,nombre,provincia.id,departamento.id',
+        clave='localidades',
     )
-    return [_normalizar_item(i, ('id', 'nombre', 'provincia_id', 'municipio_id')) for i in items]
-
-
-def generar_localidades_sinteticas(localidades, municipios):
-    """Crea localidades homónimas sintéticas para municipios sin localidad.
-
-    Función pura determinística (sin tocar BD): para cada municipio sin localidad
-    (y no CABA), genera una localidad con ``id_georef = f"{municipio_id}0000"`` (ej. municipio ``060707``
-    → ``0607070000``; departamento ``78007`` → ``780070000``). Si el id sintético
-    ya existe → ``GeoRefError`` claro, sin sobreescritura .
-    Retorna ``localidades + sintéticas`` ordenadas por ``id``.
-    """
-    municipios_con_localidad = {
-        l['municipio_id'] for l in localidades if l.get('municipio_id')
-    }
-    existentes = {l['id'] for l in localidades}
-    sinteticas = []
-    for m in municipios:
-        if m['id'] in municipios_con_localidad:
-            continue
-        if m['provincia_id'] == '02':
-            continue  # CABA: usa la única localidad censal del catálogo
-        id_sintetico = f"{m['id']}0000"
-        if id_sintetico in existentes:
-            raise GeoRefError(
-                f"Colisión de id_georef sintético {id_sintetico!r} "
-                f"(municipio {m['id']!r} {m['nombre']!r}): ya existe una localidad "
-                'con ese id. No se sobreescribe.'
-            )
-        sinteticas.append({
-            'id': id_sintetico,
-            'nombre': m['nombre'],
-            'provincia_id': m['provincia_id'],
-            'municipio_id': m['id'],
-        })
-        existentes.add(id_sintetico)
-    return sorted(localidades + sinteticas, key=lambda x: x['id'])
+    return [_normalizar_item(i, ('id', 'nombre', 'provincia_id', 'departamento_id')) for i in items]
 
 
 def descargar_catalogo_completo():
-    """Descarga el catálogo completo con completitud aplicada.
+    """Descarga el catálogo completo.
 
-    Orquesta: provincias → municipios completos (con departamentos de provincias
-    sin municipios) → localidades (+ homónimas sintéticas). Retorna el dict
-    ``{'provincias': [...], 'municipios': [...], 'localidades': [...]}`` listo
-    para ``generar_fixtures``/``cargar_catalogo`` (shapes de dict idénticos a los
-    fixtures; ``cargar_*`` no cambian).
+    Orquesta: provincias → departamentos → localidades. Retorna el dict
+    ``{'provincias': [...], 'departamentos': [...], 'localidades': [...]}`` listo
+    para ``generar_fixtures``/``cargar_catalogo``.
     """
     provincias = descargar_provincias()
-    municipios = descargar_municipios_completos()
+    departamentos = descargar_departamentos()
     localidades = descargar_localidades()
-    localidades = generar_localidades_sinteticas(localidades, municipios)
     return {
         'provincias': provincias,
-        'municipios': municipios,
+        'departamentos': departamentos,
         'localidades': localidades,
     }
 
@@ -259,7 +180,7 @@ def _escribir_atomico(ruta, items):
 def generar_fixtures(datos):
     """Escribe los 3 fixtures JSON ordenados por ID GeoRef.
 
-    ``datos`` es un dict ``{'provincias': [...], 'municipios': [...], 'localidades': [...]}``.
+    ``datos`` es un dict ``{'provincias': [...], 'departamentos': [...], 'localidades': [...]}``.
     """
     FIXTURES_DIR.mkdir(parents=True, exist_ok=True)
     for clave, items in datos.items():
@@ -286,83 +207,79 @@ def leer_fixtures():
     return datos
 
 
-def _bulk_create_en_batches(modelo, objetos):
-    """``bulk_create`` en batches de 1.000."""
-    for i in range(0, len(objetos), BATCH_SIZE):
-        modelo.objects.bulk_create(objetos[i:i + BATCH_SIZE])
+def _upsert_catalogo(modelo, items, campos_extra=(), resolver=None):
+    """Upsert por ``id_georef``: actualiza existentes y crea faltantes.
+
+    ``items`` son dicts normalizados con ``id`` y ``nombre``. ``campos_extra``
+    son campos adicionales a refrescar en registros existentes y ``resolver``
+    setea campos/FK sobre cada instancia antes de persistir.
+    """
+    existentes = {m.id_georef: m for m in modelo.objects.all()}
+    objetos = []
+    for item in items:
+        instancia = existentes.get(item['id'])
+        if instancia is None:
+            instancia = modelo(id_georef=item['id'], nombre=item['nombre'])
+        else:
+            instancia.nombre = item['nombre']
+        if resolver is not None:
+            resolver(instancia, item)
+        objetos.append(instancia)
+
+    nuevos = [o for o in objetos if o.pk is None]
+    for i in range(0, len(nuevos), BATCH_SIZE):
+        modelo.objects.bulk_create(nuevos[i:i + BATCH_SIZE], ignore_conflicts=True)
+
+    a_actualizar = [o for o in objetos if o.pk is not None]
+    campos = ('nombre',) + tuple(campos_extra)
+    for i in range(0, len(a_actualizar), BATCH_SIZE):
+        modelo.objects.bulk_update(a_actualizar[i:i + BATCH_SIZE], campos)
+
+    return len(objetos)
 
 
 def cargar_provincias(datos):
-    """Persiste provincias vía ``bulk_create``; retorna el conteo."""
-    provincias = [
-        Provincia(id_georef=item['id'], nombre=item['nombre'])
-        for item in datos['provincias']
-    ]
-    _bulk_create_en_batches(Provincia, provincias)
-    return len(provincias)
+    """Upsert de provincias por ``id_georef``; retorna el conteo."""
+    return _upsert_catalogo(Provincia, datos['provincias'])
 
 
-def cargar_municipios(datos):
-    """Persiste municipios resolviendo FK ``idprovincia`` por ``id_georef``."""
+def cargar_departamentos(datos):
+    """Upsert de departamentos resolviendo FK ``idprovincia`` por ``id_georef``."""
     provincias_por_georef = {p.id_georef: p for p in Provincia.objects.all()}
-    municipios = []
-    for item in datos['municipios']:
-        municipios.append(Municipio(
-            id_georef=item['id'],
-            nombre=item['nombre'],
-            idprovincia=provincias_por_georef.get(item.get('provincia_id')),
-        ))
-    _bulk_create_en_batches(Municipio, municipios)
-    return len(municipios)
+
+    def resolver(instancia, item):
+        instancia.idprovincia = provincias_por_georef.get(item.get('provincia_id'))
+
+    return _upsert_catalogo(
+        Departamento, datos['departamentos'], ('idprovincia',), resolver
+    )
 
 
 def cargar_localidades(datos):
-    """Persiste localidades resolviendo FK ``idmunicipio`` por ``id_georef``.
+    """Upsert de localidades resolviendo FK ``iddepartamento`` por ``id_georef``.
 
-    ``municipio_id`` es nullable; ``codigopostal`` se persiste en
-    ``None`` porque la API GeoRef no expone código postal.
+    ``codigopostal`` se persiste en ``None`` porque la API GeoRef no expone
+    código postal.
     """
-    municipios_por_georef = {m.id_georef: m for m in Municipio.objects.all()}
-    localidades = []
-    for item in datos['localidades']:
-        localidades.append(Localidad(
-            id_georef=item['id'],
-            nombre=item['nombre'],
-            codigopostal=None,
-            idmunicipio=municipios_por_georef.get(item.get('municipio_id')),
-        ))
-    _bulk_create_en_batches(Localidad, localidades)
-    return len(localidades)
+    departamentos_por_georef = {d.id_georef: d for d in Departamento.objects.all()}
+
+    def resolver(instancia, item):
+        instancia.iddepartamento = departamentos_por_georef.get(item.get('departamento_id'))
+        instancia.codigopostal = None
+
+    return _upsert_catalogo(
+        Localidad, datos['localidades'], ('iddepartamento', 'codigopostal'), resolver
+    )
 
 
 def cargar_catalogo(datos):
-    """Orquesta la carga en el orden provincias → municipios → localidades.
+    """Orquesta la carga en el orden provincias → departamentos → localidades.
 
-    Retorna conteos determinísticos ``{'provincias': n, 'municipios': n, 'localidades': n}``.
+    Retorna conteos determinísticos ``{'provincias': n, 'departamentos': n, 'localidades': n}``.
     Debe ejecutarse dentro de ``transaction.atomic()``.
     """
     return {
         'provincias': cargar_provincias(datos),
-        'municipios': cargar_municipios(datos),
+        'departamentos': cargar_departamentos(datos),
         'localidades': cargar_localidades(datos),
-    }
-
-
-def verificar_completitud():
-    """Verifica la completitud del catálogo en BD.
-
-    Consulta ORM: reporta
-    provincias sin municipios y municipios sin localidades. Las comunas de CABA
-    se excluyen del conteo de municipios sin localidad.
-    """
-    provincias_sin_municipios = Provincia.objects.filter(municipio__isnull=True).count()
-    municipios_sin_localidades = (
-        Municipio.objects.filter(localidad__isnull=True)
-        .exclude(idprovincia__id_georef='02')
-        .count()
-    )
-    return {
-        'provincias_sin_municipios': provincias_sin_municipios,
-        'municipios_sin_localidades': municipios_sin_localidades,
-        'ok': provincias_sin_municipios == 0 and municipios_sin_localidades == 0,
     }
