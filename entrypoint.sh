@@ -66,8 +66,8 @@ python manage.py migrate
 echo "Migraciones aplicadas correctamente."
 
 # Cargar catálogo geográfico GeoRef (idempotente)
-echo "Ejecutando cargar_georef..."
-python manage.py cargar_georef
+#echo "Ejecutando cargar_georef..."
+#python manage.py cargar_georef
 
 # Crear usuario admin (idempotente)
 echo "Ejecutando bootstrap_admin..."
