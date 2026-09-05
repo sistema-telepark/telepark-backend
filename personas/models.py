@@ -63,6 +63,17 @@ class Localidad(models.Model):
     codigopostal = models.IntegerField(db_column='codigoPostal', null=True, blank=True)
     iddepartamento = models.ForeignKey('Departamento', models.DO_NOTHING, db_column='iddepartamento', blank=True, null=True)
     id_georef = models.CharField(db_column='idGeoref', unique=True, null=True, blank=True, max_length=20)
+    fuente_departamento = models.CharField(
+        db_column='fuenteDepartamento',
+        max_length=10,
+        choices=[
+            ('censal', 'censal'),
+            ('bahra', 'bahra'),
+            ('manual', 'manual'),
+        ],
+        null=True,
+        blank=True,
+    )
 
     objects = OrdenadoManager()
 

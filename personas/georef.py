@@ -132,31 +132,113 @@ def descargar_departamentos():
 
 
 def descargar_localidades():
-    """Descarga localidades desde ``/localidades`` (BAHRA).
+    """Descarga localidades censales desde ``/localidades-censales`` (INDEC).
 
-    ``campos=id,nombre,provincia.id,departamento.id``. La clave de payload es
-    ``localidades``.
+    ``campos=id,nombre,provincia.id,provincia.nombre,departamento.id,departamento.nombre``.
+    La clave de payload es ``localidades_censales``.
 
-    Retorna ``{id, nombre, provincia_id, departamento_id}``.
+    Retorna ``{id, nombre, provincia_id, provincia_nombre, departamento_id, departamento_nombre}``.
     """
     items = _descargar_recurso(
-        'localidades',
-        'id,nombre,provincia.id,departamento.id',
-        clave='localidades',
+        'localidades-censales',
+        'id,nombre,provincia.id,provincia.nombre,departamento.id,departamento.nombre',
+        clave='localidades_censales',
     )
-    return [_normalizar_item(i, ('id', 'nombre', 'provincia_id', 'departamento_id')) for i in items]
+    return [
+        _normalizar_item(i, (
+            'id', 'nombre', 'provincia_id', 'provincia_nombre',
+            'departamento_id', 'departamento_nombre',
+        ))
+        for i in items
+    ]
+
+
+def descargar_asentamientos():
+    """Descarga asentamientos desde ``/asentamientos`` (BAHRA).
+
+    ``campos=id,nombre,provincia.id,departamento.id,departamento.nombre``. La
+    clave de payload es ``asentamientos``.
+
+    Retorna ``{id, nombre, provincia_id, departamento_id, departamento_nombre}``.
+    """
+    items = _descargar_recurso(
+        'asentamientos',
+        'id,nombre,provincia.id,departamento.id,departamento.nombre',
+        clave='asentamientos',
+    )
+    return [
+        _normalizar_item(i, ('id', 'nombre', 'provincia_id', 'departamento_id', 'departamento_nombre'))
+        for i in items
+    ]
+
+
+def _resolver_departamento_censal(localidades, departamentos):
+    """Pasada 1: cruce censal por ``(provincia_id, nombre)``.
+
+    Indexa los departamentos por ``(provincia_id, nombre)`` y resuelve cada
+    localidad censal. Solo se resuelve si hay exactamente un departamento
+    candidato (la clave compuesta desambigua homónimos entre provincias; los
+    duplicados dentro de una misma provincia quedan sin resolver).
+    """
+    indice = {}
+    for d in departamentos:
+        indice.setdefault((d['provincia_id'], d['nombre']), []).append(d['id'])
+
+    for loc in localidades:
+        clave = (loc.get('provincia_id'), loc.get('departamento_nombre'))
+        candidatos = indice.get(clave, [])
+        if len(candidatos) == 1:
+            loc['departamento_id'] = candidatos[0]
+            loc['fuente_departamento'] = 'censal'
+
+
+def _resolver_departamento_bahra(localidades, asentamientos):
+    """Pasada 2: fallback contra ``/asentamientos`` (BAHRA) por ``(provincia_id, nombre)``.
+
+    Resuelve las localidades que quedaron sin departamento en la pasada censal,
+    cruzando por nombre de localidad contra el nombre del asentamiento dentro de
+    la misma provincia. Solo se resuelve si hay exactamente un candidato.
+    """
+    indice = {}
+    for a in asentamientos:
+        indice.setdefault((a['provincia_id'], a['nombre']), []).append(a['departamento_id'])
+
+    for loc in localidades:
+        if loc.get('fuente_departamento'):
+            continue
+        clave = (loc.get('provincia_id'), loc.get('nombre'))
+        candidatos = indice.get(clave, [])
+        if len(candidatos) == 1:
+            loc['departamento_id'] = candidatos[0]
+            loc['fuente_departamento'] = 'bahra'
 
 
 def descargar_catalogo_completo():
     """Descarga el catálogo completo.
 
-    Orquesta: provincias → departamentos → localidades. Retorna el dict
-    ``{'provincias': [...], 'departamentos': [...], 'localidades': [...]}`` listo
-    para ``generar_fixtures``/``cargar_catalogo``.
+    Orquesta: provincias → departamentos → localidades-censales, y resuelve la
+    FK ``iddepartamento`` de cada localidad por ``(provincia_id, nombre)`` en dos
+    pasadas (cruce censal → fallback ``/asentamientos`` BAHRA). El remanente sin
+    resolver queda con ``fuente_departamento='manual'`` y ``departamento_id=None``.
+
+    Retorna el dict ``{'provincias': [...], 'departamentos': [...], 'localidades': [...]}``
+    listo para ``generar_fixtures``/``cargar_catalogo``.
     """
     provincias = descargar_provincias()
     departamentos = descargar_departamentos()
     localidades = descargar_localidades()
+
+    _resolver_departamento_censal(localidades, departamentos)
+    pendientes = [loc for loc in localidades if not loc.get('fuente_departamento')]
+    if pendientes:
+        asentamientos = descargar_asentamientos()
+        _resolver_departamento_bahra(localidades, asentamientos)
+
+    for loc in localidades:
+        if not loc.get('fuente_departamento'):
+            loc['departamento_id'] = None
+            loc['fuente_departamento'] = 'manual'
+
     return {
         'provincias': provincias,
         'departamentos': departamentos,
@@ -259,16 +341,19 @@ def cargar_localidades(datos):
     """Upsert de localidades resolviendo FK ``iddepartamento`` por ``id_georef``.
 
     ``codigopostal`` se persiste en ``None`` porque la API GeoRef no expone
-    código postal.
+    código postal. ``fuente_departamento`` se persiste tal cual viene en el item
+    (``censal``/``bahra``/``manual``).
     """
     departamentos_por_georef = {d.id_georef: d for d in Departamento.objects.all()}
 
     def resolver(instancia, item):
         instancia.iddepartamento = departamentos_por_georef.get(item.get('departamento_id'))
         instancia.codigopostal = None
+        instancia.fuente_departamento = item.get('fuente_departamento')
 
     return _upsert_catalogo(
-        Localidad, datos['localidades'], ('iddepartamento', 'codigopostal'), resolver
+        Localidad, datos['localidades'],
+        ('iddepartamento', 'codigopostal', 'fuente_departamento'), resolver
     )
 
 

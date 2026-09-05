@@ -76,6 +76,28 @@ class Command(BaseCommand):
             f'{conteos["departamentos"]} departamentos, '
             f'{conteos["localidades"]} localidades'
         ))
+        self._reportar_fuentes(datos['localidades'])
+
+    def _reportar_fuentes(self, localidades):
+        """Reporta en stdout la distribución por ``fuente_departamento`` y lista las pendientes manuales."""
+        por_fuente = {}
+        for loc in localidades:
+            fuente = loc.get('fuente_departamento') or 'sin-fuente'
+            por_fuente[fuente] = por_fuente.get(fuente, 0) + 1
+
+        detalle = ', '.join(f'{k}={v}' for k, v in sorted(por_fuente.items()))
+        self.stdout.write(f'Localidades por fuente de departamento: {detalle}')
+
+        manuales = [loc for loc in localidades if loc.get('fuente_departamento') == 'manual']
+        if manuales:
+            self.stdout.write(self.style.WARNING(
+                f'{len(manuales)} localidades pendientes de revisión manual (fuente=manual):'
+            ))
+            for loc in sorted(manuales, key=lambda x: (x.get('provincia_nombre') or '', x.get('nombre') or '')):
+                self.stdout.write(
+                    f"  - {loc.get('nombre')} (id_georef={loc.get('id')}, "
+                    f"provincia={loc.get('provincia_nombre')})"
+                )
 
     def _solo_descargar(self):
         """Regenera los fixtures JSON desde la API sin tocar la BD."""
@@ -91,6 +113,7 @@ class Command(BaseCommand):
             f'{len(datos["departamentos"])} departamentos, '
             f'{len(datos["localidades"])} localidades'
         ))
+        self._reportar_fuentes(datos['localidades'])
 
     def _descargar_todo(self):
         """Descarga el catálogo completo.
