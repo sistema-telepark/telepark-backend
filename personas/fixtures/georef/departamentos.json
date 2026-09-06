@@ -1096,8 +1096,8 @@
     },
     {
       "id": "46014",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "La Rioja",
+      "nombre_completo": "Departamento La Rioja",
       "provincia": {
         "id": "46",
         "nombre": "La Rioja",
@@ -1896,8 +1896,8 @@
     },
     {
       "id": "42021",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "Santa Rosa",
+      "nombre_completo": "Departamento Santa Rosa",
       "provincia": {
         "id": "42",
         "nombre": "La Pampa",
@@ -2376,8 +2376,8 @@
     },
     {
       "id": "66028",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "Salta",
+      "nombre_completo": "Departamento Salta",
       "provincia": {
         "id": "66",
         "nombre": "Salta",
@@ -2632,8 +2632,8 @@
     },
     {
       "id": "18021",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "Corrientes",
+      "nombre_completo": "Departamento Corrientes",
       "provincia": {
         "id": "18",
         "nombre": "Corrientes",
@@ -3240,8 +3240,8 @@
     },
     {
       "id": "82063",
-      "nombre": "La Capital",
-      "nombre_completo": "Departamento La Capital",
+      "nombre": "Santa Fe",
+      "nombre_completo": "Departamento Santa Fe",
       "provincia": {
         "id": "82",
         "nombre": "Santa Fe",
@@ -4728,8 +4728,8 @@
     },
     {
       "id": "90084",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "San Miguel de Tucumán",
+      "nombre_completo": "Departamento San Miguel de Tucumán",
       "provincia": {
         "id": "90",
         "nombre": "Tucumán",
@@ -5736,8 +5736,8 @@
     },
     {
       "id": "14014",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "Córdoba",
+      "nombre_completo": "Departamento Córdoba",
       "provincia": {
         "id": "14",
         "nombre": "Córdoba",
@@ -5816,8 +5816,8 @@
     },
     {
       "id": "86049",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "Santiago del Estero",
+      "nombre_completo": "Departamento Santiago del Estero",
       "provincia": {
         "id": "86",
         "nombre": "Santiago del Estero",
@@ -5928,8 +5928,8 @@
     },
     {
       "id": "10049",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "San Fernando del Valle de Catamarca",
+      "nombre_completo": "Departamento San Fernando del Valle de Catamarca",
       "provincia": {
         "id": "10",
         "nombre": "Catamarca",
@@ -6552,8 +6552,8 @@
     },
     {
       "id": "50007",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "Mendoza",
+      "nombre_completo": "Departamento Mendoza",
       "provincia": {
         "id": "50",
         "nombre": "Mendoza",
@@ -7496,8 +7496,8 @@
     },
     {
       "id": "54028",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "Posadas",
+      "nombre_completo": "Departamento Posadas",
       "provincia": {
         "id": "54",
         "nombre": "Misiones",
@@ -8360,8 +8360,8 @@
     },
     {
       "id": "70028",
-      "nombre": "Capital",
-      "nombre_completo": "Departamento Capital",
+      "nombre": "San Juan",
+      "nombre_completo": "Departamento San Juan",
       "provincia": {
         "id": "70",
         "nombre": "San Juan",
