@@ -2,6 +2,8 @@ from django.db import models
 
 from core.managers import OrdenadoManager
 
+from .managers import NombreOrderedManager
+
 
 class Persona(models.Model):
     idpersona = models.AutoField(db_column='idPersona', primary_key=True)
@@ -63,20 +65,22 @@ class Localidad(models.Model):
     codigopostal = models.IntegerField(db_column='codigoPostal', null=True, blank=True)
     iddepartamento = models.ForeignKey('Departamento', models.DO_NOTHING, db_column='iddepartamento', blank=True, null=True)
 
-    objects = OrdenadoManager()
+    objects = NombreOrderedManager()
 
     class Meta:
         db_table = 'localidad'
+        ordering = ('nombre',)
 
 
 class Provincia(models.Model):
     idprovincia = models.AutoField(db_column='idProvincia', primary_key=True)
     nombre = models.CharField(max_length=100)
 
-    objects = OrdenadoManager()
+    objects = NombreOrderedManager()
 
     class Meta:
         db_table = 'provincia'
+        ordering = ('nombre',)
 
 
 class Departamento(models.Model):
@@ -84,10 +88,11 @@ class Departamento(models.Model):
     nombre = models.CharField(max_length=120)
     idprovincia = models.ForeignKey('Provincia', models.DO_NOTHING, db_column='idProvincia', blank=True, null=True)
 
-    objects = OrdenadoManager()
+    objects = NombreOrderedManager()
 
     class Meta:
         db_table = 'departamento'
+        ordering = ('nombre',)
 
 
 class Tipoparentesco(models.Model):
