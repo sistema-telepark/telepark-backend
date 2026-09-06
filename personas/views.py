@@ -8,39 +8,32 @@ from core.mixins import (
 
 from .serializers import (
     DireccionSerializer, LocalidadSerializer,
-    MunicipioSerializer, PersonaEpSerializer,
+    DepartamentoSerializer, PersonaEpSerializer,
     PersonaSerializer, ProvinciaSerializer,
     TipoparentescoSerializer,
 )
 from .models import (
     Persona, PersonaEp, Direccion,
-    Tipoparentesco, Localidad, Municipio, Provincia,
+    Tipoparentesco, Localidad, Departamento, Provincia,
 )
 
 
 def _resolver_localidades_por_provincia(valor):
-    """Resuelve el id_georef de la provincia y filtra localidades por prefijo."""
+    """Resuelve el filtro idprovincia vía join FK localidad → departamento → provincia."""
     try:
-        provincia = Provincia.objects.get(pk=valor)
+        Provincia.objects.get(pk=valor)
     except Provincia.DoesNotExist:
         return {'pk__in': []}
-    return {'id_georef__startswith': provincia.id_georef}
+    return {'iddepartamento__idprovincia': valor}
 
 
-_CABA_PROVINCIA_GEO_REF = '02'          # Provincia CABA (GeoRef/INDEC)
-_CABA_LOCALIDAD_GEO_REF = '02000010'    # localidad censal única de CABA
-
-
-def _resolver_localidades_por_municipio(valor):
-    """Resuelve el filtro idmunicipio; para comunas de CABA devuelve la localidad censal única."""
+def _resolver_localidades_por_departamento(valor):
+    """Resuelve el filtro iddepartamento."""
     try:
-        municipio = Municipio.objects.select_related('idprovincia').get(pk=valor)
-    except Municipio.DoesNotExist:
+        Departamento.objects.get(pk=valor)
+    except Departamento.DoesNotExist:
         return {'pk__in': []}
-    if (municipio.idprovincia is not None
-            and municipio.idprovincia.id_georef == _CABA_PROVINCIA_GEO_REF):
-        return {'id_georef': _CABA_LOCALIDAD_GEO_REF}
-    return {'idmunicipio': valor}
+    return {'iddepartamento': valor}
 
 
 @auto_tag_schema_view
@@ -63,18 +56,18 @@ class PersonaEPViewSet(ModelPKMixin, viewsets.ModelViewSet):
     list=extend_schema(
         parameters=[
             OpenApiParameter(
-                name="idmunicipio",
+                name="iddepartamento",
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Filtra localidades por municipio (FK idmunicipio). Con filtro activo la respuesta es array plano.",
+                description="Filtra localidades por departamento (FK iddepartamento). Con filtro activo la respuesta es array plano.",
             ),
             OpenApiParameter(
                 name="idprovincia",
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Filtra localidades por provincia vía prefijo id_georef (incluye ejidos). Con filtro activo la respuesta es array plano.",
+                description="Filtra localidades por provincia (FK departamento → provincia). Con filtro activo la respuesta es array plano.",
             ),
         ],
     ),
@@ -85,7 +78,7 @@ class LocalidadViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = LocalidadSerializer
     permission_classes = [IsAuthenticated]
     cascade_lookups = {
-        'idmunicipio': _resolver_localidades_por_municipio,
+        'iddepartamento': _resolver_localidades_por_departamento,
         'idprovincia': _resolver_localidades_por_provincia,
     }
 
@@ -115,15 +108,15 @@ class TipoParentescoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewS
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Filtra municipios por provincia (FK idprovincia). Con filtro activo la respuesta es array plano.",
+                description="Filtra departamentos por provincia (FK idprovincia). Con filtro activo la respuesta es array plano.",
             ),
         ],
     ),
 )
-class MunicipioViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
+class DepartamentoViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
-    manager = Municipio.objects
-    serializer_class = MunicipioSerializer
+    manager = Departamento.objects
+    serializer_class = DepartamentoSerializer
     permission_classes = [IsAuthenticated]
     cascade_lookups = {'idprovincia': 'idprovincia'}
 

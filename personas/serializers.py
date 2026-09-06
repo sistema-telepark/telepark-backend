@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 from core.fields import StrictBooleanField
-from .models import Persona, PersonaEp, Direccion, Localidad, Municipio, Provincia, Tipoparentesco
+from .models import Persona, PersonaEp, Direccion, Localidad, Departamento, Provincia, Tipoparentesco
 
 
 class PersonaSerializer(serializers.ModelSerializer):
@@ -90,8 +90,8 @@ class PersonaEpSerializer(serializers.ModelSerializer):
 class LocalidadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Localidad
-        fields = ('idlocalidad', 'nombre', 'codigopostal', 'idmunicipio')
-        extra_kwargs = {'idmunicipio': {'allow_null': True, 'required': False}}
+        fields = ('idlocalidad', 'nombre', 'codigopostal', 'iddepartamento')
+        extra_kwargs = {'iddepartamento': {'allow_null': True, 'required': False}}
 
 
 class ProvinciaSerializer(serializers.ModelSerializer):
@@ -100,12 +100,12 @@ class ProvinciaSerializer(serializers.ModelSerializer):
         fields = ('idprovincia', 'nombre')
 
 
-class MunicipioSerializer(serializers.ModelSerializer):
+class DepartamentoSerializer(serializers.ModelSerializer):
     provincia = serializers.CharField(source='idprovincia.nombre', read_only=True, allow_null=True)
 
     class Meta:
-        model = Municipio
-        fields = ('idmunicipio', 'nombre', 'provincia', 'idprovincia')
+        model = Departamento
+        fields = ('iddepartamento', 'nombre', 'provincia', 'idprovincia')
         extra_kwargs = {'idprovincia': {'allow_null': True, 'required': False}}
 
     def validate(self, attrs):
