@@ -62,18 +62,6 @@ class Localidad(models.Model):
     nombre = models.CharField(max_length=120)
     codigopostal = models.IntegerField(db_column='codigoPostal', null=True, blank=True)
     iddepartamento = models.ForeignKey('Departamento', models.DO_NOTHING, db_column='iddepartamento', blank=True, null=True)
-    id_georef = models.CharField(db_column='idGeoref', unique=True, null=True, blank=True, max_length=20)
-    fuente_departamento = models.CharField(
-        db_column='fuenteDepartamento',
-        max_length=10,
-        choices=[
-            ('censal', 'censal'),
-            ('bahra', 'bahra'),
-            ('manual', 'manual'),
-        ],
-        null=True,
-        blank=True,
-    )
 
     objects = OrdenadoManager()
 
@@ -84,7 +72,6 @@ class Localidad(models.Model):
 class Provincia(models.Model):
     idprovincia = models.AutoField(db_column='idProvincia', primary_key=True)
     nombre = models.CharField(max_length=100)
-    id_georef = models.CharField(db_column='idGeoref', unique=True, null=True, blank=True, max_length=20)
 
     objects = OrdenadoManager()
 
@@ -96,7 +83,6 @@ class Departamento(models.Model):
     iddepartamento = models.AutoField(db_column='iddepartamento', primary_key=True)
     nombre = models.CharField(max_length=120)
     idprovincia = models.ForeignKey('Provincia', models.DO_NOTHING, db_column='idProvincia', blank=True, null=True)
-    id_georef = models.CharField(db_column='idGeoref', unique=True, null=True, blank=True, max_length=20)
 
     objects = OrdenadoManager()
 

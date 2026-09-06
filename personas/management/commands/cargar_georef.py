@@ -1,140 +1,48 @@
 """Comando de gestión ``cargar_georef``.
 
-Carga el catálogo geográfico GeoRef (provincias, departamentos, localidades) de
-forma idempotente. No contiene lógica de descarga/carga inline: delega en
-``personas/georef.py``.
+Carga el catálogo geográfico (provincias, departamentos, localidades) desde los
+fixtures locales de forma idempotente. No contiene lógica de carga inline:
+delega en ``personas/georef.py``.
 
 Flags:
-- ``--solo-descargar``: regenera los fixtures JSON desde la API sin tocar la BD.
 - ``--force``: recarga el catálogo completo (borra filas y recarga), abortando
   si existe una ``Direccion`` referenciando ``Localidad`` (guard de integridad).
 """
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
 
-from personas.georef import (
-    GeoRefError,
-    cargar_catalogo,
-    descargar_catalogo_completo,
-    generar_fixtures,
-    leer_fixtures,
-)
-from personas.models import Departamento, Direccion, Localidad, Provincia
+from personas.georef import GeoRefError, cargar_catalogo
 
 
 class Command(BaseCommand):
-    help = 'Carga el catálogo geográfico GeoRef (provincias, departamentos, localidades) de forma idempotente'
+    help = 'Carga el catálogo geográfico desde fixtures locales (provincias, departamentos, localidades) de forma idempotente'
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--solo-descargar',
-            action='store_true',
-            help='Regenera los fixtures JSON desde la API GeoRef sin tocar la BD',
-        )
-        parser.add_argument(
             '--force',
             action='store_true',
-            help='Recarga el catálogo completo (borra filas del catálogo y recarga desde fixtures/API)',
+            help='Recarga el catálogo completo (borra filas del catálogo y recarga desde fixtures)',
         )
 
     def handle(self, *args, **options):
-        solo_descargar = options['solo_descargar']
         force = options['force']
 
-        if solo_descargar:
-            self._solo_descargar()
-            return
+        try:
+            conteos = cargar_catalogo(force=force)
+        except GeoRefError as e:
+            raise CommandError(f'Error al cargar el catálogo geográfico: {e}')
+        except Exception as e:
+            raise CommandError(f'Error inesperado al cargar el catálogo geográfico: {e}')
 
-        if force:
-            self._verificar_guard_integridad()
-        elif Localidad.objects.exists():
+        if conteos is None:
             self.stdout.write(
-                'Catálogo geográfico ya cargado — no se modifica la BD (early-exit)'
+                'Catálogo geográfico ya cargado — no se modifica la BD (skip idempotente)'
             )
             return
 
-        datos = leer_fixtures()
-        fuente = 'fixtures locales'
-        if datos is None:
-            self.stdout.write('Fixtures ausentes o vacíos — usando API GeoRef como fallback')
-            datos = self._descargar_todo()
-            fuente = 'API GeoRef'
-
-        try:
-            with transaction.atomic():
-                if force:
-                    self._borrar_catalogo()
-                conteos = cargar_catalogo(datos)
-        except GeoRefError as e:
-            raise CommandError(f'Error al cargar el catálogo GeoRef: {e}')
-        except Exception as e:
-            raise CommandError(f'Error inesperado al cargar el catálogo GeoRef: {e}')
-
         self.stdout.write(self.style.SUCCESS(
-            f'Catálogo geográfico cargado desde {fuente}: '
+            'Catálogo geográfico cargado desde fixtures locales: '
             f'{conteos["provincias"]} provincias, '
             f'{conteos["departamentos"]} departamentos, '
-            f'{conteos["localidades"]} localidades'
+            f'{conteos["localidades"]} localidades '
+            f'({conteos["localidades_duplicadas_eliminadas"]} duplicados eliminados)'
         ))
-        self._reportar_fuentes(datos['localidades'])
-
-    def _reportar_fuentes(self, localidades):
-        """Reporta en stdout la distribución por ``fuente_departamento`` y lista las pendientes manuales."""
-        por_fuente = {}
-        for loc in localidades:
-            fuente = loc.get('fuente_departamento') or 'sin-fuente'
-            por_fuente[fuente] = por_fuente.get(fuente, 0) + 1
-
-        detalle = ', '.join(f'{k}={v}' for k, v in sorted(por_fuente.items()))
-        self.stdout.write(f'Localidades por fuente de departamento: {detalle}')
-
-        manuales = [loc for loc in localidades if loc.get('fuente_departamento') == 'manual']
-        if manuales:
-            self.stdout.write(self.style.WARNING(
-                f'{len(manuales)} localidades pendientes de revisión manual (fuente=manual):'
-            ))
-            for loc in sorted(manuales, key=lambda x: (x.get('provincia_nombre') or '', x.get('nombre') or '')):
-                self.stdout.write(
-                    f"  - {loc.get('nombre')} (id_georef={loc.get('id')}, "
-                    f"provincia={loc.get('provincia_nombre')})"
-                )
-
-    def _solo_descargar(self):
-        """Regenera los fixtures JSON desde la API sin tocar la BD."""
-        try:
-            datos = self._descargar_todo()
-            generar_fixtures(datos)
-        except GeoRefError as e:
-            raise CommandError(f'Error al regenerar fixtures GeoRef: {e}')
-
-        self.stdout.write(self.style.SUCCESS(
-            'Fixtures GeoRef regenerados: '
-            f'{len(datos["provincias"])} provincias, '
-            f'{len(datos["departamentos"])} departamentos, '
-            f'{len(datos["localidades"])} localidades'
-        ))
-        self._reportar_fuentes(datos['localidades'])
-
-    def _descargar_todo(self):
-        """Descarga el catálogo completo.
-
-        Provincias → departamentos → localidades. Sin tocar BD.
-        """
-        return descargar_catalogo_completo()
-
-    def _verificar_guard_integridad(self):
-        """Aborta ``--force`` si existe una ``Direccion`` referenciando ``Localidad``.
-
-        Sin borrar datos.
-        """
-        if Direccion.objects.filter(idlocalidad__isnull=False).exists():
-            raise CommandError(
-                'No se puede forzar la recarga: existen direcciones referenciando localidades. '
-                'Elimine o reasigne esas direcciones antes de usar --force.'
-            )
-
-    def _borrar_catalogo(self):
-        """Borra el catálogo en orden inverso de dependencia (restricciones FK físicas)."""
-        Localidad.objects.all().delete()
-        Departamento.objects.all().delete()
-        Provincia.objects.all().delete()
