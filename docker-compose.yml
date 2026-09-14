@@ -21,9 +21,10 @@ services:
     networks:
       - telepark-network
 
-  app:
+  backend:
     build: .
-    container_name: telepark-app
+    image: telepark-backend:latest
+    container_name: telepark-backend
     restart: unless-stopped
     depends_on:
       db:
