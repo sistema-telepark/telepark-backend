@@ -51,7 +51,7 @@ El entrypoint ejecuta automáticamente: migraciones + bootstrap del superusuario
 # Instalar dependencias
 pip install -r requirements.txt
 
-# Configurar variables de entorno (copiar example.env a .env y ajustar)
+# Configurar variables de entorno (copiar .env.example a .env y ajustar)
 
 # Generar y aplicar migraciones
 python manage.py makemigrations

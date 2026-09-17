@@ -14,11 +14,4 @@ AGENTS.md
 */*/__pycache__/
 */__pycache__/
 
-# migrations
-*migrations/
-
-# test schemas
-schema.yaml
-
-
 
