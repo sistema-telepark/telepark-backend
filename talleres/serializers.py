@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from core.fields import StrictBooleanField
 from .models import (
-    Taller, Clasetaller, Actividad, Actividadrealizada,
+    Taller, Encuentro, Actividad, Actividadrealizada,
     Asistenciataller, Comportamiento, Factorclase, Factorglobal,
     Unidadobservacion, Variableuo, Valorvariableuo,
 )
@@ -13,12 +13,12 @@ class TallerSerializer(serializers.ModelSerializer):
         fields = ('idtaller', 'tipotaller')
 
 
-class ClaseTallerSerializer(serializers.ModelSerializer):
+class EncuentroSerializer(serializers.ModelSerializer):
     virtual = StrictBooleanField(required=False, default=False)
 
     class Meta:
-        model = Clasetaller
-        fields = ('idclasetaller', 'fecha', 'virtual', 'idtaller')
+        model = Encuentro
+        fields = ('idencuentro', 'fecha', 'virtual', 'idtaller')
 
 
 class ActividadSerializer(serializers.ModelSerializer):
@@ -30,7 +30,7 @@ class ActividadSerializer(serializers.ModelSerializer):
 class ActividadRealizadaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Actividadrealizada
-        fields = ('idactividad', 'idclasetaller')
+        fields = ('idactividad', 'idencuentro')
 
 
 class ComportamientoSerializer(serializers.ModelSerializer):
@@ -42,16 +42,16 @@ class ComportamientoSerializer(serializers.ModelSerializer):
 class AsistenciaTallerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asistenciataller
-        fields = ('idasistenciataller', 'estado', 'idpersonaep', 'idclasetaller', 'idcomportamiento')
+        fields = ('idasistenciataller', 'estado', 'idpersonaep', 'idencuentro', 'idcomportamiento')
         extra_kwargs = {'idcomportamiento': {'allow_null': True, 'required': False},
                         'idpersonaep': {'allow_null': True, 'required': False},
-                        'idclasetaller': {'allow_null': True, 'required': False}}
+                        'idencuentro': {'allow_null': True, 'required': False}}
 
 
 class FactorClaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Factorclase
-        fields = ('idclasetaller', 'idfactorglobal')
+        fields = ('idencuentro', 'idfactorglobal')
 
 
 class FactorGlobalSerializer(serializers.ModelSerializer):

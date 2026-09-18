@@ -20,8 +20,8 @@ class Taller(models.Model):
         db_table = 'taller'
 
 
-class Clasetaller(models.Model):
-    idclasetaller = models.AutoField(db_column='idClaseTaller', primary_key=True)
+class Encuentro(models.Model):
+    idencuentro = models.AutoField(db_column='idEncuentro', primary_key=True)
     fecha = models.DateField()
     virtual = models.BooleanField(db_column='virtual', default=False)
     idtaller = models.ForeignKey(Taller, models.DO_NOTHING, db_column='idTaller')
@@ -29,7 +29,7 @@ class Clasetaller(models.Model):
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'clasetaller'
+        db_table = 'encuentro'
 
 
 class Actividad(models.Model):
@@ -45,13 +45,13 @@ class Actividad(models.Model):
 
 class Actividadrealizada(models.Model):
     idactividad = models.OneToOneField(Actividad, models.DO_NOTHING, db_column='idActividad', primary_key=True)
-    idclasetaller = models.ForeignKey(Clasetaller, models.CASCADE, db_column='idClaseTaller')
+    idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
 
     objects = OrdenadoManager()
 
     class Meta:
         db_table = 'actividadrealizada'
-        unique_together = (('idactividad', 'idclasetaller'),)
+        unique_together = (('idactividad', 'idencuentro'),)
 
 
 class Comportamiento(models.Model):
@@ -68,7 +68,7 @@ class Asistenciataller(models.Model):
     idasistenciataller = models.AutoField(db_column='idAsistenciaTaller', primary_key=True)
     estado = models.CharField(max_length=45)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP', blank=True, null=True)
-    idclasetaller = models.ForeignKey(Clasetaller, models.SET_NULL, db_column='idClaseTaller', blank=True, null=True)
+    idencuentro = models.ForeignKey(Encuentro, models.SET_NULL, db_column='idEncuentro', blank=True, null=True)
     idcomportamiento = models.ForeignKey(Comportamiento, models.DO_NOTHING, db_column='idComportamiento', blank=True, null=True)
 
     objects = AsistenciaTallerManager()
@@ -78,14 +78,14 @@ class Asistenciataller(models.Model):
 
 
 class Factorclase(models.Model):
-    idclasetaller = models.OneToOneField(Clasetaller, models.CASCADE, db_column='idClaseTaller', primary_key=True)
+    idencuentro = models.OneToOneField(Encuentro, models.CASCADE, db_column='idEncuentro', primary_key=True)
     idfactorglobal = models.ForeignKey('Factorglobal', models.DO_NOTHING, db_column='idFactorGlobal')
 
     objects = OrdenadoManager()
 
     class Meta:
         db_table = 'factorclase'
-        unique_together = (('idclasetaller', 'idfactorglobal'),)
+        unique_together = (('idencuentro', 'idfactorglobal'),)
 
 
 class Factorglobal(models.Model):
