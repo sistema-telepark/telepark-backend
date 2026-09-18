@@ -4,14 +4,14 @@ from rest_framework.permissions import IsAuthenticated
 from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 
 from .serializers import (
-    TallerSerializer, ClaseTallerSerializer, ActividadSerializer,
+    TallerSerializer, EncuentroSerializer, ActividadSerializer,
     ActividadRealizadaSerializer, AsistenciaTallerSerializer,
     ComportamientoSerializer, FactorClaseSerializer,
     FactorGlobalSerializer, UnidadObservacionSerializer,
     VariableUOSerializer, ValorVariableUOSerializer,
 )
 from .models import (
-    Taller, Clasetaller, Actividad, Actividadrealizada,
+    Taller, Encuentro, Actividad, Actividadrealizada,
     Asistenciataller, Comportamiento, Factorclase, Factorglobal,
     Unidadobservacion, Variableuo, Valorvariableuo,
 )
@@ -26,10 +26,10 @@ class TallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class ClaseTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+class EncuentroViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
-    manager = Clasetaller.objects
-    serializer_class = ClaseTallerSerializer
+    manager = Encuentro.objects
+    serializer_class = EncuentroSerializer
     permission_classes = [IsAuthenticated]
 
 

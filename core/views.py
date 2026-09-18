@@ -156,7 +156,7 @@ def api_root(request, format=None):
         }),
         "talleres": _clean_dict({
             "talleres": _safe_reverse("talleres-list", request, format),
-            "clases_taller": _safe_reverse("clases-taller-list", request, format),
+            "encuentros": _safe_reverse("encuentros-list", request, format),
             "actividades": _safe_reverse("actividades-list", request, format),
             "actividades_realizadas": _safe_reverse("actividades-realizadas-list", request, format),
             "asistencias_taller": _safe_reverse("asistencias-taller-list", request, format),
