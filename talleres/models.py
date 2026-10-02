@@ -44,7 +44,8 @@ class Actividad(models.Model):
 
 
 class Actividadrealizada(models.Model):
-    idactividad = models.OneToOneField(Actividad, models.DO_NOTHING, db_column='idActividad', primary_key=True)
+    idactividadrealizada = models.AutoField(db_column='idActividadRealizada', primary_key=True)
+    idactividad = models.ForeignKey(Actividad, models.DO_NOTHING, db_column='idActividad')
     idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
 
     objects = OrdenadoManager()

@@ -30,7 +30,7 @@ class ActividadSerializer(serializers.ModelSerializer):
 class ActividadRealizadaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Actividadrealizada
-        fields = ('idactividad', 'idencuentro')
+        fields = ('idactividadrealizada', 'idactividad', 'idencuentro')
 
 
 class ComportamientoSerializer(serializers.ModelSerializer):
