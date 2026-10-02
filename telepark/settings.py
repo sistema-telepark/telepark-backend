@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'corsheaders',
     'rest_framework',
     'drf_spectacular',
@@ -161,7 +162,7 @@ SPECTACULAR_SETTINGS = {
         'salud, eventos, obra_social, talleres'
     ),
     'VERSION': '1.0.0',
-    'CONTACT': {'email': 'admin@telepark.com'},
+    'CONTACT': {'email': 'telepark@frlp.utn.edu.ar'},
     'SCHEMA_PATH_PREFIX': r'/api/v1/',
     'SERVE_INCLUDE_SCHEMA': False,
     'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'] if DEBUG else ['rest_framework.permissions.IsAdminUser'],
