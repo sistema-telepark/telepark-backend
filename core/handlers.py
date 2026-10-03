@@ -1,9 +1,14 @@
 """Custom EXCEPTION_HANDLER de DRF — normaliza errores a {detail, code, status}."""
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 from django.db import IntegrityError
+from django.db.models.deletion import ProtectedError
+from django.http import Http404
 
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated
+from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
@@ -24,6 +29,7 @@ DETAIL_NOT_AUTHENTICATED = 'Credenciales de autenticación no provistas.'
 DETAIL_INVALID_CREDENTIALS = 'Credenciales inválidas'
 DETAIL_NOT_FOUND = 'No encontrado'
 DETAIL_INTEGRITY_ERROR = 'Violación de integridad de datos'
+DETAIL_PROTECTED_ERROR = 'No se puede eliminar el recurso porque tiene registros asociados.'
 
 
 def _normalizar_code(exc):
@@ -33,6 +39,14 @@ def _normalizar_code(exc):
 
 def custom_exception_handler(exc, context):
     """Traduce una excepción a una Response normalizada, o None si no la conoce."""
+    # Paso 0: normalizar Http404/PermissionDenied de Django a su equivalente DRF,
+    # replicando `rest_framework.views.exception_handler` (que no reasigna `exc`).
+    # Sin esto, `_normalizar_code` no encuentra `default_code` y cae a 'error'.
+    if isinstance(exc, Http404):
+        exc = NotFound(*(exc.args))
+    elif isinstance(exc, DjangoPermissionDenied):
+        exc = DRFPermissionDenied(*(exc.args))
+
     # Paso 1: delegar en el handler default de DRF (APIException, Http404, PermissionDenied).
     response = drf_exception_handler(exc, context)
     if response is not None:
@@ -83,6 +97,12 @@ def custom_exception_handler(exc, context):
         return Response(
             {'detail': DETAIL_NOT_FOUND, 'code': 'not_found', 'status': 404},
             status=status.HTTP_404_NOT_FOUND,
+        )
+    if isinstance(exc, ProtectedError):
+        # Debe preceder a `IntegrityError`: ProtectedError es su subclase.
+        return Response(
+            {'detail': DETAIL_PROTECTED_ERROR, 'code': 'conflict', 'status': 409},
+            status=status.HTTP_409_CONFLICT,
         )
     if isinstance(exc, IntegrityError):
         return Response(

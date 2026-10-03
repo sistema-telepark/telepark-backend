@@ -1,5 +1,6 @@
 from django.db import models
 
+from core.exceptions import ConflictError
 from core.managers import OrdenadoManager
 
 
@@ -16,6 +17,10 @@ class Taller(models.Model):
 
     objects = OrdenadoManager()
 
+    def validar_borrado(self):
+        if self.encuentro_set.exists() or self.actividad_set.exists():
+            raise ConflictError('No se puede eliminar un taller con encuentros o actividades asociados')
+
     class Meta:
         db_table = 'taller'
 
@@ -24,7 +29,7 @@ class Encuentro(models.Model):
     idencuentro = models.AutoField(db_column='idEncuentro', primary_key=True)
     fecha = models.DateField()
     virtual = models.BooleanField(db_column='virtual', default=False)
-    idtaller = models.ForeignKey(Taller, models.DO_NOTHING, db_column='idTaller')
+    idtaller = models.ForeignKey(Taller, models.PROTECT, db_column='idTaller')
 
     objects = OrdenadoManager()
 
@@ -35,9 +40,13 @@ class Encuentro(models.Model):
 class Actividad(models.Model):
     idactividad = models.AutoField(db_column='idActividad', primary_key=True)
     nombre = models.CharField(max_length=45)
-    idtaller = models.ForeignKey(Taller, models.DO_NOTHING, db_column='idTaller')
+    idtaller = models.ForeignKey(Taller, models.PROTECT, db_column='idTaller')
 
     objects = OrdenadoManager()
+
+    def validar_borrado(self):
+        if self.actividadrealizada_set.exists():
+            raise ConflictError('No se puede eliminar una actividad con registros de actividades realizadas')
 
     class Meta:
         db_table = 'actividad'
@@ -45,7 +54,7 @@ class Actividad(models.Model):
 
 class Actividadrealizada(models.Model):
     idactividadrealizada = models.AutoField(db_column='idActividadRealizada', primary_key=True)
-    idactividad = models.ForeignKey(Actividad, models.DO_NOTHING, db_column='idActividad')
+    idactividad = models.ForeignKey(Actividad, models.PROTECT, db_column='idActividad')
     idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
 
     objects = OrdenadoManager()
@@ -68,9 +77,9 @@ class Comportamiento(models.Model):
 class Asistenciataller(models.Model):
     idasistenciataller = models.AutoField(db_column='idAsistenciaTaller', primary_key=True)
     estado = models.CharField(max_length=45)
-    idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP', blank=True, null=True)
+    idpersonaep = models.ForeignKey('personas.PersonaEp', models.PROTECT, db_column='idPersonaEP', blank=True, null=True)
     idencuentro = models.ForeignKey(Encuentro, models.SET_NULL, db_column='idEncuentro', blank=True, null=True)
-    idcomportamiento = models.ForeignKey(Comportamiento, models.DO_NOTHING, db_column='idComportamiento', blank=True, null=True)
+    idcomportamiento = models.ForeignKey(Comportamiento, models.PROTECT, db_column='idComportamiento', blank=True, null=True)
 
     objects = AsistenciaTallerManager()
 
@@ -80,7 +89,7 @@ class Asistenciataller(models.Model):
 
 class Factorclase(models.Model):
     idencuentro = models.OneToOneField(Encuentro, models.CASCADE, db_column='idEncuentro', primary_key=True)
-    idfactorglobal = models.ForeignKey('Factorglobal', models.DO_NOTHING, db_column='idFactorGlobal')
+    idfactorglobal = models.ForeignKey('Factorglobal', models.PROTECT, db_column='idFactorGlobal')
 
     objects = OrdenadoManager()
 
@@ -112,8 +121,8 @@ class Unidadobservacion(models.Model):
 class Variableuo(models.Model):
     idvariableuo = models.AutoField(db_column='idVariableUO', primary_key=True)
     nombre = models.CharField(max_length=45)
-    idcomportamiento = models.ForeignKey(Comportamiento, models.DO_NOTHING, db_column='idComportamiento')
-    idunidadobservacion = models.ForeignKey(Unidadobservacion, models.DO_NOTHING, db_column='idUnidadObservacion')
+    idcomportamiento = models.ForeignKey(Comportamiento, models.PROTECT, db_column='idComportamiento')
+    idunidadobservacion = models.ForeignKey(Unidadobservacion, models.PROTECT, db_column='idUnidadObservacion')
 
     objects = OrdenadoManager()
 
@@ -124,7 +133,7 @@ class Variableuo(models.Model):
 class Valorvariableuo(models.Model):
     idvalorvariableuo = models.AutoField(db_column='idValorVariableUO', primary_key=True)
     valor = models.CharField(max_length=45)
-    idvariableuo = models.ForeignKey(Variableuo, models.DO_NOTHING, db_column='idVariableUO')
+    idvariableuo = models.ForeignKey(Variableuo, models.PROTECT, db_column='idVariableUO')
 
     objects = OrdenadoManager()
 

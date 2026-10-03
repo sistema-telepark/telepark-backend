@@ -4,9 +4,11 @@
 .opencode/
 .vscode/
 .specs/
+.agents/
 specs/
 BD/
 AGENTS.md
+skills-lock.json
 
 # Cache
 *.pyc
