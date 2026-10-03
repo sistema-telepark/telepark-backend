@@ -1,7 +1,10 @@
-from rest_framework import viewsets
+from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
+from core.schema import error_response
 
 from .serializers import (
     TallerSerializer, EncuentroSerializer, ActividadSerializer,
@@ -24,6 +27,18 @@ class TallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = TallerSerializer
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        responses={
+            204: OpenApiResponse(description='Sin contenido'),
+            409: error_response(409, 'No se puede eliminar un taller con encuentros o actividades asociados'),
+        },
+    )
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.validar_borrado()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @auto_tag_schema_view
 class EncuentroViewSet(ModelPKMixin, viewsets.ModelViewSet):
@@ -39,6 +54,18 @@ class ActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
     manager = Actividad.objects
     serializer_class = ActividadSerializer
     permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            204: OpenApiResponse(description='Sin contenido'),
+            409: error_response(409, 'No se puede eliminar una actividad con registros de actividades realizadas'),
+        },
+    )
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.validar_borrado()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @auto_tag_schema_view
