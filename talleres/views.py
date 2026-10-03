@@ -9,13 +9,13 @@ from core.schema import error_response
 from .serializers import (
     TallerSerializer, EncuentroSerializer, ActividadSerializer,
     ActividadRealizadaSerializer, AsistenciaTallerSerializer,
-    ComportamientoSerializer, FactorClaseSerializer,
+    FactorClaseSerializer,
     FactorGlobalSerializer, UnidadObservacionSerializer,
     VariableUOSerializer, ValorVariableUOSerializer,
 )
 from .models import (
     Taller, Encuentro, Actividad, Actividadrealizada,
-    Asistenciataller, Comportamiento, Factorclase, Factorglobal,
+    Asistenciataller, Factorclase, Factorglobal,
     Unidadobservacion, Variableuo, Valorvariableuo,
 )
 
@@ -81,14 +81,6 @@ class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = Asistenciataller.objects
     serializer_class = AsistenciaTallerSerializer
-    permission_classes = [IsAuthenticated]
-
-
-@auto_tag_schema_view
-class ComportamientoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
-    app_tag = 'talleres'
-    manager = Comportamiento.objects
-    serializer_class = ComportamientoSerializer
     permission_classes = [IsAuthenticated]
 
 

@@ -64,22 +64,11 @@ class Actividadrealizada(models.Model):
         unique_together = (('idactividad', 'idencuentro'),)
 
 
-class Comportamiento(models.Model):
-    idcomportamiento = models.AutoField(db_column='idComportamiento', primary_key=True)
-    comentario = models.CharField(max_length=45)
-
-    objects = OrdenadoManager()
-
-    class Meta:
-        db_table = 'comportamiento'
-
-
 class Asistenciataller(models.Model):
     idasistenciataller = models.AutoField(db_column='idAsistenciaTaller', primary_key=True)
     estado = models.CharField(max_length=45)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.PROTECT, db_column='idPersonaEP', blank=True, null=True)
     idencuentro = models.ForeignKey(Encuentro, models.SET_NULL, db_column='idEncuentro', blank=True, null=True)
-    idcomportamiento = models.ForeignKey(Comportamiento, models.PROTECT, db_column='idComportamiento', blank=True, null=True)
 
     objects = AsistenciaTallerManager()
 
@@ -121,7 +110,6 @@ class Unidadobservacion(models.Model):
 class Variableuo(models.Model):
     idvariableuo = models.AutoField(db_column='idVariableUO', primary_key=True)
     nombre = models.CharField(max_length=45)
-    idcomportamiento = models.ForeignKey(Comportamiento, models.PROTECT, db_column='idComportamiento')
     idunidadobservacion = models.ForeignKey(Unidadobservacion, models.PROTECT, db_column='idUnidadObservacion')
 
     objects = OrdenadoManager()
