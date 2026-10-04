@@ -35,7 +35,7 @@ Cada módulo sigue una **capa de 3 niveles**: Views/Serializers → Services →
 ## Inicio rápido (Docker)
 
 ```powershell
-docker-compose up
+docker compose up
 ```
 
 Servidor en `http://localhost:8080`, MySQL en `localhost:3306`.

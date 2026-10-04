@@ -124,6 +124,7 @@ class Valorvariableuo(models.Model):
     valor = models.CharField(max_length=45)
     idvariableuo = models.ForeignKey(Variableuo, models.PROTECT, db_column='idVariableUO')
     idasistenciataller = models.ForeignKey(Asistenciataller, models.CASCADE, db_column='idAsistenciaTaller', blank=True, null=True)
+    idactividadrealizada = models.ForeignKey(Actividadrealizada, models.CASCADE, db_column='idActividadRealizada', blank=True, null=True)
 
     objects = OrdenadoManager()
 

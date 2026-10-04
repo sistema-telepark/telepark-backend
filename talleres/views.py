@@ -141,6 +141,13 @@ class VariableUOViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
                 required=False,
                 description="Filtra valores de variable UO por asistencia de taller (FK idasistenciataller). Con filtro activo la respuesta es array plano.",
             ),
+            OpenApiParameter(
+                name="idactividadrealizada",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filtra valores de variable UO por actividad realizada (FK idactividadrealizada). Con filtro activo la respuesta es array plano.",
+            ),
         ],
     ),
 )
@@ -149,4 +156,5 @@ class ValorVariableUOViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelVie
     manager = Valorvariableuo.objects
     serializer_class = ValorVariableUOSerializer
     permission_classes = [IsAuthenticated]
-    cascade_lookups = {'idasistenciataller': 'idasistenciataller'}
+    cascade_lookups = {'idasistenciataller': 'idasistenciataller',
+                       'idactividadrealizada': 'idactividadrealizada'}
