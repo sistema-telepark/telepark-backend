@@ -123,6 +123,7 @@ class Valorvariableuo(models.Model):
     idvalorvariableuo = models.AutoField(db_column='idValorVariableUO', primary_key=True)
     valor = models.CharField(max_length=45)
     idvariableuo = models.ForeignKey(Variableuo, models.PROTECT, db_column='idVariableUO')
+    idasistenciataller = models.ForeignKey(Asistenciataller, models.CASCADE, db_column='idAsistenciaTaller', blank=True, null=True)
 
     objects = OrdenadoManager()
 

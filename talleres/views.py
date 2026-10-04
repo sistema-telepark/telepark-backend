@@ -131,8 +131,22 @@ class VariableUOViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class ValorVariableUOViewSet(ModelPKMixin, viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="idasistenciataller",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filtra valores de variable UO por asistencia de taller (FK idasistenciataller). Con filtro activo la respuesta es array plano.",
+            ),
+        ],
+    ),
+)
+class ValorVariableUOViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = Valorvariableuo.objects
     serializer_class = ValorVariableUOSerializer
     permission_classes = [IsAuthenticated]
+    cascade_lookups = {'idasistenciataller': 'idasistenciataller'}

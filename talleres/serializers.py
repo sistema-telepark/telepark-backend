@@ -68,4 +68,5 @@ class VariableUOSerializer(serializers.ModelSerializer):
 class ValorVariableUOSerializer(serializers.ModelSerializer):
     class Meta:
         model = Valorvariableuo
-        fields = ('idvalorvariableuo', 'valor', 'idvariableuo')
+        fields = ('idvalorvariableuo', 'valor', 'idvariableuo', 'idasistenciataller')
+        extra_kwargs = {'idasistenciataller': {'allow_null': True, 'required': False}}
