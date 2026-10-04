@@ -2,7 +2,7 @@ from rest_framework import serializers
 from core.fields import StrictBooleanField
 from .models import (
     Taller, Encuentro, Actividad, Actividadrealizada,
-    Asistenciataller, Comportamiento, Factorclase, Factorglobal,
+    Asistenciataller, Factorclase, Factorglobal,
     Unidadobservacion, Variableuo, Valorvariableuo,
 )
 
@@ -33,25 +33,18 @@ class ActividadRealizadaSerializer(serializers.ModelSerializer):
         fields = ('idactividadrealizada', 'idactividad', 'idencuentro')
 
 
-class ComportamientoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comportamiento
-        fields = ('idcomportamiento', 'comentario')
-
-
 class AsistenciaTallerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Asistenciataller
-        fields = ('idasistenciataller', 'estado', 'idpersonaep', 'idencuentro', 'idcomportamiento')
-        extra_kwargs = {'idcomportamiento': {'allow_null': True, 'required': False},
-                        'idpersonaep': {'allow_null': True, 'required': False},
+        fields = ('idasistenciataller', 'estado', 'idpersonaep', 'idencuentro')
+        extra_kwargs = {'idpersonaep': {'allow_null': True, 'required': False},
                         'idencuentro': {'allow_null': True, 'required': False}}
 
 
 class FactorClaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Factorclase
-        fields = ('idencuentro', 'idfactorglobal')
+        fields = ('idfactorclase', 'idencuentro', 'idfactorglobal')
 
 
 class FactorGlobalSerializer(serializers.ModelSerializer):
@@ -69,10 +62,12 @@ class UnidadObservacionSerializer(serializers.ModelSerializer):
 class VariableUOSerializer(serializers.ModelSerializer):
     class Meta:
         model = Variableuo
-        fields = ('idvariableuo', 'nombre', 'idcomportamiento', 'idunidadobservacion')
+        fields = ('idvariableuo', 'nombre', 'idunidadobservacion')
 
 
 class ValorVariableUOSerializer(serializers.ModelSerializer):
     class Meta:
         model = Valorvariableuo
-        fields = ('idvalorvariableuo', 'valor', 'idvariableuo')
+        fields = ('idvalorvariableuo', 'valor', 'idvariableuo', 'idasistenciataller', 'idactividadrealizada')
+        extra_kwargs = {'idasistenciataller': {'allow_null': True, 'required': False},
+                        'idactividadrealizada': {'allow_null': True, 'required': False}}

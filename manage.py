@@ -4,6 +4,13 @@ import os
 import sys
 
 
+# Windows uses the legacy cp1252 codec for piped stdout/stderr, which cannot
+# encode characters used in OpenAPI descriptions (e.g. "→").
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
+
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'telepark.settings')

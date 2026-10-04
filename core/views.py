@@ -160,7 +160,6 @@ def api_root(request, format=None):
             "actividades": _safe_reverse("actividades-list", request, format),
             "actividades_realizadas": _safe_reverse("actividades-realizadas-list", request, format),
             "asistencias_taller": _safe_reverse("asistencias-taller-list", request, format),
-            "comportamientos": _safe_reverse("comportamientos-list", request, format),
             "factores_clase": _safe_reverse("factores-clase-list", request, format),
             "factores_globales": _safe_reverse("factores-globales-list", request, format),
             "unidades_observacion": _safe_reverse("unidades-observacion-list", request, format),

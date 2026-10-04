@@ -1,21 +1,21 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
+from core.mixins import CascadeFilterMixin, ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 from core.schema import error_response
 
 from .serializers import (
     TallerSerializer, EncuentroSerializer, ActividadSerializer,
     ActividadRealizadaSerializer, AsistenciaTallerSerializer,
-    ComportamientoSerializer, FactorClaseSerializer,
+    FactorClaseSerializer,
     FactorGlobalSerializer, UnidadObservacionSerializer,
     VariableUOSerializer, ValorVariableUOSerializer,
 )
 from .models import (
     Taller, Encuentro, Actividad, Actividadrealizada,
-    Asistenciataller, Comportamiento, Factorclase, Factorglobal,
+    Asistenciataller, Factorclase, Factorglobal,
     Unidadobservacion, Variableuo, Valorvariableuo,
 )
 
@@ -85,19 +85,25 @@ class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class ComportamientoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
-    app_tag = 'talleres'
-    manager = Comportamiento.objects
-    serializer_class = ComportamientoSerializer
-    permission_classes = [IsAuthenticated]
-
-
-@auto_tag_schema_view
-class FactorClaseViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="idencuentro",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filtra factores de clase por encuentro (FK idencuentro). Con filtro activo la respuesta es array plano.",
+            ),
+        ],
+    ),
+)
+class FactorClaseViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = Factorclase.objects
     serializer_class = FactorClaseSerializer
     permission_classes = [IsAuthenticated]
+    cascade_lookups = {'idencuentro': 'idencuentro'}
 
 
 @auto_tag_schema_view
@@ -125,8 +131,30 @@ class VariableUOViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class ValorVariableUOViewSet(ModelPKMixin, viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="idasistenciataller",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filtra valores de variable UO por asistencia de taller (FK idasistenciataller). Con filtro activo la respuesta es array plano.",
+            ),
+            OpenApiParameter(
+                name="idactividadrealizada",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filtra valores de variable UO por actividad realizada (FK idactividadrealizada). Con filtro activo la respuesta es array plano.",
+            ),
+        ],
+    ),
+)
+class ValorVariableUOViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = Valorvariableuo.objects
     serializer_class = ValorVariableUOSerializer
     permission_classes = [IsAuthenticated]
+    cascade_lookups = {'idasistenciataller': 'idasistenciataller',
+                       'idactividadrealizada': 'idactividadrealizada'}

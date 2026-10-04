@@ -64,22 +64,11 @@ class Actividadrealizada(models.Model):
         unique_together = (('idactividad', 'idencuentro'),)
 
 
-class Comportamiento(models.Model):
-    idcomportamiento = models.AutoField(db_column='idComportamiento', primary_key=True)
-    comentario = models.CharField(max_length=45)
-
-    objects = OrdenadoManager()
-
-    class Meta:
-        db_table = 'comportamiento'
-
-
 class Asistenciataller(models.Model):
     idasistenciataller = models.AutoField(db_column='idAsistenciaTaller', primary_key=True)
     estado = models.CharField(max_length=45)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.PROTECT, db_column='idPersonaEP', blank=True, null=True)
     idencuentro = models.ForeignKey(Encuentro, models.SET_NULL, db_column='idEncuentro', blank=True, null=True)
-    idcomportamiento = models.ForeignKey(Comportamiento, models.PROTECT, db_column='idComportamiento', blank=True, null=True)
 
     objects = AsistenciaTallerManager()
 
@@ -88,7 +77,8 @@ class Asistenciataller(models.Model):
 
 
 class Factorclase(models.Model):
-    idencuentro = models.OneToOneField(Encuentro, models.CASCADE, db_column='idEncuentro', primary_key=True)
+    idfactorclase = models.AutoField(db_column='idFactorClase', primary_key=True)
+    idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
     idfactorglobal = models.ForeignKey('Factorglobal', models.PROTECT, db_column='idFactorGlobal')
 
     objects = OrdenadoManager()
@@ -121,7 +111,6 @@ class Unidadobservacion(models.Model):
 class Variableuo(models.Model):
     idvariableuo = models.AutoField(db_column='idVariableUO', primary_key=True)
     nombre = models.CharField(max_length=45)
-    idcomportamiento = models.ForeignKey(Comportamiento, models.PROTECT, db_column='idComportamiento')
     idunidadobservacion = models.ForeignKey(Unidadobservacion, models.PROTECT, db_column='idUnidadObservacion')
 
     objects = OrdenadoManager()
@@ -134,6 +123,8 @@ class Valorvariableuo(models.Model):
     idvalorvariableuo = models.AutoField(db_column='idValorVariableUO', primary_key=True)
     valor = models.CharField(max_length=45)
     idvariableuo = models.ForeignKey(Variableuo, models.PROTECT, db_column='idVariableUO')
+    idasistenciataller = models.ForeignKey(Asistenciataller, models.CASCADE, db_column='idAsistenciaTaller', blank=True, null=True)
+    idactividadrealizada = models.ForeignKey(Actividadrealizada, models.CASCADE, db_column='idActividadRealizada', blank=True, null=True)
 
     objects = OrdenadoManager()
 
