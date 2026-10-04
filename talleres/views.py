@@ -1,9 +1,9 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.mixins import ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
+from core.mixins import CascadeFilterMixin, ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 from core.schema import error_response
 
 from .serializers import (
@@ -85,11 +85,25 @@ class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class FactorClaseViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="idencuentro",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Filtra factores de clase por encuentro (FK idencuentro). Con filtro activo la respuesta es array plano.",
+            ),
+        ],
+    ),
+)
+class FactorClaseViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = Factorclase.objects
     serializer_class = FactorClaseSerializer
     permission_classes = [IsAuthenticated]
+    cascade_lookups = {'idencuentro': 'idencuentro'}
 
 
 @auto_tag_schema_view

@@ -77,7 +77,8 @@ class Asistenciataller(models.Model):
 
 
 class Factorclase(models.Model):
-    idencuentro = models.OneToOneField(Encuentro, models.CASCADE, db_column='idEncuentro', primary_key=True)
+    idfactorclase = models.AutoField(db_column='idFactorClase', primary_key=True)
+    idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
     idfactorglobal = models.ForeignKey('Factorglobal', models.PROTECT, db_column='idFactorGlobal')
 
     objects = OrdenadoManager()

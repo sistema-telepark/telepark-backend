@@ -44,7 +44,7 @@ class AsistenciaTallerSerializer(serializers.ModelSerializer):
 class FactorClaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Factorclase
-        fields = ('idencuentro', 'idfactorglobal')
+        fields = ('idfactorclase', 'idencuentro', 'idfactorglobal')
 
 
 class FactorGlobalSerializer(serializers.ModelSerializer):
