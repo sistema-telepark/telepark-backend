@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.mixins import (
     CascadeFilterMixin, ModelPKMixin, NoPaginationMixin, auto_tag_schema_view,
 )
+from core.permission import AdminOnlyForDelete
 
 from .serializers import (
     DireccionSerializer, LocalidadSerializer,
@@ -41,7 +42,7 @@ class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
     manager = Persona.objects
     serializer_class = PersonaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminOnlyForDelete]
 
 
 @auto_tag_schema_view
@@ -49,7 +50,7 @@ class PersonaEPViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
     manager = PersonaEp.objects
     serializer_class = PersonaEpSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminOnlyForDelete]
 
 @auto_tag_schema_view
 @extend_schema_view(

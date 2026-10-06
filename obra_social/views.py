@@ -6,6 +6,7 @@ from rest_framework.generics import GenericAPIView
 from drf_spectacular.utils import extend_schema
 
 from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEpSubresourceMixin, auto_tag_schema_view
+from core.permission import AdminOrReadOnly
 from core.schema import error_response
 
 from .serializers import (
@@ -19,7 +20,7 @@ class ObraSocialViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'obra_social'
     manager = Obrasocial.objects
     serializer_class = ObraSocialSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminOrReadOnly]
 
 
 @auto_tag_schema_view
@@ -27,7 +28,7 @@ class OSViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'obra_social'
     manager = Os.objects
     serializer_class = OSSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminOrReadOnly]
 
 
 @extend_schema(
