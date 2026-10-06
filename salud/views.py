@@ -6,6 +6,7 @@ from rest_framework.generics import GenericAPIView
 from drf_spectacular.utils import extend_schema
 
 from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEpSubresourceMixin, auto_tag_schema_view
+from core.permission import AdminOrReadOnly
 from core.schema import error_response
 
 from .serializers import (
@@ -41,7 +42,7 @@ class EnfermedadViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'salud'
     manager = Enfermedad.objects
     serializer_class = EnfermedadSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminOrReadOnly]
 
 
 @auto_tag_schema_view
@@ -49,7 +50,7 @@ class MedicamentoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet)
     app_tag = 'salud'
     manager = Medicamento.objects
     serializer_class = MedicamentoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AdminOrReadOnly]
 
 
 @auto_tag_schema_view
