@@ -45,22 +45,22 @@ class Actividad(models.Model):
     objects = OrdenadoManager()
 
     def validar_borrado(self):
-        if self.actividadrealizada_set.exists():
+        if self.encuentroactividad_set.exists():
             raise ConflictError('No se puede eliminar una actividad con registros de actividades realizadas')
 
     class Meta:
         db_table = 'actividad'
 
 
-class Actividadrealizada(models.Model):
-    idactividadrealizada = models.AutoField(db_column='idActividadRealizada', primary_key=True)
+class EncuentroActividad(models.Model):
+    idencuentroactividad = models.AutoField(db_column='idEncuentroActividad', primary_key=True)
     idactividad = models.ForeignKey(Actividad, models.PROTECT, db_column='idActividad')
     idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'actividadrealizada'
+        db_table = 'encuentroactividad'
         unique_together = (('idactividad', 'idencuentro'),)
 
 
@@ -76,15 +76,15 @@ class Asistenciataller(models.Model):
         db_table = 'asistenciataller'
 
 
-class Factorclase(models.Model):
-    idfactorclase = models.AutoField(db_column='idFactorClase', primary_key=True)
+class EncuentroFactorGlobal(models.Model):
+    idencuentrofactorglobal = models.AutoField(db_column='idEncuentroFactorGlobal', primary_key=True)
     idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
     idfactorglobal = models.ForeignKey('Factorglobal', models.PROTECT, db_column='idFactorGlobal')
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'factorclase'
+        db_table = 'encuentrofactorglobal'
         unique_together = (('idencuentro', 'idfactorglobal'),)
 
 
@@ -124,7 +124,7 @@ class Valorvariableuo(models.Model):
     valor = models.CharField(max_length=45)
     idvariableuo = models.ForeignKey(Variableuo, models.PROTECT, db_column='idVariableUO')
     idasistenciataller = models.ForeignKey(Asistenciataller, models.CASCADE, db_column='idAsistenciaTaller', blank=True, null=True)
-    idactividadrealizada = models.ForeignKey(Actividadrealizada, models.CASCADE, db_column='idActividadRealizada', blank=True, null=True)
+    idencuentroactividad = models.ForeignKey(EncuentroActividad, models.CASCADE, db_column='idEncuentroActividad', blank=True, null=True)
 
     objects = OrdenadoManager()
 

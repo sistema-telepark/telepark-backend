@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from core.fields import StrictBooleanField
-from .models import Obrasocial, Os
+from .models import Obrasocial, Cobertura
 
 
 class ObraSocialSerializer(serializers.ModelSerializer):
@@ -11,16 +11,16 @@ class ObraSocialSerializer(serializers.ModelSerializer):
         fields = ('idobrasocial', 'nombre', 'esestatal')
 
 
-class OSSerializer(serializers.ModelSerializer):
+class CoberturaSerializer(serializers.ModelSerializer):
     borrado = StrictBooleanField(required=False, default=False)
 
     class Meta:
-        model = Os
-        fields = ('idos', 'idpersonaep', 'idobrasocial', 'borrado')
+        model = Cobertura
+        fields = ('idcobertura', 'idpersonaep', 'idobrasocial', 'borrado')
 
 
-class OSEpSerializer(OSSerializer):
+class CoberturaEpSerializer(CoberturaSerializer):
     idobrasocial = ObraSocialSerializer(many=False, read_only=True)
 
-    class Meta(OSSerializer.Meta):
+    class Meta(CoberturaSerializer.Meta):
         pass

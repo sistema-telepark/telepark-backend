@@ -3,7 +3,7 @@ from django.views.generic.base import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 from core.views import health_check, api_root
 from salud.views import DiagnosticoPorPersonaEpView, EvolucionPorPersonaEpView, IndicacionPorPersonaEpView
-from obra_social.views import OsPorPersonaEpView
+from obra_social.views import CoberturaPorPersonaEpView
 
 urlpatterns = [
     path('', RedirectView.as_view(pattern_name='api-v1-root', permanent=False), name='root-redirect'),
@@ -27,5 +27,5 @@ urlpatterns = [
     path('api/v1/personas-ep/<int:personaep_pk>/diagnosticos', DiagnosticoPorPersonaEpView.as_view(), name='personas-ep-diagnosticos'),
     path('api/v1/personas-ep/<int:personaep_pk>/evoluciones', EvolucionPorPersonaEpView.as_view(), name='personas-ep-evoluciones'),
     path('api/v1/personas-ep/<int:personaep_pk>/indicaciones', IndicacionPorPersonaEpView.as_view(), name='personas-ep-indicaciones'),
-    path('api/v1/personas-ep/<int:personaep_pk>/coberturas', OsPorPersonaEpView.as_view(), name='personas-ep-coberturas'),
+    path('api/v1/personas-ep/<int:personaep_pk>/coberturas', CoberturaPorPersonaEpView.as_view(), name='personas-ep-coberturas'),
 ]

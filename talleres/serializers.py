@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from core.fields import StrictBooleanField
 from .models import (
-    Taller, Encuentro, Actividad, Actividadrealizada,
-    Asistenciataller, Factorclase, Factorglobal,
+    Taller, Encuentro, Actividad, EncuentroActividad,
+    Asistenciataller, EncuentroFactorGlobal, Factorglobal,
     Unidadobservacion, Variableuo, Valorvariableuo,
 )
 
@@ -27,10 +27,10 @@ class ActividadSerializer(serializers.ModelSerializer):
         fields = ('idactividad', 'nombre', 'idtaller')
 
 
-class ActividadRealizadaSerializer(serializers.ModelSerializer):
+class EncuentroActividadSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Actividadrealizada
-        fields = ('idactividadrealizada', 'idactividad', 'idencuentro')
+        model = EncuentroActividad
+        fields = ('idencuentroactividad', 'idactividad', 'idencuentro')
 
 
 class AsistenciaTallerSerializer(serializers.ModelSerializer):
@@ -41,10 +41,10 @@ class AsistenciaTallerSerializer(serializers.ModelSerializer):
                         'idencuentro': {'allow_null': True, 'required': False}}
 
 
-class FactorClaseSerializer(serializers.ModelSerializer):
+class EncuentroFactorGlobalSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Factorclase
-        fields = ('idfactorclase', 'idencuentro', 'idfactorglobal')
+        model = EncuentroFactorGlobal
+        fields = ('idencuentrofactorglobal', 'idencuentro', 'idfactorglobal')
 
 
 class FactorGlobalSerializer(serializers.ModelSerializer):
@@ -68,6 +68,6 @@ class VariableUOSerializer(serializers.ModelSerializer):
 class ValorVariableUOSerializer(serializers.ModelSerializer):
     class Meta:
         model = Valorvariableuo
-        fields = ('idvalorvariableuo', 'valor', 'idvariableuo', 'idasistenciataller', 'idactividadrealizada')
+        fields = ('idvalorvariableuo', 'valor', 'idvariableuo', 'idasistenciataller', 'idencuentroactividad')
         extra_kwargs = {'idasistenciataller': {'allow_null': True, 'required': False},
-                        'idactividadrealizada': {'allow_null': True, 'required': False}}
+                        'idencuentroactividad': {'allow_null': True, 'required': False}}

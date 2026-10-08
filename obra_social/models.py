@@ -14,8 +14,8 @@ class Obrasocial(models.Model):
         db_table = 'obrasocial'
 
 
-class Os(models.Model):
-    idos = models.AutoField(db_column='idOS', primary_key=True)
+class Cobertura(models.Model):
+    idcobertura = models.AutoField(db_column='idCobertura', primary_key=True)
     idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')
     idobrasocial = models.ForeignKey(Obrasocial, models.DO_NOTHING, db_column='idObraSocial')
     borrado = models.BooleanField(db_column='borrado', default=False)
@@ -23,4 +23,4 @@ class Os(models.Model):
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'os'
+        db_table = 'cobertura'
