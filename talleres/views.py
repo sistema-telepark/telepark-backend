@@ -8,14 +8,14 @@ from core.schema import error_response
 
 from .serializers import (
     TallerSerializer, EncuentroSerializer, ActividadSerializer,
-    ActividadRealizadaSerializer, AsistenciaTallerSerializer,
-    FactorClaseSerializer,
+    EncuentroActividadSerializer, AsistenciaTallerSerializer,
+    EncuentroFactorGlobalSerializer,
     FactorGlobalSerializer, UnidadObservacionSerializer,
     VariableUOSerializer, ValorVariableUOSerializer,
 )
 from .models import (
-    Taller, Encuentro, Actividad, Actividadrealizada,
-    Asistenciataller, Factorclase, Factorglobal,
+    Taller, Encuentro, Actividad, EncuentroActividad,
+    Asistenciataller, EncuentroFactorGlobal, Factorglobal,
     Unidadobservacion, Variableuo, Valorvariableuo,
 )
 
@@ -69,10 +69,10 @@ class ActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class ActividadRealizadaViewSet(ModelPKMixin, viewsets.ModelViewSet):
+class EncuentroActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
-    manager = Actividadrealizada.objects
-    serializer_class = ActividadRealizadaSerializer
+    manager = EncuentroActividad.objects
+    serializer_class = EncuentroActividadSerializer
     permission_classes = [IsAuthenticated]
 
 
@@ -93,15 +93,15 @@ class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Filtra factores de clase por encuentro (FK idencuentro). Con filtro activo la respuesta es array plano.",
+                description="Filtra encuentros-factores-globales por encuentro (FK idencuentro). Con filtro activo la respuesta es array plano.",
             ),
         ],
     ),
 )
-class FactorClaseViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
+class EncuentroFactorGlobalViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
-    manager = Factorclase.objects
-    serializer_class = FactorClaseSerializer
+    manager = EncuentroFactorGlobal.objects
+    serializer_class = EncuentroFactorGlobalSerializer
     permission_classes = [IsAuthenticated]
     cascade_lookups = {'idencuentro': 'idencuentro'}
 
@@ -142,11 +142,11 @@ class VariableUOViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
                 description="Filtra valores de variable UO por asistencia de taller (FK idasistenciataller). Con filtro activo la respuesta es array plano.",
             ),
             OpenApiParameter(
-                name="idactividadrealizada",
+                name="idencuentroactividad",
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Filtra valores de variable UO por actividad realizada (FK idactividadrealizada). Con filtro activo la respuesta es array plano.",
+                description="Filtra valores de variable UO por encuentro-actividad (FK idencuentroactividad). Con filtro activo la respuesta es array plano.",
             ),
         ],
     ),
@@ -157,4 +157,4 @@ class ValorVariableUOViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelVie
     serializer_class = ValorVariableUOSerializer
     permission_classes = [IsAuthenticated]
     cascade_lookups = {'idasistenciataller': 'idasistenciataller',
-                       'idactividadrealizada': 'idactividadrealizada'}
+                       'idencuentroactividad': 'idencuentroactividad'}

@@ -10,9 +10,9 @@ from core.permission import AdminOrReadOnly
 from core.schema import error_response
 
 from .serializers import (
-    ObraSocialSerializer, OSEpSerializer, OSSerializer,
+    ObraSocialSerializer, CoberturaEpSerializer, CoberturaSerializer,
 )
-from .models import Obrasocial, Os
+from .models import Obrasocial, Cobertura
 
 
 @auto_tag_schema_view
@@ -24,10 +24,10 @@ class ObraSocialViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class OSViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+class CoberturaViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'obra_social'
-    manager = Os.objects
-    serializer_class = OSSerializer
+    manager = Cobertura.objects
+    serializer_class = CoberturaSerializer
     permission_classes = [AdminOrReadOnly]
 
 
@@ -35,13 +35,13 @@ class OSViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     tags=['obra_social'],
     responses={404: error_response(404, "PersonaEp no encontrada")},
 )
-class OsPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
+class CoberturaPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = OSEpSerializer
-    queryset = Os.objects.none()
+    serializer_class = CoberturaEpSerializer
+    queryset = Cobertura.objects.none()
 
     def get(self, request, personaep_pk):
         self.validar_personaep(personaep_pk)
-        obrasociales = Os.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idobrasocial'])
+        obrasociales = Cobertura.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idobrasocial'])
         serializer = self.get_serializer(obrasociales, many=True)
         return Response(serializer.data)
