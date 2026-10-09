@@ -1,13 +1,12 @@
 """Custom EXCEPTION_HANDLER de DRF — normaliza errores a {detail, code, status}."""
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
 from django.http import Http404
-
 from rest_framework import status
-from rest_framework.exceptions import NotAuthenticated
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotAuthenticated, NotFound
 from rest_framework.exceptions import PermissionDenied as DRFPermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
@@ -15,6 +14,8 @@ from rest_framework.views import exception_handler as drf_exception_handler
 from core.exceptions import (
     ConflictError,
     InvalidCredentialsError,
+)
+from core.exceptions import (
     ValidationError as DomainValidationError,
 )
 

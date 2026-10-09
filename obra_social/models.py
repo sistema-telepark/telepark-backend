@@ -3,24 +3,24 @@ from django.db import models
 from core.managers import OrdenadoManager
 
 
-class Obrasocial(models.Model):
-    idobrasocial = models.AutoField(db_column='idObraSocial', primary_key=True)
+class ObraSocial(models.Model):
+    id_obra_social = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=45)
-    esestatal = models.BooleanField(db_column='esEstatal', default=False)
+    es_estatal = models.BooleanField(default=False)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'obrasocial'
+        db_table = 'obra_social_obra_social'
 
 
 class Cobertura(models.Model):
-    idcobertura = models.AutoField(db_column='idCobertura', primary_key=True)
-    idpersonaep = models.ForeignKey('personas.PersonaEp', models.DO_NOTHING, db_column='idPersonaEP')
-    idobrasocial = models.ForeignKey(Obrasocial, models.DO_NOTHING, db_column='idObraSocial')
-    borrado = models.BooleanField(db_column='borrado', default=False)
+    id_cobertura = models.AutoField(primary_key=True)
+    persona_ep = models.ForeignKey('personas.PersonaEP', models.DO_NOTHING)
+    obra_social = models.ForeignKey(ObraSocial, models.DO_NOTHING)
+    borrado = models.BooleanField(default=False)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'cobertura'
+        db_table = 'obra_social_cobertura'

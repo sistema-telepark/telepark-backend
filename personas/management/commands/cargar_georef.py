@@ -8,6 +8,7 @@ Flags:
 - ``--force``: recarga el catálogo completo (borra filas y recarga), abortando
   si existe una ``Direccion`` referenciando ``Localidad`` (guard de integridad).
 """
+
 from django.core.management.base import BaseCommand, CommandError
 
 from personas.georef import GeoRefError, cargar_catalogo
@@ -34,15 +35,15 @@ class Command(BaseCommand):
             raise CommandError(f'Error inesperado al cargar el catálogo geográfico: {e}')
 
         if conteos is None:
-            self.stdout.write(
-                'Catálogo geográfico ya cargado — no se modifica la BD (skip idempotente)'
-            )
+            self.stdout.write('Catálogo geográfico ya cargado — no se modifica la BD (skip idempotente)')
             return
 
-        self.stdout.write(self.style.SUCCESS(
-            'Catálogo geográfico cargado desde fixtures locales: '
-            f'{conteos["provincias"]} provincias, '
-            f'{conteos["departamentos"]} departamentos, '
-            f'{conteos["localidades"]} localidades '
-            f'({conteos["localidades_duplicadas_eliminadas"]} duplicados eliminados)'
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                'Catálogo geográfico cargado desde fixtures locales: '
+                f'{conteos["provincias"]} provincias, '
+                f'{conteos["departamentos"]} departamentos, '
+                f'{conteos["localidades"]} localidades '
+                f'({conteos["localidades_duplicadas_eliminadas"]} duplicados eliminados)'
+            )
+        )

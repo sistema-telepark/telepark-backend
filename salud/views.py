@@ -1,21 +1,28 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView
 
-from drf_spectacular.utils import extend_schema
-
-from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEpSubresourceMixin, auto_tag_schema_view
+from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEPSubresourceMixin, auto_tag_schema_view
 from core.permission import AdminOrReadOnly
 from core.schema import error_response
 
-from .serializers import (
-    EvolucionSerializer, DiagnosticoEpSerializer, DiagnosticoSerializer,
-    MedicamentoSerializer, IndicacionEpSerializer,
-    IndicacionSerializer, EnfermedadSerializer,
-)
 from .models import (
-    Diagnostico, Evolucion, Enfermedad, Medicamento, Indicacionmedicamento,
+    Diagnostico,
+    Enfermedad,
+    Evolucion,
+    IndicacionMedicamento,
+    Medicamento,
+)
+from .serializers import (
+    DiagnosticoEpSerializer,
+    DiagnosticoSerializer,
+    EnfermedadSerializer,
+    EvolucionSerializer,
+    IndicacionEpSerializer,
+    IndicacionSerializer,
+    MedicamentoSerializer,
 )
 
 
@@ -27,14 +34,12 @@ class DiagnosticoViewSet(ModelPKMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-
 @auto_tag_schema_view
 class EvolucionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'salud'
     manager = Evolucion.objects
     serializer_class = EvolucionSerializer
     permission_classes = [IsAuthenticated]
-
 
 
 @auto_tag_schema_view
@@ -56,56 +61,56 @@ class MedicamentoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet)
 @auto_tag_schema_view
 class IndicacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'salud'
-    manager = Indicacionmedicamento.objects
+    manager = IndicacionMedicamento.objects
     serializer_class = IndicacionSerializer
     permission_classes = [IsAuthenticated]
 
 
 @extend_schema(
     tags=['salud'],
-    responses={404: error_response(404, "PersonaEp no encontrada")},
+    responses={404: error_response(404, 'PersonaEP no encontrada')},
 )
-class DiagnosticoPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
+class DiagnosticoPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = DiagnosticoEpSerializer
     queryset = Diagnostico.objects.none()
 
-    def get(self, request, personaep_pk):
-        self.validar_personaep(personaep_pk)
-        diagnosticos = Diagnostico.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idenfermedad'])
+    def get(self, request, persona_ep_pk):
+        self.validar_persona_ep(persona_ep_pk)
+        diagnosticos = Diagnostico.objects.filtrar_por_persona_ep(persona_ep_pk, select_related_fields=['enfermedad'])
         serializer = self.get_serializer(diagnosticos, many=True)
         return Response(serializer.data)
 
 
 @extend_schema(
     tags=['salud'],
-    responses={404: error_response(404, "PersonaEp no encontrada")},
+    responses={404: error_response(404, 'PersonaEP no encontrada')},
 )
-class EvolucionPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
+class EvolucionPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = EvolucionSerializer
     queryset = Evolucion.objects.none()
 
-    def get(self, request, personaep_pk):
-        self.validar_personaep(personaep_pk)
-        evoluciones = Evolucion.objects.filtrar_por_persona_ep(personaep_pk)
+    def get(self, request, persona_ep_pk):
+        self.validar_persona_ep(persona_ep_pk)
+        evoluciones = Evolucion.objects.filtrar_por_persona_ep(persona_ep_pk)
         serializer = self.get_serializer(evoluciones, many=True)
         return Response(serializer.data)
 
 
 @extend_schema(
     tags=['salud'],
-    responses={404: error_response(404, "PersonaEp no encontrada")},
+    responses={404: error_response(404, 'PersonaEP no encontrada')},
 )
-class IndicacionPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
+class IndicacionPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = IndicacionEpSerializer
-    queryset = Indicacionmedicamento.objects.none()
+    queryset = IndicacionMedicamento.objects.none()
 
-    def get(self, request, personaep_pk):
-        self.validar_personaep(personaep_pk)
-        indicaciones = Indicacionmedicamento.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idmedicamento'])
+    def get(self, request, persona_ep_pk):
+        self.validar_persona_ep(persona_ep_pk)
+        indicaciones = IndicacionMedicamento.objects.filtrar_por_persona_ep(
+            persona_ep_pk, select_related_fields=['medicamento']
+        )
         serializer = self.get_serializer(indicaciones, many=True)
         return Response(serializer.data)
-
-

@@ -1,27 +1,27 @@
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
+from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework import status
 
-from core.permission import IsSuperuser
-from core.schema import error_response
+from autenticacion.helpers import (
+    actualizar_usuario,
+    autenticar,
+    cambiar_rol,
+    crear_usuario,
+    eliminar_usuario,
+    listar_usuarios,
+    obtener_usuario_por_id,
+)
 from autenticacion.serializers import (
-    LoginSerializer,
     CreateUserSerializer,
-    UpdateUserSerializer,
+    LoginSerializer,
     RoleChangeSerializer,
+    UpdateUserSerializer,
     UserListOutputSerializer,
 )
-from autenticacion.helpers import (
-    autenticar,
-    crear_usuario,
-    actualizar_usuario,
-    listar_usuarios,
-    cambiar_rol,
-    obtener_usuario_por_id,
-    eliminar_usuario,
-)
+from core.permission import IsSuperuser
+from core.schema import error_response
 
 
 @extend_schema(
@@ -29,20 +29,20 @@ from autenticacion.helpers import (
     request=LoginSerializer,
     responses={
         200: OpenApiResponse(
-            description="Login exitoso — retorna JWT access/refresh y datos del usuario",
+            description='Login exitoso — retorna JWT access/refresh y datos del usuario',
             response={
-                "type": "object",
-                "properties": {
-                    "access": {"type": "string", "description": "JWT access token"},
-                    "refresh": {"type": "string", "description": "JWT refresh token"},
-                    "is_superuser": {"type": "boolean"},
-                    "username": {"type": "string"},
-                    "name": {"type": "string", "description": "Nombre completo del usuario"},
+                'type': 'object',
+                'properties': {
+                    'access': {'type': 'string', 'description': 'JWT access token'},
+                    'refresh': {'type': 'string', 'description': 'JWT refresh token'},
+                    'is_superuser': {'type': 'boolean'},
+                    'username': {'type': 'string'},
+                    'name': {'type': 'string', 'description': 'Nombre completo del usuario'},
                 },
             },
         ),
-        400: error_response(400, "Payload inválido (validation_error/parse_error)"),
-        401: error_response(401, "Credenciales inválidas"),
+        400: error_response(400, 'Payload inválido (validation_error/parse_error)'),
+        401: error_response(401, 'Credenciales inválidas'),
     },
 )
 @api_view(['POST'])
@@ -59,46 +59,46 @@ def auth_view(request):
         tags=['autenticacion'],
         parameters=[
             OpenApiParameter(
-                name="search",
+                name='search',
                 type=str,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Búsqueda por username, nombre, apellido o email",
+                description='Búsqueda por username, nombre, apellido o email',
             ),
             OpenApiParameter(
-                name="is_superuser",
+                name='is_superuser',
                 type=bool,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Filtrar por administrador",
+                description='Filtrar por administrador',
             ),
             OpenApiParameter(
-                name="is_active",
+                name='is_active',
                 type=bool,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Filtrar por activo/inactivo",
+                description='Filtrar por activo/inactivo',
             ),
         ],
         responses={
             200: OpenApiResponse(
-                description="Lista paginada de usuarios del sistema",
+                description='Lista paginada de usuarios del sistema',
                 response={
-                    "type": "object",
-                    "properties": {
-                        "count": {"type": "integer"},
-                        "next": {"type": "string", "nullable": True},
-                        "previous": {"type": "string", "nullable": True},
-                        "results": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "username": {"type": "string"},
-                                    "first_name": {"type": "string"},
-                                    "last_name": {"type": "string"},
-                                    "is_superuser": {"type": "boolean"},
-                                    "is_active": {"type": "boolean"},
+                    'type': 'object',
+                    'properties': {
+                        'count': {'type': 'integer'},
+                        'next': {'type': 'string', 'nullable': True},
+                        'previous': {'type': 'string', 'nullable': True},
+                        'results': {
+                            'type': 'array',
+                            'items': {
+                                'type': 'object',
+                                'properties': {
+                                    'username': {'type': 'string'},
+                                    'first_name': {'type': 'string'},
+                                    'last_name': {'type': 'string'},
+                                    'is_superuser': {'type': 'boolean'},
+                                    'is_active': {'type': 'boolean'},
                                 },
                             },
                         },
@@ -112,15 +112,15 @@ def auth_view(request):
         request=CreateUserSerializer,
         responses={
             201: OpenApiResponse(
-                description="Usuario creado exitosamente",
+                description='Usuario creado exitosamente',
                 response={
-                    "type": "object",
-                    "properties": {
-                        "message": {"type": "string"},
+                    'type': 'object',
+                    'properties': {
+                        'message': {'type': 'string'},
                     },
                 },
             ),
-            400: error_response(400, "Datos inválidos o usuario ya existe"),
+            400: error_response(400, 'Datos inválidos o usuario ya existe'),
         },
     ),
 )
@@ -157,20 +157,20 @@ def usuarios_list(request):
         tags=['autenticacion'],
         responses={
             200: OpenApiResponse(
-                description="Detalle de un usuario del sistema",
+                description='Detalle de un usuario del sistema',
                 response={
-                    "type": "object",
-                    "properties": {
-                        "username": {"type": "string"},
-                        "first_name": {"type": "string"},
-                        "last_name": {"type": "string"},
-                        "email": {"type": "string"},
-                        "is_superuser": {"type": "boolean"},
-                        "is_active": {"type": "boolean"},
+                    'type': 'object',
+                    'properties': {
+                        'username': {'type': 'string'},
+                        'first_name': {'type': 'string'},
+                        'last_name': {'type': 'string'},
+                        'email': {'type': 'string'},
+                        'is_superuser': {'type': 'boolean'},
+                        'is_active': {'type': 'boolean'},
                     },
                 },
             ),
-            404: error_response(404, "Usuario no encontrado"),
+            404: error_response(404, 'Usuario no encontrado'),
         },
     ),
     put=extend_schema(
@@ -178,16 +178,16 @@ def usuarios_list(request):
         request=UpdateUserSerializer,
         responses={
             200: OpenApiResponse(
-                description="Usuario actualizado exitosamente",
+                description='Usuario actualizado exitosamente',
                 response={
-                    "type": "object",
-                    "properties": {
-                        "message": {"type": "string"},
+                    'type': 'object',
+                    'properties': {
+                        'message': {'type': 'string'},
                     },
                 },
             ),
-            400: error_response(400, "Datos inválidos o usuario inexistente"),
-            404: error_response(404, "Usuario no encontrado"),
+            400: error_response(400, 'Datos inválidos o usuario inexistente'),
+            404: error_response(404, 'Usuario no encontrado'),
         },
     ),
     patch=extend_schema(
@@ -195,36 +195,36 @@ def usuarios_list(request):
         request=RoleChangeSerializer,
         responses={
             200: OpenApiResponse(
-                description="Rol actualizado exitosamente",
+                description='Rol actualizado exitosamente',
                 response={
-                    "type": "object",
-                    "properties": {
-                        "message": {"type": "string"},
-                        "username": {"type": "string"},
-                        "is_superuser": {"type": "boolean"},
+                    'type': 'object',
+                    'properties': {
+                        'message': {'type': 'string'},
+                        'username': {'type': 'string'},
+                        'is_superuser': {'type': 'boolean'},
                     },
                 },
             ),
-            400: error_response(400, "Error de validación — is_superuser requerido o tipo inválido"),
-            403: error_response(403, "No autorizado — no eres superusuario o intentas modificar tu propio rol"),
-            404: error_response(404, "Usuario no encontrado"),
-            409: error_response(409, "Conflicto — no puedes degradar al último administrador"),
+            400: error_response(400, 'Error de validación — is_superuser requerido o tipo inválido'),
+            403: error_response(403, 'No autorizado — no eres superusuario o intentas modificar tu propio rol'),
+            404: error_response(404, 'Usuario no encontrado'),
+            409: error_response(409, 'Conflicto — no puedes degradar al último administrador'),
         },
     ),
     delete=extend_schema(
         tags=['autenticacion'],
         responses={
-            204: OpenApiResponse(description="Usuario eliminado exitosamente"),
-            403: error_response(403, "No puedes eliminar tu propio usuario"),
-            404: error_response(404, "Usuario no encontrado"),
+            204: OpenApiResponse(description='Usuario eliminado exitosamente'),
+            403: error_response(403, 'No puedes eliminar tu propio usuario'),
+            404: error_response(404, 'Usuario no encontrado'),
         },
     ),
 )
 @api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
 @permission_classes([IsSuperuser])
-def usuarios_detail(request, idusuario):
+def usuarios_detail(request, id_usuario):
     if request.method == 'GET':
-        user = obtener_usuario_por_id(idusuario)
+        user = obtener_usuario_por_id(id_usuario)
         serializer = UserListOutputSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -233,7 +233,7 @@ def usuarios_detail(request, idusuario):
         serializer.is_valid(raise_exception=True)
         result = actualizar_usuario(
             serializer.validated_data,
-            user_id=idusuario,
+            user_id=id_usuario,
         )
         return Response(result, status=status.HTTP_200_OK)
 
@@ -242,13 +242,13 @@ def usuarios_detail(request, idusuario):
         serializer.is_valid(raise_exception=True)
         result = cambiar_rol(
             actor_user=request.user,
-            target_id=idusuario,
+            target_id=id_usuario,
             is_superuser=serializer.validated_data['is_superuser'],
         )
         return Response(result, status=status.HTTP_200_OK)
 
     elif request.method == 'DELETE':
-        if request.user.id == idusuario:
+        if request.user.id == id_usuario:
             raise PermissionError('No puedes eliminar tu propio usuario')
-        eliminar_usuario(idusuario)
+        eliminar_usuario(id_usuario)
         return Response(status=status.HTTP_204_NO_CONTENT)

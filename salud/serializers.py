@@ -1,8 +1,13 @@
 from rest_framework import serializers
+
 from core.fields import StrictBooleanField
+
 from .models import (
-    Diagnostico, Evolucion, Enfermedad,
-    Medicamento, Indicacionmedicamento,
+    Diagnostico,
+    Enfermedad,
+    Evolucion,
+    IndicacionMedicamento,
+    Medicamento,
 )
 
 
@@ -11,13 +16,13 @@ class EvolucionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Evolucion
-        fields = ('idevolucion', 'escalaevolucion', 'fecha', 'idpersonaep', 'borrado')
+        fields = ('id_evolucion', 'escala_evolucion', 'fecha', 'persona_ep', 'borrado')
 
 
 class EnfermedadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enfermedad
-        fields = ('idenfermedad', 'nombre')
+        fields = ('id_enfermedad', 'nombre')
 
 
 class DiagnosticoSerializer(serializers.ModelSerializer):
@@ -25,47 +30,45 @@ class DiagnosticoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Diagnostico
-        fields = ('iddiagnostico',
-                  'fecha',
-                  'idpersonaep',
-                  'idenfermedad',
-                  'borrado')
+        fields = ('id_diagnostico', 'fecha', 'persona_ep', 'enfermedad', 'borrado')
 
 
 class DiagnosticoEpSerializer(DiagnosticoSerializer):
-    idenfermedad = EnfermedadSerializer(many=False, read_only=True)
+    enfermedad = EnfermedadSerializer(many=False, read_only=True)
 
     class Meta(DiagnosticoSerializer.Meta):
         pass
 
 
 class MedicamentoSerializer(serializers.ModelSerializer):
-    esantiparkinsoniano = StrictBooleanField(required=False, default=False)
-    eslevodopa = StrictBooleanField(required=False, default=False)
+    es_antiparkinsoniano = StrictBooleanField(required=False, default=False)
+    es_levodopa = StrictBooleanField(required=False, default=False)
 
     class Meta:
         model = Medicamento
-        fields = ('idmedicamento', 'nombre', 'esantiparkinsoniano', 'eslevodopa')
+        fields = ('id_medicamento', 'nombre', 'es_antiparkinsoniano', 'es_levodopa')
 
 
 class IndicacionSerializer(serializers.ModelSerializer):
     borrado = StrictBooleanField(required=False, default=False)
-    estavigente = StrictBooleanField(required=False, default=False)
+    esta_vigente = StrictBooleanField(required=False, default=False)
 
     class Meta:
-        model = Indicacionmedicamento
-        fields = ('idindicacion',
-                  'cantidadmiligramos',
-                  'estavigente',
-                  'fechaprescripcion',
-                  'horadetoma',
-                  'idpersonaep',
-                  'idmedicamento',
-                  'borrado')
+        model = IndicacionMedicamento
+        fields = (
+            'id_indicacion',
+            'cantidad_miligramos',
+            'esta_vigente',
+            'fecha_prescripcion',
+            'hora_de_toma',
+            'persona_ep',
+            'medicamento',
+            'borrado',
+        )
 
 
 class IndicacionEpSerializer(IndicacionSerializer):
-    idmedicamento = MedicamentoSerializer(many=False, read_only=True)
+    medicamento = MedicamentoSerializer(many=False, read_only=True)
 
     class Meta(IndicacionSerializer.Meta):
         pass

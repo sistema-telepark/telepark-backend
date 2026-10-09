@@ -1,7 +1,7 @@
 import re
 
 from django.apps import apps
-from drf_spectacular.utils import extend_schema_view, extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import NotFound, ValidationError
 
 _NUMERIC_RE = re.compile(r'^-?\d+$')
@@ -28,13 +28,13 @@ class NoPaginationMixin:
     pagination_class = None
 
 
-class PersonaEpSubresourceMixin:
-    """Valida la existencia del PersonaEp antes de filtrar sub-recursos."""
+class PersonaEPSubresourceMixin:
+    """Valida la existencia del PersonaEP antes de filtrar sub-recursos."""
 
-    def validar_personaep(self, personaep_pk):
+    def validar_persona_ep(self, persona_ep_pk):
         # `apps.get_model` evita el import circular core → personas.
-        PersonaEp = apps.get_model('personas', 'PersonaEp')
-        if not PersonaEp.objects.filter(pk=personaep_pk).exists():
+        PersonaEP = apps.get_model('personas', 'PersonaEP')
+        if not PersonaEP.objects.filter(pk=persona_ep_pk).exists():
             raise NotFound('No encontrado')
 
 
@@ -54,9 +54,9 @@ class CascadeFilterMixin:
                 # Param ausente o vacío → tratado como ausente, sin filtro ni error.
                 continue
             if _NUMERIC_RE.match(valor) is None:
-                raise ValidationError({
-                    'detail': f'El parámetro "{param}" debe ser un ID numérico (recibido: "{valor}").'
-                })
+                raise ValidationError(
+                    {'detail': f'El parámetro "{param}" debe ser un ID numérico (recibido: "{valor}").'}
+                )
             if callable(lookup):
                 kwargs = lookup(valor)
             else:
@@ -90,8 +90,7 @@ def auto_tag_schema_view(cls):
         # También etiqueta @action methods (los que tienen atributo 'actions')
         for attr_name in dir(cls):
             method = getattr(cls, attr_name)
-            if (callable(method) and hasattr(method, 'actions')
-                    and not hasattr(method, '_schema')):
+            if callable(method) and hasattr(method, 'actions') and not hasattr(method, '_schema'):
                 setattr(cls, attr_name, extend_schema(tags=[tag])(method))
         return cls
     return cls

@@ -1,24 +1,25 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import GenericAPIView
 
-from drf_spectacular.utils import extend_schema
-
-from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEpSubresourceMixin, auto_tag_schema_view
+from core.mixins import ModelPKMixin, NoPaginationMixin, PersonaEPSubresourceMixin, auto_tag_schema_view
 from core.permission import AdminOrReadOnly
 from core.schema import error_response
 
+from .models import Cobertura, ObraSocial
 from .serializers import (
-    ObraSocialSerializer, CoberturaEpSerializer, CoberturaSerializer,
+    CoberturaEpSerializer,
+    CoberturaSerializer,
+    ObraSocialSerializer,
 )
-from .models import Obrasocial, Cobertura
 
 
 @auto_tag_schema_view
 class ObraSocialViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'obra_social'
-    manager = Obrasocial.objects
+    manager = ObraSocial.objects
     serializer_class = ObraSocialSerializer
     permission_classes = [AdminOrReadOnly]
 
@@ -33,15 +34,15 @@ class CoberturaViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 
 @extend_schema(
     tags=['obra_social'],
-    responses={404: error_response(404, "PersonaEp no encontrada")},
+    responses={404: error_response(404, 'PersonaEP no encontrada')},
 )
-class CoberturaPorPersonaEpView(PersonaEpSubresourceMixin, GenericAPIView):
+class CoberturaPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CoberturaEpSerializer
     queryset = Cobertura.objects.none()
 
-    def get(self, request, personaep_pk):
-        self.validar_personaep(personaep_pk)
-        obrasociales = Cobertura.objects.filtrar_por_persona_ep(personaep_pk, select_related_fields=['idobrasocial'])
+    def get(self, request, persona_ep_pk):
+        self.validar_persona_ep(persona_ep_pk)
+        obrasociales = Cobertura.objects.filtrar_por_persona_ep(persona_ep_pk, select_related_fields=['obra_social'])
         serializer = self.get_serializer(obrasociales, many=True)
         return Response(serializer.data)
