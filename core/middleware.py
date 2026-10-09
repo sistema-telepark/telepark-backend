@@ -21,7 +21,7 @@ class ExceptionMiddleware(object):
     def process_exception(self, request, exception):
         correlation_id = getattr(request, 'correlation_id', None)
         logger.error(
-            "Unhandled exception (correlation_id=%s): %s",
+            'Unhandled exception (correlation_id=%s): %s',
             correlation_id,
             type(exception).__name__,
             exc_info=settings.DEBUG,

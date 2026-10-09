@@ -1,6 +1,7 @@
 """Helpers modulares para autenticación y gestión de usuarios."""
-from django.contrib.auth.models import User
+
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import Q
@@ -9,6 +10,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from core.exceptions import (
     ConflictError,
     InvalidCredentialsError,
+)
+from core.exceptions import (
     ValidationError as DomainValidationError,
 )
 
@@ -120,10 +123,10 @@ def listar_usuarios(filters=None):
         if 'search' in filters:
             search = filters['search']
             qs = qs.filter(
-                Q(username__icontains=search) |
-                Q(first_name__icontains=search) |
-                Q(last_name__icontains=search) |
-                Q(email__icontains=search)
+                Q(username__icontains=search)
+                | Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+                | Q(email__icontains=search)
             )
     return qs
 

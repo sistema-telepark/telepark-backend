@@ -1,4 +1,5 @@
 """Módulo de carga del catálogo geográfico desde fixtures locales."""
+
 import json
 from pathlib import Path
 
@@ -53,8 +54,7 @@ def cargar_provincias():
     """Inserta provincias desde el fixture; retorna ``{id_fixture: pk}``."""
     items = _leer_fixture('provincias')
     provincias = [
-        Provincia(pk=pk, nombre=item['nombre'])
-        for pk, item in zip(_proximos_pks(Provincia, len(items)), items)
+        Provincia(pk=pk, nombre=item['nombre']) for pk, item in zip(_proximos_pks(Provincia, len(items)), items)
     ]
     Provincia.objects.bulk_create(provincias, batch_size=BATCH_SIZE)
     return {item['id']: p.pk for item, p in zip(items, provincias)}
@@ -67,7 +67,7 @@ def cargar_departamentos(mapa_provincias):
         Departamento(
             pk=pk,
             nombre=item['nombre'],
-            idprovincia_id=mapa_provincias.get(item['provincia']['id']),
+            provincia_id=mapa_provincias.get(item['provincia']['id']),
         )
         for pk, item in zip(_proximos_pks(Departamento, len(items)), items)
     ]
@@ -110,8 +110,8 @@ def cargar_localidades(mapa_departamentos):
         Localidad(
             pk=pk,
             nombre=item['nombre'],
-            iddepartamento_id=mapa_departamentos.get(item['departamento']['id']),
-            codigopostal=item.get('codigopostal'),
+            departamento_id=mapa_departamentos.get(item['departamento']['id']),
+            codigo_postal=item.get('codigopostal'),
         )
         for pk, item in zip(_proximos_pks(Localidad, len(ganadores)), ganadores)
     ]
@@ -135,7 +135,7 @@ def _estado_catalogo():
 
 def _verificar_guard_integridad():
     """Aborta ``--force`` si existe una ``Direccion`` referenciando ``Localidad``."""
-    if Direccion.objects.filter(idlocalidad__isnull=False).exists():
+    if Direccion.objects.filter(localidad__isnull=False).exists():
         raise GeoRefError(
             'No se puede forzar la recarga: existen direcciones referenciando '
             'localidades. Elimine o reasigne esas direcciones antes de usar --force.'

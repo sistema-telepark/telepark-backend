@@ -11,8 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -34,14 +35,14 @@ STATICFILES_DIRS = [
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("ENV") == 'dev'
+DEBUG = os.getenv('ENV') == 'dev'
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:3000").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')
 # Application definition
 
 INSTALLED_APPS = [
@@ -56,13 +57,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     # Módulos del dominio (ordenados por dependencias)
-    'autenticacion',       # autenticación y gestión de usuarios
+    'autenticacion',  # autenticación y gestión de usuarios
     'core',
-    'personas',       # raíz — sin dependencias externas
-    'salud',          # → personas
-    'eventos',        # → personas
-    'obra_social',    # → personas
-    'talleres',       # → personas
+    'personas',  # raíz — sin dependencias externas
+    'salud',  # → personas
+    'eventos',  # → personas
+    'obra_social',  # → personas
+    'talleres',  # → personas
 ]
 
 MIDDLEWARE = [
@@ -103,19 +104,17 @@ WSGI_APPLICATION = 'telepark.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv("DB_DATABASE"),
-        'HOST': os.getenv("DB_HOST"),
-        'PORT': os.getenv("DB_PORT"),
-        'USER': os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'NAME': os.getenv('DB_DATABASE'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
     }
 }
 
 # Authentication
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication',),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
@@ -158,14 +157,15 @@ LOGGING = {
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Telepark API',
     'DESCRIPTION': (
-        'API REST del sistema Telepark — módulos: autenticacion, personas, '
-        'salud, eventos, obra_social, talleres'
+        'API REST del sistema Telepark — módulos: autenticacion, personas, salud, eventos, obra_social, talleres'
     ),
     'VERSION': '1.0.0',
     'CONTACT': {'email': 'telepark@frlp.utn.edu.ar'},
     'SCHEMA_PATH_PREFIX': r'/api/v1/',
     'SERVE_INCLUDE_SCHEMA': False,
-    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'] if DEBUG else ['rest_framework.permissions.IsAdminUser'],
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny']
+    if DEBUG
+    else ['rest_framework.permissions.IsAdminUser'],
     'SECURITY': [{'BearerAuth': []}],
     'SWAGGER_UI_SETTINGS': {
         'persistAuthorization': True,
@@ -189,21 +189,16 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
-
     'ALGORITHM': 'HS256',
     'VERIFYING_KEY': None,
     'AUDIENCE': None,
     'ISSUER': None,
-
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'username',
     'USER_ID_CLAIM': 'user_id',
-
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
-
     'JTI_CLAIM': 'jti',
-
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
@@ -227,7 +222,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 
 
 # Internationalization

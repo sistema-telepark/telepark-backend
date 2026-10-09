@@ -17,14 +17,14 @@ class CreateUserSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         if self.initial_data:
-            for field in ('is_staff'):
+            for field in 'is_staff':
                 if field in self.initial_data:
                     raise serializers.ValidationError({field: 'No puedes modificar este campo'})
         return attrs
 
 
 class UpdateUserSerializer(serializers.Serializer):
-    user = serializers.CharField(required=False, help_text="Obsoleto — el ID del usuario se toma de la URL")
+    user = serializers.CharField(required=False, help_text='Obsoleto — el ID del usuario se toma de la URL')
     email = serializers.CharField(required=False)
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
@@ -34,7 +34,7 @@ class UpdateUserSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         if self.initial_data:
-            for field in ('is_staff'):
+            for field in 'is_staff':
                 if field in self.initial_data:
                     raise serializers.ValidationError({field: 'No puedes modificar este campo'})
         return attrs

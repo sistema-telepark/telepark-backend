@@ -123,6 +123,6 @@ telepark-backend/
 
 ## Convenciones
 
-- Las FKs entre módulos usan **referencias con string**: `models.ForeignKey('personas.PersonaEp', ...)`
+- Las FKs entre módulos usan **referencias con string**: `models.ForeignKey('personas.PersonaEP', ...)`
 - `DEBUG = True` solo cuando `ENV=dev`
 - Autenticación via JWT (access token: 60 min, refresh: 1 día, `USER_ID_FIELD = 'username'`)

@@ -5,15 +5,15 @@ from core.managers import OrdenadoManager
 
 
 class AsistenciaTallerManager(OrdenadoManager):
-    """Manager para Asistenciataller con orden compuesto."""
+    """Manager para AsistenciaTaller con orden compuesto."""
 
     def listar_ordenado(self):
-        return self.all().order_by('idpersonaep', 'idasistenciataller')
+        return self.all().order_by('persona_ep', 'id_asistencia_taller')
 
 
 class Taller(models.Model):
-    idtaller = models.AutoField(db_column='idTaller', primary_key=True)
-    tipotaller = models.CharField(db_column='tipoTaller', max_length=45)
+    id_taller = models.AutoField(primary_key=True)
+    tipo_taller = models.CharField(max_length=45)
 
     objects = OrdenadoManager()
 
@@ -22,25 +22,25 @@ class Taller(models.Model):
             raise ConflictError('No se puede eliminar un taller con encuentros o actividades asociados')
 
     class Meta:
-        db_table = 'taller'
+        db_table = 'talleres_taller'
 
 
 class Encuentro(models.Model):
-    idencuentro = models.AutoField(db_column='idEncuentro', primary_key=True)
+    id_encuentro = models.AutoField(primary_key=True)
     fecha = models.DateField()
-    virtual = models.BooleanField(db_column='virtual', default=False)
-    idtaller = models.ForeignKey(Taller, models.PROTECT, db_column='idTaller')
+    virtual = models.BooleanField(default=False)
+    taller = models.ForeignKey(Taller, models.PROTECT)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'encuentro'
+        db_table = 'talleres_encuentro'
 
 
 class Actividad(models.Model):
-    idactividad = models.AutoField(db_column='idActividad', primary_key=True)
+    id_actividad = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=45)
-    idtaller = models.ForeignKey(Taller, models.PROTECT, db_column='idTaller')
+    taller = models.ForeignKey(Taller, models.PROTECT)
 
     objects = OrdenadoManager()
 
@@ -49,84 +49,84 @@ class Actividad(models.Model):
             raise ConflictError('No se puede eliminar una actividad con registros de actividades realizadas')
 
     class Meta:
-        db_table = 'actividad'
+        db_table = 'talleres_actividad'
 
 
 class EncuentroActividad(models.Model):
-    idencuentroactividad = models.AutoField(db_column='idEncuentroActividad', primary_key=True)
-    idactividad = models.ForeignKey(Actividad, models.PROTECT, db_column='idActividad')
-    idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
+    id_encuentro_actividad = models.AutoField(primary_key=True)
+    actividad = models.ForeignKey(Actividad, models.PROTECT)
+    encuentro = models.ForeignKey(Encuentro, models.CASCADE)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'encuentroactividad'
-        unique_together = (('idactividad', 'idencuentro'),)
+        db_table = 'talleres_encuentro_actividad'
+        unique_together = (('actividad', 'encuentro'),)
 
 
-class Asistenciataller(models.Model):
-    idasistenciataller = models.AutoField(db_column='idAsistenciaTaller', primary_key=True)
+class AsistenciaTaller(models.Model):
+    id_asistencia_taller = models.AutoField(primary_key=True)
     estado = models.CharField(max_length=45)
-    idpersonaep = models.ForeignKey('personas.PersonaEp', models.PROTECT, db_column='idPersonaEP', blank=True, null=True)
-    idencuentro = models.ForeignKey(Encuentro, models.SET_NULL, db_column='idEncuentro', blank=True, null=True)
+    persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT, blank=True, null=True)
+    encuentro = models.ForeignKey(Encuentro, models.SET_NULL, blank=True, null=True)
 
     objects = AsistenciaTallerManager()
 
     class Meta:
-        db_table = 'asistenciataller'
+        db_table = 'talleres_asistencia_taller'
 
 
 class EncuentroFactorGlobal(models.Model):
-    idencuentrofactorglobal = models.AutoField(db_column='idEncuentroFactorGlobal', primary_key=True)
-    idencuentro = models.ForeignKey(Encuentro, models.CASCADE, db_column='idEncuentro')
-    idfactorglobal = models.ForeignKey('Factorglobal', models.PROTECT, db_column='idFactorGlobal')
+    id_encuentro_factor_global = models.AutoField(primary_key=True)
+    encuentro = models.ForeignKey(Encuentro, models.CASCADE)
+    factor_global = models.ForeignKey('FactorGlobal', models.PROTECT)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'encuentrofactorglobal'
-        unique_together = (('idencuentro', 'idfactorglobal'),)
+        db_table = 'talleres_encuentro_factor_global'
+        unique_together = (('encuentro', 'factor_global'),)
 
 
-class Factorglobal(models.Model):
-    idfactorglobal = models.AutoField(db_column='idFactorGlobal', primary_key=True)
+class FactorGlobal(models.Model):
+    id_factor_global = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=45)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'factorglobal'
+        db_table = 'talleres_factor_global'
 
 
-class Unidadobservacion(models.Model):
-    idunidadobservacion = models.AutoField(db_column='idUnidadObservacion', primary_key=True)
+class UnidadObservacion(models.Model):
+    id_unidad_observacion = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=45)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'unidadobservacion'
+        db_table = 'talleres_unidad_observacion'
 
 
-class Variableuo(models.Model):
-    idvariableuo = models.AutoField(db_column='idVariableUO', primary_key=True)
+class VariableUO(models.Model):
+    id_variable_uo = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=45)
-    idunidadobservacion = models.ForeignKey(Unidadobservacion, models.PROTECT, db_column='idUnidadObservacion')
+    unidad_observacion = models.ForeignKey(UnidadObservacion, models.PROTECT)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'variableuo'
+        db_table = 'talleres_variable_uo'
 
 
-class Valorvariableuo(models.Model):
-    idvalorvariableuo = models.AutoField(db_column='idValorVariableUO', primary_key=True)
+class ValorVariableUO(models.Model):
+    id_valor_variable_uo = models.AutoField(primary_key=True)
     valor = models.CharField(max_length=45)
-    idvariableuo = models.ForeignKey(Variableuo, models.PROTECT, db_column='idVariableUO')
-    idasistenciataller = models.ForeignKey(Asistenciataller, models.CASCADE, db_column='idAsistenciaTaller', blank=True, null=True)
-    idencuentroactividad = models.ForeignKey(EncuentroActividad, models.CASCADE, db_column='idEncuentroActividad', blank=True, null=True)
+    variable_uo = models.ForeignKey(VariableUO, models.PROTECT)
+    asistencia_taller = models.ForeignKey(AsistenciaTaller, models.CASCADE, blank=True, null=True)
+    encuentro_actividad = models.ForeignKey(EncuentroActividad, models.CASCADE, blank=True, null=True)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'valorvariableuo'
+        db_table = 'talleres_valor_variable_uo'

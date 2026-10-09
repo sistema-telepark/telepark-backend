@@ -1,5 +1,6 @@
 from rest_framework.routers import SimpleRouter
-from .views import ObraSocialViewSet, CoberturaViewSet
+
+from .views import CoberturaViewSet, ObraSocialViewSet
 
 router = SimpleRouter(trailing_slash=False)
 

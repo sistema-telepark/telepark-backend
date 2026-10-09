@@ -1,8 +1,13 @@
 from rest_framework.routers import SimpleRouter
+
 from .views import (
-    PersonaViewSet, PersonaEPViewSet,
-    DireccionViewSet, TipoParentescoViewSet,
-    LocalidadViewSet, DepartamentoViewSet, ProvinciaViewSet,
+    DepartamentoViewSet,
+    DireccionViewSet,
+    LocalidadViewSet,
+    PersonaEPViewSet,
+    PersonaViewSet,
+    ProvinciaViewSet,
+    TipoParentescoViewSet,
 )
 
 router = SimpleRouter(trailing_slash=False)

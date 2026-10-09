@@ -6,103 +6,100 @@ from .managers import NombreOrderedManager
 
 
 class Persona(models.Model):
-    idpersona = models.AutoField(db_column='idPersona', primary_key=True)
+    id_persona = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=45)
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=35)
-    iddireccion = models.ForeignKey('Direccion', models.DO_NOTHING, db_column='idDireccion', blank=True, null=True)
-    borrado = models.BooleanField(db_column='borrado', default=False)
+    direccion = models.ForeignKey('Direccion', models.DO_NOTHING, blank=True, null=True)
+    borrado = models.BooleanField(default=False)
     sexo = models.CharField(max_length=45, blank=True, null=True)
-    fechanacimiento = models.DateField(db_column='fechaNacimiento', blank=True, null=True)
+    fecha_nacimiento = models.DateField(blank=True, null=True)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'persona'
+        db_table = 'personas_persona'
 
 
-class PersonaEp(Persona):
+class PersonaEP(Persona):
     persona_ptr = models.OneToOneField(
-        Persona, models.DO_NOTHING, db_column='idPersona',
-        parent_link=True, primary_key=True
+        Persona, models.DO_NOTHING, db_column='id_persona', parent_link=True, primary_key=True
     )
-    activataller = models.BooleanField(db_column='activaTaller', default=False)
-    escolaridadcompleta = models.BooleanField(db_column='escolaridadCompleta', default=False)
-    fechainicio = models.DateTimeField(db_column='fechaInicio')
-    maximaescolaridadalcanzada = models.CharField(db_column='maximaEscolaridadAlcanzada', max_length=45, blank=True, null=True)
-    tieneacompanante = models.BooleanField(db_column='tieneAcompanante', default=False)
-    tienecuidador = models.BooleanField(db_column='tieneCuidador', default=False)
-    vivesolo = models.BooleanField(db_column='viveSolo', default=False)
-    ocupacionprevia = models.CharField(db_column='ocupacionPrevia', max_length=45)
-    ocupacionactual = models.CharField(db_column='ocupacionActual', max_length=45)
-    idreferente = models.ForeignKey(
-        Persona, models.DO_NOTHING, db_column='idReferente', related_name='+'
-    )
+    activa_taller = models.BooleanField(default=False)
+    escolaridad_completa = models.BooleanField(default=False)
+    fecha_inicio = models.DateTimeField()
+    maxima_escolaridad_alcanzada = models.CharField(max_length=45, blank=True, null=True)
+    tiene_acompanante = models.BooleanField(default=False)
+    tiene_cuidador = models.BooleanField(default=False)
+    vive_solo = models.BooleanField(default=False)
+    ocupacion_previa = models.CharField(max_length=45)
+    ocupacion_actual = models.CharField(max_length=45)
+    referente = models.ForeignKey(Persona, models.DO_NOTHING, related_name='+')
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'persona_ep'
+        db_table = 'personas_persona_ep'
 
 
 class Direccion(models.Model):
-    iddireccion = models.AutoField(db_column='idDireccion', primary_key=True)
+    id_direccion = models.AutoField(primary_key=True)
     calle = models.CharField(max_length=45, blank=True, null=True)
     departamento = models.CharField(max_length=45, blank=True, null=True)
     numero = models.IntegerField(blank=True, null=True)
     piso = models.IntegerField(blank=True, null=True)
-    idlocalidad = models.ForeignKey('Localidad', models.DO_NOTHING, db_column='idLocalidad', blank=True, null=True)
+    localidad = models.ForeignKey('Localidad', models.DO_NOTHING, blank=True, null=True)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'direccion'
+        db_table = 'personas_direccion'
 
 
 class Localidad(models.Model):
-    idlocalidad = models.AutoField(db_column='idLocalidad', primary_key=True)
+    id_localidad = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=120)
-    codigopostal = models.IntegerField(db_column='codigoPostal', null=True, blank=True)
-    iddepartamento = models.ForeignKey('Departamento', models.DO_NOTHING, db_column='iddepartamento', blank=True, null=True)
+    codigo_postal = models.IntegerField(null=True, blank=True)
+    departamento = models.ForeignKey('Departamento', models.DO_NOTHING, blank=True, null=True)
 
     objects = NombreOrderedManager()
 
     class Meta:
-        db_table = 'localidad'
+        db_table = 'personas_localidad'
         ordering = ('nombre',)
 
 
 class Provincia(models.Model):
-    idprovincia = models.AutoField(db_column='idProvincia', primary_key=True)
+    id_provincia = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
 
     objects = NombreOrderedManager()
 
     class Meta:
-        db_table = 'provincia'
+        db_table = 'personas_provincia'
         ordering = ('nombre',)
 
 
 class Departamento(models.Model):
-    iddepartamento = models.AutoField(db_column='iddepartamento', primary_key=True)
+    id_departamento = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=120)
-    idprovincia = models.ForeignKey('Provincia', models.DO_NOTHING, db_column='idProvincia', blank=True, null=True)
+    provincia = models.ForeignKey('Provincia', models.DO_NOTHING, blank=True, null=True)
 
     objects = NombreOrderedManager()
 
     class Meta:
-        db_table = 'departamento'
+        db_table = 'personas_departamento'
         ordering = ('nombre',)
 
 
-class Tipoparentesco(models.Model):
-    idtipoparentesco = models.AutoField(db_column='idTipoParentesco', primary_key=True)
-    idpersona = models.ForeignKey(Persona, models.DO_NOTHING, db_column='idPersona')
-    idpersonaep = models.ForeignKey(PersonaEp, models.DO_NOTHING, db_column='idPersonaEP', related_name='+')
+class TipoParentesco(models.Model):
+    id_tipo_parentesco = models.AutoField(primary_key=True)
+    persona = models.ForeignKey(Persona, models.DO_NOTHING)
+    persona_ep = models.ForeignKey(PersonaEP, models.DO_NOTHING, related_name='+')
     nombre = models.CharField(max_length=45, blank=True, null=True)
 
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'tipoparentesco'
-        unique_together = (('idpersona', 'idpersonaep'),)
+        db_table = 'personas_tipo_parentesco'
+        unique_together = (('persona', 'persona_ep'),)

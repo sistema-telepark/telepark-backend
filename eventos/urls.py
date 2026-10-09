@@ -1,4 +1,5 @@
 from rest_framework.routers import SimpleRouter
+
 from .views import EventoViewSet, TipoEventoViewSet
 
 router = SimpleRouter(trailing_slash=False)
