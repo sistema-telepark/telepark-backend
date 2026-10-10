@@ -33,7 +33,7 @@ class DiagnosticoSerializer(serializers.ModelSerializer):
         fields = ('id_diagnostico', 'fecha', 'persona_ep', 'enfermedad', 'borrado')
 
 
-class DiagnosticoEpSerializer(DiagnosticoSerializer):
+class DiagnosticoEPSerializer(DiagnosticoSerializer):
     enfermedad = EnfermedadSerializer(many=False, read_only=True)
 
     class Meta(DiagnosticoSerializer.Meta):
@@ -67,7 +67,7 @@ class IndicacionSerializer(serializers.ModelSerializer):
         )
 
 
-class IndicacionEpSerializer(IndicacionSerializer):
+class IndicacionEPSerializer(IndicacionSerializer):
     medicamento = MedicamentoSerializer(many=False, read_only=True)
 
     class Meta(IndicacionSerializer.Meta):

@@ -16,11 +16,11 @@ from .models import (
     Medicamento,
 )
 from .serializers import (
-    DiagnosticoEpSerializer,
+    DiagnosticoEPSerializer,
     DiagnosticoSerializer,
     EnfermedadSerializer,
     EvolucionSerializer,
-    IndicacionEpSerializer,
+    IndicacionEPSerializer,
     IndicacionSerializer,
     MedicamentoSerializer,
 )
@@ -72,7 +72,7 @@ class IndicacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
 )
 class DiagnosticoPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = DiagnosticoEpSerializer
+    serializer_class = DiagnosticoEPSerializer
     queryset = Diagnostico.objects.none()
 
     def get(self, request, persona_ep_pk):
@@ -104,7 +104,7 @@ class EvolucionPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
 )
 class IndicacionPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = IndicacionEpSerializer
+    serializer_class = IndicacionEPSerializer
     queryset = IndicacionMedicamento.objects.none()
 
     def get(self, request, persona_ep_pk):

@@ -21,7 +21,7 @@ class CoberturaSerializer(serializers.ModelSerializer):
         fields = ('id_cobertura', 'persona_ep', 'obra_social', 'borrado')
 
 
-class CoberturaEpSerializer(CoberturaSerializer):
+class CoberturaEPSerializer(CoberturaSerializer):
     obra_social = ObraSocialSerializer(many=False, read_only=True)
 
     class Meta(CoberturaSerializer.Meta):

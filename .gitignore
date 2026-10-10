@@ -1,8 +1,11 @@
 # Environments, AGENTS, and IDEs
 .env
+.env.*
+!.env.example
 .venv/
 .opencode/
 .vscode/
+.idea/
 .specs/
 .agents/
 specs/
@@ -11,9 +14,17 @@ AGENTS.md
 skills-lock.json
 
 # Cache
-*.pyc
-*/*/*/__pycache__/
-*/*/__pycache__/
-*/__pycache__/
+*.py[cod]
+__pycache__/
+.ruff_cache/
+
+# Static (collectstatic output)
+staticfiles/
+
+# OS / logs
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.log
 
 
