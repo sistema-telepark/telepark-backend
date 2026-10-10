@@ -10,7 +10,7 @@ from core.schema import error_response
 
 from .models import Cobertura, ObraSocial
 from .serializers import (
-    CoberturaEpSerializer,
+    CoberturaEPSerializer,
     CoberturaSerializer,
     ObraSocialSerializer,
 )
@@ -38,7 +38,7 @@ class CoberturaViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 )
 class CoberturaPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = CoberturaEpSerializer
+    serializer_class = CoberturaEPSerializer
     queryset = Cobertura.objects.none()
 
     def get(self, request, persona_ep_pk):
