@@ -166,7 +166,6 @@ SPECTACULAR_SETTINGS = {
     'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny']
     if DEBUG
     else ['rest_framework.permissions.IsAdminUser'],
-    'SECURITY': [{'BearerAuth': []}],
     'SWAGGER_UI_SETTINGS': {
         'persistAuthorization': True,
         'deepLinking': True,
@@ -181,6 +180,10 @@ SPECTACULAR_SETTINGS = {
         {'name': 'talleres', 'description': 'Talleres, actividades, asistencias y observaciones'},
     ],
     'ENUM_GENERATE_CHECKBEHAVIOR': 'coerce',
+    'POSTPROCESSING_HOOKS': [
+        'drf_spectacular.hooks.postprocess_schema_enums',
+        'core.schema.agregar_respuestas_autenticacion',
+    ],
 }
 
 # JWT configuration

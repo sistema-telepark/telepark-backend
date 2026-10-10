@@ -68,9 +68,12 @@ class IndicacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 @extend_schema(
     tags=['salud'],
-    responses={404: error_response(404, 'PersonaEP no encontrada')},
+    responses={
+        200: DiagnosticoEPSerializer(many=True),
+        404: error_response(404, 'PersonaEP no encontrada'),
+    },
 )
-class DiagnosticoPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
+class DiagnosticoPorPersonaEPView(NoPaginationMixin, PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = DiagnosticoEPSerializer
     queryset = Diagnostico.objects.none()
@@ -84,9 +87,12 @@ class DiagnosticoPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
 
 @extend_schema(
     tags=['salud'],
-    responses={404: error_response(404, 'PersonaEP no encontrada')},
+    responses={
+        200: EvolucionSerializer(many=True),
+        404: error_response(404, 'PersonaEP no encontrada'),
+    },
 )
-class EvolucionPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
+class EvolucionPorPersonaEPView(NoPaginationMixin, PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = EvolucionSerializer
     queryset = Evolucion.objects.none()
@@ -100,9 +106,12 @@ class EvolucionPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
 
 @extend_schema(
     tags=['salud'],
-    responses={404: error_response(404, 'PersonaEP no encontrada')},
+    responses={
+        200: IndicacionEPSerializer(many=True),
+        404: error_response(404, 'PersonaEP no encontrada'),
+    },
 )
-class IndicacionPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
+class IndicacionPorPersonaEPView(NoPaginationMixin, PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = IndicacionEPSerializer
     queryset = IndicacionMedicamento.objects.none()

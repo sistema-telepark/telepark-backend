@@ -3,13 +3,11 @@ from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.utils import OperationalError
 from django.http import JsonResponse
 from django.urls.exceptions import NoReverseMatch
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-
-from core.schema import ERROR_404_SCHEMA
 
 
 class ApiRootPermission(BasePermission):
@@ -73,11 +71,6 @@ def health_check(request):
         return JsonResponse(result, status=503)
 
 
-@extend_schema(
-    tags=['sistema'],
-    description='Handler 404 personalizado para rutas inexistentes en la API versionada /api/v1/',
-    responses={404: OpenApiResponse(response=ERROR_404_SCHEMA, description='Ruta no encontrada')},
-)
 def custom_404_view(request, exception=None):
     """Handler 404 personalizado con mensajes."""
     path = getattr(request, 'path', '')

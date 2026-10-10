@@ -34,9 +34,12 @@ class CoberturaViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 
 @extend_schema(
     tags=['obra_social'],
-    responses={404: error_response(404, 'PersonaEP no encontrada')},
+    responses={
+        200: CoberturaEPSerializer(many=True),
+        404: error_response(404, 'PersonaEP no encontrada'),
+    },
 )
-class CoberturaPorPersonaEPView(PersonaEPSubresourceMixin, GenericAPIView):
+class CoberturaPorPersonaEPView(NoPaginationMixin, PersonaEPSubresourceMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CoberturaEPSerializer
     queryset = Cobertura.objects.none()
