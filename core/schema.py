@@ -156,3 +156,36 @@ RESPONSE_SUCCESS_204 = {
     'type': 'object',
     'properties': {},
 }
+
+
+RUTAS_PUBLICAS = frozenset(
+    {
+        '/api/v1/health',
+        '/api/v1/auth/login',
+        '/api/v1/auth/refresh',
+        '/schema/',
+    }
+)
+
+_METODOS_HTTP = ('get', 'post', 'put', 'patch', 'delete', 'options', 'head')
+
+
+def _respuesta_error(schema, description):
+    return {'description': description, 'content': {'application/json': {'schema': schema}}}
+
+
+def agregar_respuestas_autenticacion(result, generator, request, public):
+    """Agrega 401/403 a las operaciones autenticadas; excluye health, login, refresh y schema."""
+    for ruta, operaciones in result.get('paths', {}).items():
+        if ruta in RUTAS_PUBLICAS:
+            continue
+        for metodo in _METODOS_HTTP:
+            operacion = operaciones.get(metodo)
+            if operacion is None:
+                continue
+            if not any('jwtAuth' in requisito for requisito in operacion.get('security', [])):
+                continue
+            respuestas = operacion.setdefault('responses', {})
+            respuestas.setdefault('401', _respuesta_error(ERROR_401_SCHEMA, 'No autenticado'))
+            respuestas.setdefault('403', _respuesta_error(ERROR_403_SCHEMA, 'Permiso denegado'))
+    return result
