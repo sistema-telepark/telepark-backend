@@ -14,11 +14,9 @@ class ObraSocialSerializer(serializers.ModelSerializer):
 
 
 class CoberturaSerializer(serializers.ModelSerializer):
-    borrado = StrictBooleanField(required=False, default=False)
-
     class Meta:
         model = Cobertura
-        fields = ('id_cobertura', 'persona_ep', 'obra_social', 'borrado')
+        fields = ('id_cobertura', 'persona_ep', 'obra_social')
 
 
 class CoberturaEPSerializer(CoberturaSerializer):

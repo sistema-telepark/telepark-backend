@@ -12,11 +12,9 @@ from .models import (
 
 
 class EvolucionSerializer(serializers.ModelSerializer):
-    borrado = StrictBooleanField(required=False, default=False)
-
     class Meta:
         model = Evolucion
-        fields = ('id_evolucion', 'escala_evolucion', 'fecha', 'persona_ep', 'borrado')
+        fields = ('id_evolucion', 'escala_evolucion', 'fecha', 'persona_ep')
 
 
 class EnfermedadSerializer(serializers.ModelSerializer):
@@ -26,11 +24,9 @@ class EnfermedadSerializer(serializers.ModelSerializer):
 
 
 class DiagnosticoSerializer(serializers.ModelSerializer):
-    borrado = StrictBooleanField(required=False, default=False)
-
     class Meta:
         model = Diagnostico
-        fields = ('id_diagnostico', 'fecha', 'persona_ep', 'enfermedad', 'borrado')
+        fields = ('id_diagnostico', 'fecha', 'persona_ep', 'enfermedad')
 
 
 class DiagnosticoEPSerializer(DiagnosticoSerializer):
@@ -50,7 +46,6 @@ class MedicamentoSerializer(serializers.ModelSerializer):
 
 
 class IndicacionSerializer(serializers.ModelSerializer):
-    borrado = StrictBooleanField(required=False, default=False)
     esta_vigente = StrictBooleanField(required=False, default=False)
 
     class Meta:
@@ -63,7 +58,6 @@ class IndicacionSerializer(serializers.ModelSerializer):
             'hora_de_toma',
             'persona_ep',
             'medicamento',
-            'borrado',
         )
 
 
