@@ -7,11 +7,11 @@ from .models import Departamento, Direccion, Localidad, Persona, PersonaEP, Prov
 
 
 class PersonaSerializer(serializers.ModelSerializer):
-    borrado = StrictBooleanField(required=False, default=False)
+    activo = StrictBooleanField(required=False, default=True)
 
     class Meta:
         model = Persona
-        fields = ('id_persona', 'nombre', 'apellido', 'telefono', 'direccion', 'borrado', 'sexo', 'fecha_nacimiento')
+        fields = ('id_persona', 'nombre', 'apellido', 'telefono', 'direccion', 'activo', 'sexo', 'fecha_nacimiento')
         extra_kwargs = {'direccion': {'allow_null': True, 'required': False}}
 
 
@@ -57,7 +57,7 @@ class PersonaEPSerializer(serializers.ModelSerializer):
             'apellido',
             'telefono',
             'direccion_id',
-            'borrado',
+            'activo',
             'sexo',
             'fecha_nacimiento',
             'activa_taller',
@@ -74,7 +74,7 @@ class PersonaEPSerializer(serializers.ModelSerializer):
             'referente',
         )
         extra_kwargs = {
-            'borrado': {'read_only': True},
+            'activo': {'read_only': True},
             'sexo': {'required': False, 'allow_null': True},
             'fecha_nacimiento': {'required': False, 'allow_null': True},
         }
@@ -90,7 +90,7 @@ class PersonaEPSerializer(serializers.ModelSerializer):
             )
             referente = Persona.objects.create(
                 **referente_data,
-                borrado=False,
+                activo=True,
                 direccion=referente_direccion,
             )
 
@@ -98,7 +98,7 @@ class PersonaEPSerializer(serializers.ModelSerializer):
 
             validated_data['direccion'] = direccion
             validated_data['referente'] = referente
-            validated_data['borrado'] = False
+            validated_data['activo'] = True
             return super().create(validated_data)
 
 

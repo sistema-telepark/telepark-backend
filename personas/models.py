@@ -11,7 +11,7 @@ class Persona(models.Model):
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=35)
     direccion = models.ForeignKey('Direccion', models.DO_NOTHING, blank=True, null=True)
-    borrado = models.BooleanField(default=False)
+    activo = models.BooleanField(default=True)
     sexo = models.CharField(max_length=45, blank=True, null=True)
     fecha_nacimiento = models.DateField(blank=True, null=True)
 
