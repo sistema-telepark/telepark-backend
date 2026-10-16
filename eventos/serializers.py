@@ -6,17 +6,15 @@ from .models import Evento, TipoEvento
 
 
 class TipoEventoSerializer(serializers.ModelSerializer):
-    borrado = StrictBooleanField(required=False, default=False)
     desactiva_taller = StrictBooleanField(required=False, default=False)
 
     class Meta:
         model = TipoEvento
-        fields = ('id_tipo_evento', 'nombre', 'desactiva_taller', 'borrado')
+        fields = ('id_tipo_evento', 'nombre', 'desactiva_taller')
 
 
 class EventoSerializer(serializers.ModelSerializer):
     tipo_evento_detalle = TipoEventoSerializer(many=False, read_only=True, source='tipo_evento')
-    borrado = StrictBooleanField(required=False, default=False)
 
     class Meta:
         model = Evento
@@ -28,5 +26,4 @@ class EventoSerializer(serializers.ModelSerializer):
             'persona_ep',
             'tipo_evento',
             'tipo_evento_detalle',
-            'borrado',
         )
