@@ -92,8 +92,8 @@ class Departamento(models.Model):
         ordering = ('nombre',)
 
 
-class TipoParentesco(models.Model):
-    id_tipo_parentesco = models.AutoField(primary_key=True)
+class Vinculo(models.Model):
+    id_vinculo = models.AutoField(primary_key=True)
     persona = models.ForeignKey(Persona, models.DO_NOTHING)
     persona_ep = models.ForeignKey(PersonaEP, models.DO_NOTHING, related_name='+')
     nombre = models.CharField(max_length=45, blank=True, null=True)
@@ -101,5 +101,5 @@ class TipoParentesco(models.Model):
     objects = OrdenadoManager()
 
     class Meta:
-        db_table = 'personas_tipo_parentesco'
+        db_table = 'personas_vinculo'
         unique_together = (('persona', 'persona_ep'),)
