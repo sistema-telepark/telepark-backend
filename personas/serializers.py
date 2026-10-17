@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from core.fields import StrictBooleanField
 
-from .models import Departamento, Direccion, Localidad, Persona, PersonaEP, Provincia, Vinculo
+from .models import Departamento, Direccion, Localidad, Persona, PersonaEP, Provincia, TipoVinculo, Vinculo
 
 
 class PersonaSerializer(serializers.ModelSerializer):
@@ -133,7 +133,14 @@ class DepartamentoSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class TipoVinculoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoVinculo
+        fields = ('id_tipo_vinculo', 'nombre')
+
+
 class VinculoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vinculo
-        fields = ('id_vinculo', 'persona', 'persona_ep', 'nombre')
+        fields = ('id_vinculo', 'persona', 'persona_ep', 'tipo_vinculo')
+        extra_kwargs = {'tipo_vinculo': {'allow_null': False, 'required': True}}
