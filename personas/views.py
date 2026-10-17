@@ -17,7 +17,7 @@ from .models import (
     Persona,
     PersonaEP,
     Provincia,
-    TipoParentesco,
+    Vinculo,
 )
 from .serializers import (
     DepartamentoSerializer,
@@ -26,7 +26,7 @@ from .serializers import (
     PersonaEPSerializer,
     PersonaSerializer,
     ProvinciaSerializer,
-    TipoParentescoSerializer,
+    VinculoSerializer,
 )
 
 
@@ -105,10 +105,10 @@ class DireccionViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class TipoParentescoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
+class VinculoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
-    manager = TipoParentesco.objects
-    serializer_class = TipoParentescoSerializer
+    manager = Vinculo.objects
+    serializer_class = VinculoSerializer
     permission_classes = [IsAuthenticated]
 
 
