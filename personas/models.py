@@ -92,11 +92,21 @@ class Departamento(models.Model):
         ordering = ('nombre',)
 
 
+class TipoVinculo(models.Model):
+    id_tipo_vinculo = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=45)
+
+    objects = OrdenadoManager()
+
+    class Meta:
+        db_table = 'personas_tipo_vinculo'
+
+
 class Vinculo(models.Model):
     id_vinculo = models.AutoField(primary_key=True)
     persona = models.ForeignKey(Persona, models.DO_NOTHING)
     persona_ep = models.ForeignKey(PersonaEP, models.DO_NOTHING, related_name='+')
-    nombre = models.CharField(max_length=45, blank=True, null=True)
+    tipo_vinculo = models.ForeignKey(TipoVinculo, models.PROTECT)
 
     objects = OrdenadoManager()
 
