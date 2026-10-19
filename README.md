@@ -22,7 +22,7 @@ Monolito modular (**modulith**) con 7 apps organizadas en dos capas:
 - `core` — router central, middleware de errores, permisos, health check
 
 **Dominio de negocio**
-- `personas` — módulo raíz: personas, direcciones, localidades, parentescos
+- `personas` — módulo raíz: personas, vínculos, direcciones, localidades
 - `salud` — diagnósticos, evoluciones, enfermedades, medicamentos
 - `eventos` — eventos y tipos de evento
 - `obra_social` — obras sociales y coberturas

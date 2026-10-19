@@ -1,5 +1,6 @@
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from core.mixins import (
@@ -50,13 +51,35 @@ def _resolver_localidades_por_departamento(valor):
     return {'departamento': valor}
 
 
-class SoftDeleteMixin:
-    def perform_destroy(self, instance):
-        Persona.objects.filter(pk=instance.pk).update(activo=False)
+class ActivoFilterMixin:
+    """Filtra por `?activo` con whitelist exacta, conservando la paginación global."""
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        request = getattr(self, 'request', None)
+        if request is None or 'activo' not in request.query_params:
+            return qs
+        valor = request.query_params.get('activo')
+        if valor not in ('true', 'false'):
+            raise ValidationError({'detail': f'El parámetro "activo" debe ser "true" o "false" (recibido: "{valor}").'})
+        return self.manager.filtrar_por_activo(valor == 'true')
 
 
 @auto_tag_schema_view
-class PersonaViewSet(SoftDeleteMixin, ModelPKMixin, viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='activo',
+                type=bool,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra personas por estado activo (true/false exactos). Sin el parámetro no se aplica filtro.',
+            ),
+        ],
+    ),
+)
+class PersonaViewSet(ActivoFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
     manager = Persona.objects
     serializer_class = PersonaSerializer
@@ -64,11 +87,27 @@ class PersonaViewSet(SoftDeleteMixin, ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class PersonaEPViewSet(SoftDeleteMixin, ModelPKMixin, viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='activo',
+                type=bool,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra personas EP por estado activo (true/false exactos). Sin el parámetro no se aplica filtro.',
+            ),
+        ],
+    ),
+)
+class PersonaEPViewSet(ActivoFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
     manager = PersonaEP.objects
     serializer_class = PersonaEPSerializer
     permission_classes = [AdminOnlyForDelete]
+
+    def perform_destroy(self, instance):
+        instance.persona_ptr.delete()
 
 
 @auto_tag_schema_view

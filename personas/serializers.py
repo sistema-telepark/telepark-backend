@@ -6,8 +6,17 @@ from core.fields import StrictBooleanField
 from .models import Departamento, Direccion, Localidad, Persona, PersonaEP, Provincia, TipoVinculo, Vinculo
 
 
+def _actualizar_direccion(direccion, datos):
+    if direccion is None:
+        return Direccion.objects.create(**datos)
+    for campo, valor in datos.items():
+        setattr(direccion, campo, valor)
+    direccion.save()
+    return direccion
+
+
 class PersonaSerializer(serializers.ModelSerializer):
-    activo = StrictBooleanField(required=False, default=True)
+    activo = StrictBooleanField(required=False)
 
     class Meta:
         model = Persona
@@ -43,11 +52,12 @@ class PersonaEPSerializer(serializers.ModelSerializer):
     referente = ReferenteSerializer(write_only=True)
     direccion_id = serializers.IntegerField(read_only=True)
     referente_id = serializers.IntegerField(read_only=True)
-    activa_taller = StrictBooleanField(required=False, default=False)
-    escolaridad_completa = StrictBooleanField(required=False, default=False)
-    tiene_acompanante = StrictBooleanField(required=False, default=False)
-    tiene_cuidador = StrictBooleanField(required=False, default=False)
-    vive_solo = StrictBooleanField(required=False, default=False)
+    activo = StrictBooleanField(required=False)
+    activa_taller = StrictBooleanField(required=False)
+    escolaridad_completa = StrictBooleanField(required=False)
+    tiene_acompanante = StrictBooleanField(required=False)
+    tiene_cuidador = StrictBooleanField(required=False)
+    vive_solo = StrictBooleanField(required=False)
 
     class Meta:
         model = PersonaEP
@@ -74,7 +84,6 @@ class PersonaEPSerializer(serializers.ModelSerializer):
             'referente',
         )
         extra_kwargs = {
-            'activo': {'read_only': True},
             'sexo': {'required': False, 'allow_null': True},
             'fecha_nacimiento': {'required': False, 'allow_null': True},
         }
@@ -100,6 +109,25 @@ class PersonaEPSerializer(serializers.ModelSerializer):
             validated_data['referente'] = referente
             validated_data['activo'] = True
             return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            referente_data = validated_data.pop('referente', None)
+            direccion_data = validated_data.pop('direccion', None)
+
+            if referente_data is not None:
+                referente = instance.referente
+                referente_direccion_data = referente_data.pop('direccion', None)
+                if referente_direccion_data is not None:
+                    referente.direccion = _actualizar_direccion(referente.direccion, referente_direccion_data)
+                for campo, valor in referente_data.items():
+                    setattr(referente, campo, valor)
+                referente.save()
+
+            if direccion_data is not None:
+                instance.direccion = _actualizar_direccion(instance.direccion, direccion_data)
+
+            return super().update(instance, validated_data)
 
 
 class LocalidadSerializer(serializers.ModelSerializer):

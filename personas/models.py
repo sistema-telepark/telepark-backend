@@ -2,7 +2,7 @@ from django.db import models
 
 from core.managers import OrdenadoManager
 
-from .managers import NombreOrderedManager
+from .managers import NombreOrderedManager, PersonaManager
 
 
 class Persona(models.Model):
@@ -15,7 +15,7 @@ class Persona(models.Model):
     sexo = models.CharField(max_length=45, blank=True, null=True)
     fecha_nacimiento = models.DateField(blank=True, null=True)
 
-    objects = OrdenadoManager()
+    objects = PersonaManager()
 
     class Meta:
         db_table = 'personas_persona'
@@ -36,7 +36,7 @@ class PersonaEP(Persona):
     ocupacion_actual = models.CharField(max_length=45)
     referente = models.ForeignKey(Persona, models.PROTECT, related_name='+')
 
-    objects = OrdenadoManager()
+    objects = PersonaManager()
 
     class Meta:
         db_table = 'personas_persona_ep'
