@@ -50,8 +50,13 @@ def _resolver_localidades_por_departamento(valor):
     return {'departamento': valor}
 
 
+class SoftDeleteMixin:
+    def perform_destroy(self, instance):
+        Persona.objects.filter(pk=instance.pk).update(activo=False)
+
+
 @auto_tag_schema_view
-class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
+class PersonaViewSet(SoftDeleteMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
     manager = Persona.objects
     serializer_class = PersonaSerializer
@@ -59,7 +64,7 @@ class PersonaViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class PersonaEPViewSet(ModelPKMixin, viewsets.ModelViewSet):
+class PersonaEPViewSet(SoftDeleteMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
     manager = PersonaEP.objects
     serializer_class = PersonaEPSerializer

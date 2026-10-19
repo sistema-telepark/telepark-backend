@@ -68,7 +68,7 @@ class AsistenciaTaller(models.Model):
     id_asistencia_taller = models.AutoField(primary_key=True)
     estado = models.CharField(max_length=45)
     persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT, blank=True, null=True)
-    encuentro = models.ForeignKey(Encuentro, models.SET_NULL, blank=True, null=True)
+    encuentro = models.ForeignKey(Encuentro, models.PROTECT, blank=True, null=True)
 
     objects = AsistenciaTallerManager()
 

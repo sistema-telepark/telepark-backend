@@ -26,8 +26,8 @@ class Evento(models.Model):
     fecha_desde = models.DateField(blank=True, null=True)
     fecha_hasta = models.DateField(blank=True, null=True)
     motivo = models.CharField(max_length=256, blank=True, null=True)
-    persona_ep = models.ForeignKey('personas.PersonaEP', models.DO_NOTHING)
-    tipo_evento = models.ForeignKey(TipoEvento, models.DO_NOTHING)
+    persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)
+    tipo_evento = models.ForeignKey(TipoEvento, models.PROTECT)
 
     objects = EventoManager()
 

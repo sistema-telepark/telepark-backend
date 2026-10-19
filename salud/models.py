@@ -37,8 +37,8 @@ class Enfermedad(models.Model):
 class Diagnostico(models.Model):
     id_diagnostico = models.AutoField(primary_key=True)
     fecha = models.DateField()
-    persona_ep = models.ForeignKey('personas.PersonaEP', models.DO_NOTHING)
-    enfermedad = models.ForeignKey(Enfermedad, models.DO_NOTHING)
+    persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)
+    enfermedad = models.ForeignKey(Enfermedad, models.PROTECT)
 
     objects = DiagnosticoManager()
 
@@ -50,7 +50,7 @@ class Evolucion(models.Model):
     id_evolucion = models.AutoField(primary_key=True)
     escala_evolucion = models.IntegerField()
     fecha = models.DateField(blank=True, null=True)
-    persona_ep = models.ForeignKey('personas.PersonaEP', models.DO_NOTHING)
+    persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)
 
     objects = EvolucionManager()
 
@@ -76,8 +76,8 @@ class IndicacionMedicamento(models.Model):
     esta_vigente = models.BooleanField(default=False)
     fecha_prescripcion = models.DateField(blank=True, null=True)
     hora_de_toma = models.TimeField(blank=True, null=True)
-    persona_ep = models.ForeignKey('personas.PersonaEP', models.DO_NOTHING)
-    medicamento = models.ForeignKey(Medicamento, models.DO_NOTHING)
+    persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)
+    medicamento = models.ForeignKey(Medicamento, models.PROTECT)
 
     objects = IndicacionMedicamentoManager()
 

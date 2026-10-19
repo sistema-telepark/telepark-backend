@@ -10,7 +10,7 @@ class Persona(models.Model):
     nombre = models.CharField(max_length=45)
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=35)
-    direccion = models.ForeignKey('Direccion', models.DO_NOTHING, blank=True, null=True)
+    direccion = models.ForeignKey('Direccion', models.PROTECT, blank=True, null=True)
     activo = models.BooleanField(default=True)
     sexo = models.CharField(max_length=45, blank=True, null=True)
     fecha_nacimiento = models.DateField(blank=True, null=True)
@@ -23,7 +23,7 @@ class Persona(models.Model):
 
 class PersonaEP(Persona):
     persona_ptr = models.OneToOneField(
-        Persona, models.DO_NOTHING, db_column='id_persona', parent_link=True, primary_key=True
+        Persona, models.CASCADE, db_column='id_persona', parent_link=True, primary_key=True
     )
     activa_taller = models.BooleanField(default=False)
     escolaridad_completa = models.BooleanField(default=False)
@@ -34,7 +34,7 @@ class PersonaEP(Persona):
     vive_solo = models.BooleanField(default=False)
     ocupacion_previa = models.CharField(max_length=45)
     ocupacion_actual = models.CharField(max_length=45)
-    referente = models.ForeignKey(Persona, models.DO_NOTHING, related_name='+')
+    referente = models.ForeignKey(Persona, models.PROTECT, related_name='+')
 
     objects = OrdenadoManager()
 
@@ -48,7 +48,7 @@ class Direccion(models.Model):
     departamento = models.CharField(max_length=45, blank=True, null=True)
     numero = models.IntegerField(blank=True, null=True)
     piso = models.IntegerField(blank=True, null=True)
-    localidad = models.ForeignKey('Localidad', models.DO_NOTHING, blank=True, null=True)
+    localidad = models.ForeignKey('Localidad', models.PROTECT, blank=True, null=True)
 
     objects = OrdenadoManager()
 
@@ -60,7 +60,7 @@ class Localidad(models.Model):
     id_localidad = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=120)
     codigo_postal = models.IntegerField(null=True, blank=True)
-    departamento = models.ForeignKey('Departamento', models.DO_NOTHING, blank=True, null=True)
+    departamento = models.ForeignKey('Departamento', models.PROTECT, blank=True, null=True)
 
     objects = NombreOrderedManager()
 
@@ -83,7 +83,7 @@ class Provincia(models.Model):
 class Departamento(models.Model):
     id_departamento = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=120)
-    provincia = models.ForeignKey('Provincia', models.DO_NOTHING, blank=True, null=True)
+    provincia = models.ForeignKey('Provincia', models.PROTECT, blank=True, null=True)
 
     objects = NombreOrderedManager()
 
@@ -104,8 +104,8 @@ class TipoVinculo(models.Model):
 
 class Vinculo(models.Model):
     id_vinculo = models.AutoField(primary_key=True)
-    persona = models.ForeignKey(Persona, models.DO_NOTHING)
-    persona_ep = models.ForeignKey(PersonaEP, models.DO_NOTHING, related_name='+')
+    persona = models.ForeignKey(Persona, models.PROTECT)
+    persona_ep = models.ForeignKey(PersonaEP, models.PROTECT, related_name='+')
     tipo_vinculo = models.ForeignKey(TipoVinculo, models.PROTECT)
 
     objects = OrdenadoManager()
