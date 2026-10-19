@@ -12,7 +12,7 @@ class EventoManager(OrdenadoManager):
 
 class TipoEvento(models.Model):
     id_tipo_evento = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=45, blank=True, null=True)
+    nombre = models.CharField(max_length=45)
     desactiva_taller = models.BooleanField(default=False)
 
     objects = OrdenadoManager()

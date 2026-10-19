@@ -46,10 +46,6 @@ class AsistenciaTallerSerializer(serializers.ModelSerializer):
     class Meta:
         model = AsistenciaTaller
         fields = ('id_asistencia_taller', 'estado', 'persona_ep', 'encuentro')
-        extra_kwargs = {
-            'persona_ep': {'allow_null': True, 'required': False},
-            'encuentro': {'allow_null': True, 'required': False},
-        }
 
 
 class EncuentroFactorGlobalSerializer(serializers.ModelSerializer):
