@@ -29,6 +29,8 @@ class DireccionSerializer(serializers.ModelSerializer):
         model = Direccion
         fields = ('id_direccion', 'calle', 'departamento', 'numero', 'piso', 'localidad')
         extra_kwargs = {
+            'calle': {'required': True, 'allow_null': False, 'allow_blank': False},
+            'numero': {'required': True, 'allow_null': False},
             'localidad': {'allow_null': True, 'required': False},
             'departamento': {'allow_null': True, 'required': False},
             'piso': {'allow_null': True, 'required': False},

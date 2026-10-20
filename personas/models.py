@@ -44,9 +44,9 @@ class PersonaEP(Persona):
 
 class Direccion(models.Model):
     id_direccion = models.AutoField(primary_key=True)
-    calle = models.CharField(max_length=45, blank=True, null=True)
+    calle = models.CharField(max_length=45)
+    numero = models.IntegerField()
     departamento = models.CharField(max_length=45, blank=True, null=True)
-    numero = models.IntegerField(blank=True, null=True)
     piso = models.IntegerField(blank=True, null=True)
     localidad = models.ForeignKey('Localidad', models.PROTECT, blank=True, null=True)
 
