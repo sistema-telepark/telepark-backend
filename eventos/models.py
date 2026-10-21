@@ -12,7 +12,7 @@ class EventoManager(OrdenadoManager):
 
 class TipoEvento(models.Model):
     id_tipo_evento = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=45, blank=True, null=True)
+    nombre = models.CharField(max_length=45)
     desactiva_taller = models.BooleanField(default=False)
 
     objects = OrdenadoManager()
@@ -26,8 +26,8 @@ class Evento(models.Model):
     fecha_desde = models.DateField(blank=True, null=True)
     fecha_hasta = models.DateField(blank=True, null=True)
     motivo = models.CharField(max_length=256, blank=True, null=True)
-    persona_ep = models.ForeignKey('personas.PersonaEP', models.DO_NOTHING)
-    tipo_evento = models.ForeignKey(TipoEvento, models.DO_NOTHING)
+    persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)
+    tipo_evento = models.ForeignKey(TipoEvento, models.PROTECT)
 
     objects = EventoManager()
 

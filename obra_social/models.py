@@ -16,8 +16,8 @@ class ObraSocial(models.Model):
 
 class Cobertura(models.Model):
     id_cobertura = models.AutoField(primary_key=True)
-    persona_ep = models.ForeignKey('personas.PersonaEP', models.DO_NOTHING)
-    obra_social = models.ForeignKey(ObraSocial, models.DO_NOTHING)
+    persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)
+    obra_social = models.ForeignKey(ObraSocial, models.PROTECT)
 
     objects = OrdenadoManager()
 

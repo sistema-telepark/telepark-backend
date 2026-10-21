@@ -3,7 +3,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 from django.db import IntegrityError
-from django.db.models.deletion import ProtectedError
+from django.db.models.deletion import ProtectedError, RestrictedError
 from django.http import Http404
 from rest_framework import status
 from rest_framework.exceptions import NotAuthenticated, NotFound
@@ -99,8 +99,8 @@ def custom_exception_handler(exc, context):
             {'detail': DETAIL_NOT_FOUND, 'code': 'not_found', 'status': 404},
             status=status.HTTP_404_NOT_FOUND,
         )
-    if isinstance(exc, ProtectedError):
-        # Debe preceder a `IntegrityError`: ProtectedError es su subclase.
+    if isinstance(exc, (ProtectedError, RestrictedError)):
+        # Debe preceder a `IntegrityError`: ambas son sus subclases.
         return Response(
             {'detail': DETAIL_PROTECTED_ERROR, 'code': 'conflict', 'status': 409},
             status=status.HTTP_409_CONFLICT,

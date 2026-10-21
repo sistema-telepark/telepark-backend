@@ -173,7 +173,7 @@ SPECTACULAR_SETTINGS = {
     'TAGS': [
         {'name': 'sistema', 'description': 'Infraestructura del sistema — health check y documentación'},
         {'name': 'autenticacion', 'description': 'Autenticación y gestión de usuarios del sistema'},
-        {'name': 'personas', 'description': 'Gestión de personas, direcciones, localidades y parentescos'},
+        {'name': 'personas', 'description': 'Gestión de personas, vínculos, direcciones y datos geográficos'},
         {'name': 'salud', 'description': 'Diagnósticos, evoluciones, enfermedades y medicamentos'},
         {'name': 'eventos', 'description': 'Eventos y tipos de evento'},
         {'name': 'obra_social', 'description': 'Obras sociales y coberturas'},
