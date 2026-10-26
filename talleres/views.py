@@ -89,11 +89,54 @@ class EncuentroActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
+@extend_schema_view(
+    update=extend_schema(
+        responses={
+            200: AsistenciaTallerSerializer,
+            409: error_response(409, 'El par persona_ep + encuentro ya está ocupado por otra asistencia'),
+        },
+    ),
+    partial_update=extend_schema(
+        responses={
+            200: AsistenciaTallerSerializer,
+            409: error_response(409, 'El par persona_ep + encuentro ya está ocupado por otra asistencia'),
+        },
+    ),
+)
 class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = AsistenciaTaller.objects
     serializer_class = AsistenciaTallerSerializer
     permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary='Registrar asistencia de taller',
+        description=(
+            'Upsert sobre el par `persona_ep` + `encuentro`: si no existe la asistencia se crea (201); '
+            'si ya existe se actualiza únicamente `estado`, se conserva la fila y se responde 200.'
+        ),
+        responses={
+            201: AsistenciaTallerSerializer,
+            200: AsistenciaTallerSerializer,
+            400: error_response(400, 'Datos inválidos'),
+        },
+    )
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        datos = serializer.validated_data
+        asistencia, creada = self.manager.registrar_asistencia(datos['persona_ep'], datos['encuentro'], datos['estado'])
+        salida = self.get_serializer(asistencia)
+        codigo = status.HTTP_201_CREATED if creada else status.HTTP_200_OK
+        return Response(salida.data, status=codigo)
+
+    def perform_update(self, serializer):
+        actual = serializer.instance
+        actual.validar_disponibilidad(
+            serializer.validated_data.get('persona_ep', actual.persona_ep),
+            serializer.validated_data.get('encuentro', actual.encuentro),
+        )
+        serializer.save()
 
 
 @auto_tag_schema_view

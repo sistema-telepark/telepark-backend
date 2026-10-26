@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import IntegrityError, models, transaction
 
 from core.exceptions import ConflictError
 from core.managers import OrdenadoManager
@@ -9,6 +9,23 @@ class AsistenciaTallerManager(OrdenadoManager):
 
     def listar_ordenado(self):
         return self.all().order_by('persona_ep', 'id_asistencia_taller')
+
+    def registrar_asistencia(self, persona_ep, encuentro, estado):
+        """Crea la asistencia del par persona_ep + encuentro o actualiza su estado."""
+        try:
+            with transaction.atomic():
+                asistencia = self.select_for_update().filter(persona_ep=persona_ep, encuentro=encuentro).first()
+                if asistencia is None:
+                    return self.create(persona_ep=persona_ep, encuentro=encuentro, estado=estado), True
+                asistencia.estado = estado
+                asistencia.save(update_fields=['estado'])
+                return asistencia, False
+        except IntegrityError:
+            with transaction.atomic():
+                asistencia = self.select_for_update().get(persona_ep=persona_ep, encuentro=encuentro)
+                asistencia.estado = estado
+                asistencia.save(update_fields=['estado'])
+                return asistencia, False
 
 
 class Taller(models.Model):
@@ -72,8 +89,14 @@ class AsistenciaTaller(models.Model):
 
     objects = AsistenciaTallerManager()
 
+    def validar_disponibilidad(self, persona_ep, encuentro):
+        """Rechaza el par persona_ep + encuentro si otra fila ya lo ocupa."""
+        if AsistenciaTaller.objects.filter(persona_ep=persona_ep, encuentro=encuentro).exclude(pk=self.pk).exists():
+            raise ConflictError('Ya existe una asistencia para esa persona en el encuentro indicado')
+
     class Meta:
         db_table = 'talleres_asistencia_taller'
+        unique_together = (('persona_ep', 'encuentro'),)
 
 
 class EncuentroFactorGlobal(models.Model):

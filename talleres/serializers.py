@@ -46,6 +46,7 @@ class AsistenciaTallerSerializer(serializers.ModelSerializer):
     class Meta:
         model = AsistenciaTaller
         fields = ('id_asistencia_taller', 'estado', 'persona_ep', 'encuentro')
+        validators = []
 
 
 class EncuentroFactorGlobalSerializer(serializers.ModelSerializer):
