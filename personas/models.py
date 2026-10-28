@@ -112,4 +112,6 @@ class Vinculo(models.Model):
 
     class Meta:
         db_table = 'personas_vinculo'
-        unique_together = (('persona', 'persona_ep'),)
+        constraints = [
+            models.UniqueConstraint(fields=('persona', 'persona_ep'), name='unique_vinculo_persona_persona_ep'),
+        ]

@@ -27,4 +27,6 @@ Desktop.ini
 .DS_Store
 *.log
 
-
+# datos de prueba
+personas/seed.py
+personas/management/commands/poblar_demo.py
