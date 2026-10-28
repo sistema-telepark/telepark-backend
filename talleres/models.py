@@ -78,7 +78,9 @@ class EncuentroActividad(models.Model):
 
     class Meta:
         db_table = 'talleres_encuentro_actividad'
-        unique_together = (('actividad', 'encuentro'),)
+        constraints = [
+            models.UniqueConstraint(fields=('encuentro', 'actividad'), name='unique_encuentro_actividad_pair'),
+        ]
 
 
 class AsistenciaTaller(models.Model):
@@ -96,7 +98,11 @@ class AsistenciaTaller(models.Model):
 
     class Meta:
         db_table = 'talleres_asistencia_taller'
-        unique_together = (('persona_ep', 'encuentro'),)
+        constraints = [
+            models.UniqueConstraint(
+                fields=('persona_ep', 'encuentro'), name='unique_asistencia_taller_persona_ep_encuentro'
+            ),
+        ]
 
 
 class EncuentroFactorGlobal(models.Model):
@@ -108,7 +114,9 @@ class EncuentroFactorGlobal(models.Model):
 
     class Meta:
         db_table = 'talleres_encuentro_factor_global'
-        unique_together = (('encuentro', 'factor_global'),)
+        constraints = [
+            models.UniqueConstraint(fields=('encuentro', 'factor_global'), name='unique_encuentro_factor_global_pair'),
+        ]
 
 
 class FactorGlobal(models.Model):
