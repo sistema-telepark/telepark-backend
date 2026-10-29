@@ -51,18 +51,34 @@ def _resolver_localidades_por_departamento(valor):
     return {'departamento': valor}
 
 
+VALORES_ACTIVO = ('true', 'false')
+
+
+def _valor_activo(request):
+    """Traduce `?activo` a bool; `None` si el parámetro está ausente o no hay request."""
+    if request is None or 'activo' not in request.query_params:
+        return None
+    valor = request.query_params.get('activo')
+    if valor not in VALORES_ACTIVO:
+        raise ValidationError({'detail': f'El parámetro "activo" debe ser "true" o "false" (recibido: "{valor}").'})
+    return valor == 'true'
+
+
 class ActivoFilterMixin:
-    """Filtra por `?activo` con whitelist exacta, conservando la paginación global."""
+    """Filtra por `?activo` con whitelist exacta y desactiva la paginación cuando filtra."""
 
     def get_queryset(self):
         qs = super().get_queryset()
-        request = getattr(self, 'request', None)
-        if request is None or 'activo' not in request.query_params:
+        valor = _valor_activo(getattr(self, 'request', None))
+        if valor is None:
             return qs
-        valor = request.query_params.get('activo')
-        if valor not in ('true', 'false'):
-            raise ValidationError({'detail': f'El parámetro "activo" debe ser "true" o "false" (recibido: "{valor}").'})
-        return self.manager.filtrar_por_activo(valor == 'true')
+        return self.manager.filtrar_por_activo(valor)
+
+    def paginate_queryset(self, queryset):
+        if _valor_activo(getattr(self, 'request', None)) is not None:
+            # Filtro válido → array plano (paginación desactivada).
+            return None
+        return super().paginate_queryset(queryset)
 
 
 @auto_tag_schema_view
@@ -74,7 +90,10 @@ class ActivoFilterMixin:
                 type=bool,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description='Filtra personas por estado activo (true/false exactos). Sin el parámetro no se aplica filtro.',
+                description=(
+                    'Filtra personas por estado activo (true/false exactos). Con filtro válido la respuesta es un array '
+                    'plano completo (sin paginar); sin el parámetro se conserva el envelope paginado global.'
+                ),
             ),
         ],
     ),
@@ -95,7 +114,10 @@ class PersonaViewSet(ActivoFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
                 type=bool,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description='Filtra personas EP por estado activo (true/false exactos). Sin el parámetro no se aplica filtro.',
+                description=(
+                    'Filtra personas EP por estado activo (true/false exactos). Con filtro válido la respuesta es un '
+                    'array plano completo (sin paginar); sin el parámetro se conserva el envelope paginado global.'
+                ),
             ),
         ],
     ),
