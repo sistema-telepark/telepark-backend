@@ -1,7 +1,14 @@
+from django.apps import apps
 from django.db import IntegrityError, models, transaction
 
-from core.exceptions import ConflictError
+from core.exceptions import ConflictError, ValidationError
 from core.managers import OrdenadoManager
+
+ESTADOS_ASISTENCIA = (
+    ('Presente', 'Presente'),
+    ('Ausente', 'Ausente'),
+)
+ESTADO_ASISTENCIA_DEFAULT = 'Ausente'
 
 
 class AsistenciaTallerManager(OrdenadoManager):
@@ -10,8 +17,19 @@ class AsistenciaTallerManager(OrdenadoManager):
     def listar_ordenado(self):
         return self.all().order_by('persona_ep', 'id_asistencia_taller')
 
+    def listar_roster(self, encuentro):
+        """Filas del roster del encuentro, una por PersonaEP activa ordenada por PK."""
+        PersonaEP = apps.get_model('personas', 'PersonaEP')
+        estados = dict(self.filter(encuentro=encuentro).values_list('persona_ep_id', 'estado'))
+        personas = PersonaEP.objects.filtrar_por_activo(True).values_list('pk', flat=True)
+        return [
+            {'persona_ep': persona_ep, 'estado': estados.get(persona_ep, ESTADO_ASISTENCIA_DEFAULT)}
+            for persona_ep in personas
+        ]
+
     def registrar_asistencia(self, persona_ep, encuentro, estado):
         """Crea la asistencia del par persona_ep + encuentro o actualiza su estado."""
+        AsistenciaTaller.validar_estado(estado)
         try:
             with transaction.atomic():
                 asistencia = self.select_for_update().filter(persona_ep=persona_ep, encuentro=encuentro).first()
@@ -85,11 +103,16 @@ class EncuentroActividad(models.Model):
 
 class AsistenciaTaller(models.Model):
     id_asistencia_taller = models.AutoField(primary_key=True)
-    estado = models.CharField(max_length=45)
+    estado = models.CharField(max_length=45, choices=ESTADOS_ASISTENCIA)
     persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)
     encuentro = models.ForeignKey(Encuentro, models.PROTECT)
 
     objects = AsistenciaTallerManager()
+
+    @staticmethod
+    def validar_estado(estado):
+        if estado not in dict(ESTADOS_ASISTENCIA):
+            raise ValidationError(f'Estado inválido: "{estado}". Valores permitidos: Presente, Ausente.')
 
     def validar_disponibilidad(self, persona_ep, encuentro):
         """Rechaza el par persona_ep + encuentro si otra fila ya lo ocupa."""

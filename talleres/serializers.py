@@ -3,6 +3,7 @@ from rest_framework import serializers
 from core.fields import StrictBooleanField
 
 from .models import (
+    ESTADOS_ASISTENCIA,
     Actividad,
     AsistenciaTaller,
     Encuentro,
@@ -43,10 +44,17 @@ class EncuentroActividadSerializer(serializers.ModelSerializer):
 
 
 class AsistenciaTallerSerializer(serializers.ModelSerializer):
+    estado = serializers.ChoiceField(choices=ESTADOS_ASISTENCIA, required=True)
+
     class Meta:
         model = AsistenciaTaller
         fields = ('id_asistencia_taller', 'estado', 'persona_ep', 'encuentro')
         validators = []
+
+
+class RosterAsistenciaSerializer(serializers.Serializer):
+    persona_ep = serializers.IntegerField()
+    estado = serializers.CharField()
 
 
 class EncuentroFactorGlobalSerializer(serializers.ModelSerializer):

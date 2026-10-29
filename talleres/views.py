@@ -1,5 +1,7 @@
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
+from rest_framework.exceptions import NotFound
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -25,6 +27,7 @@ from .serializers import (
     EncuentroFactorGlobalSerializer,
     EncuentroSerializer,
     FactorGlobalSerializer,
+    RosterAsistenciaSerializer,
     TallerSerializer,
     UnidadObservacionSerializer,
     ValorVariableUOSerializer,
@@ -90,6 +93,17 @@ class EncuentroActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 @auto_tag_schema_view
 @extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='encuentro',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra asistencias de taller por encuentro (FK encuentro). Con filtro activo la respuesta es array plano.',
+            ),
+        ],
+    ),
     update=extend_schema(
         responses={
             200: AsistenciaTallerSerializer,
@@ -103,11 +117,12 @@ class EncuentroActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
         },
     ),
 )
-class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+class AsistenciaTallerViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = AsistenciaTaller.objects
     serializer_class = AsistenciaTallerSerializer
     permission_classes = [IsAuthenticated]
+    cascade_lookups = {'encuentro': 'encuentro'}
 
     @extend_schema(
         summary='Registrar asistencia de taller',
@@ -137,6 +152,25 @@ class AsistenciaTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
             serializer.validated_data.get('encuentro', actual.encuentro),
         )
         serializer.save()
+
+
+@extend_schema(
+    tags=['talleres'],
+    responses={
+        200: RosterAsistenciaSerializer(many=True),
+        404: error_response(404, 'Encuentro no encontrado'),
+    },
+)
+class RosterEncuentroAsistenciasView(NoPaginationMixin, GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RosterAsistenciaSerializer
+    queryset = AsistenciaTaller.objects.none()
+
+    def get(self, request, encuentro_pk):
+        encuentro = Encuentro.objects.filter(pk=encuentro_pk).first()
+        if encuentro is None:
+            raise NotFound('No encontrado')
+        return Response(self.get_serializer(AsistenciaTaller.objects.listar_roster(encuentro), many=True).data)
 
 
 @auto_tag_schema_view
