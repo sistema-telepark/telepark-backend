@@ -5,6 +5,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from core.views import api_root, health_check
 from obra_social.views import CoberturaPorPersonaEPView
 from salud.views import DiagnosticoPorPersonaEPView, EvolucionPorPersonaEPView, IndicacionPorPersonaEPView
+from talleres.views import RosterEncuentroAsistenciasView
 
 urlpatterns = [
     path('', RedirectView.as_view(pattern_name='api-v1-root', permanent=False), name='root-redirect'),
@@ -38,5 +39,10 @@ urlpatterns = [
         'api/v1/personas-ep/<int:persona_ep_pk>/coberturas',
         CoberturaPorPersonaEPView.as_view(),
         name='personas-ep-coberturas',
+    ),
+    path(
+        'api/v1/encuentros/<int:encuentro_pk>/asistencias',
+        RosterEncuentroAsistenciasView.as_view(),
+        name='encuentros-asistencias',
     ),
 ]
