@@ -70,11 +70,25 @@ class EncuentroViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class EncuentroTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='encuentro',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra encuentros-talleres por encuentro (FK encuentro). Con filtro activo la respuesta es array plano.',
+            ),
+        ],
+    ),
+)
+class EncuentroTallerViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = EncuentroTaller.objects
     serializer_class = EncuentroTallerSerializer
     permission_classes = [IsAuthenticated]
+    cascade_lookups = {'encuentro': 'encuentro'}
 
 
 @auto_tag_schema_view

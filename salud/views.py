@@ -70,6 +70,7 @@ class IndicacionViewSet(ModelPKMixin, viewsets.ModelViewSet):
     tags=['salud'],
     responses={
         200: DiagnosticoEPSerializer(many=True),
+        400: error_response(400, 'Identificador de persona no numérico'),
         404: error_response(404, 'PersonaEP no encontrada'),
     },
 )
@@ -89,6 +90,7 @@ class DiagnosticoPorPersonaEPView(NoPaginationMixin, PersonaEPSubresourceMixin, 
     tags=['salud'],
     responses={
         200: EvolucionSerializer(many=True),
+        400: error_response(400, 'Identificador de persona no numérico'),
         404: error_response(404, 'PersonaEP no encontrada'),
     },
 )
@@ -108,6 +110,7 @@ class EvolucionPorPersonaEPView(NoPaginationMixin, PersonaEPSubresourceMixin, Ge
     tags=['salud'],
     responses={
         200: IndicacionEPSerializer(many=True),
+        400: error_response(400, 'Identificador de persona no numérico'),
         404: error_response(404, 'PersonaEP no encontrada'),
     },
 )

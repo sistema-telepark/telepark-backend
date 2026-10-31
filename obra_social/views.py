@@ -36,6 +36,7 @@ class CoberturaViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     tags=['obra_social'],
     responses={
         200: CoberturaEPSerializer(many=True),
+        400: error_response(400, 'Identificador de persona no numérico'),
         404: error_response(404, 'PersonaEP no encontrada'),
     },
 )
