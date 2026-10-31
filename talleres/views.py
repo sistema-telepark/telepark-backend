@@ -65,6 +65,9 @@ class EncuentroViewSet(ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = EncuentroSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('talleres')
+
 
 @auto_tag_schema_view
 class EncuentroTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
@@ -95,11 +98,25 @@ class ActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
-class EncuentroActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='encuentro',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra encuentros-actividades por encuentro (FK encuentro). Con filtro activo la respuesta es array plano.',
+            ),
+        ],
+    ),
+)
+class EncuentroActividadViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = EncuentroActividad.objects
     serializer_class = EncuentroActividadSerializer
     permission_classes = [IsAuthenticated]
+    cascade_lookups = {'encuentro': 'encuentro'}
 
 
 @auto_tag_schema_view
