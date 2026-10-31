@@ -2,6 +2,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from core.fields import StrictBooleanField
+from core.serializers import StrictModelSerializer
 
 from .models import Departamento, Direccion, Localidad, Persona, PersonaEP, Provincia, TipoVinculo, Vinculo
 
@@ -15,7 +16,7 @@ def _actualizar_direccion(direccion, datos):
     return direccion
 
 
-class PersonaSerializer(serializers.ModelSerializer):
+class PersonaSerializer(StrictModelSerializer):
     activo = StrictBooleanField(required=False)
 
     class Meta:
@@ -24,7 +25,7 @@ class PersonaSerializer(serializers.ModelSerializer):
         extra_kwargs = {'direccion': {'allow_null': True, 'required': False}}
 
 
-class DireccionSerializer(serializers.ModelSerializer):
+class DireccionSerializer(StrictModelSerializer):
     class Meta:
         model = Direccion
         fields = ('id_direccion', 'calle', 'departamento', 'numero', 'piso', 'localidad')
@@ -37,7 +38,7 @@ class DireccionSerializer(serializers.ModelSerializer):
         }
 
 
-class ReferenteSerializer(serializers.ModelSerializer):
+class ReferenteSerializer(StrictModelSerializer):
     direccion = DireccionSerializer(write_only=True, required=False, allow_null=True)
 
     class Meta:
@@ -49,7 +50,7 @@ class ReferenteSerializer(serializers.ModelSerializer):
         }
 
 
-class PersonaEPSerializer(serializers.ModelSerializer):
+class PersonaEPSerializer(StrictModelSerializer):
     direccion = DireccionSerializer(write_only=True, required=False, allow_null=True)
     referente = ReferenteSerializer(write_only=True)
     direccion_id = serializers.IntegerField(read_only=True)
@@ -132,20 +133,20 @@ class PersonaEPSerializer(serializers.ModelSerializer):
             return super().update(instance, validated_data)
 
 
-class LocalidadSerializer(serializers.ModelSerializer):
+class LocalidadSerializer(StrictModelSerializer):
     class Meta:
         model = Localidad
         fields = ('id_localidad', 'nombre', 'codigo_postal', 'departamento')
         extra_kwargs = {'departamento': {'allow_null': True, 'required': False}}
 
 
-class ProvinciaSerializer(serializers.ModelSerializer):
+class ProvinciaSerializer(StrictModelSerializer):
     class Meta:
         model = Provincia
         fields = ('id_provincia', 'nombre')
 
 
-class DepartamentoSerializer(serializers.ModelSerializer):
+class DepartamentoSerializer(StrictModelSerializer):
     provincia_nombre = serializers.CharField(source='provincia.nombre', read_only=True, allow_null=True)
 
     class Meta:
@@ -163,13 +164,13 @@ class DepartamentoSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class TipoVinculoSerializer(serializers.ModelSerializer):
+class TipoVinculoSerializer(StrictModelSerializer):
     class Meta:
         model = TipoVinculo
         fields = ('id_tipo_vinculo', 'nombre')
 
 
-class VinculoSerializer(serializers.ModelSerializer):
+class VinculoSerializer(StrictModelSerializer):
     class Meta:
         model = Vinculo
         fields = ('id_vinculo', 'persona', 'persona_ep', 'tipo_vinculo')

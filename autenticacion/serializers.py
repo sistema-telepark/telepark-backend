@@ -1,12 +1,14 @@
 from rest_framework import serializers
 
+from core.serializers import StrictSerializer
 
-class LoginSerializer(serializers.Serializer):
+
+class LoginSerializer(StrictSerializer):
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
 
-class CreateUserSerializer(serializers.Serializer):
+class CreateUserSerializer(StrictSerializer):
     user = serializers.CharField(required=True)
     email = serializers.CharField(required=True)
     first_name = serializers.CharField(required=True)
@@ -23,7 +25,7 @@ class CreateUserSerializer(serializers.Serializer):
         return attrs
 
 
-class UpdateUserSerializer(serializers.Serializer):
+class UpdateUserSerializer(StrictSerializer):
     user = serializers.CharField(required=False, help_text='Obsoleto — el ID del usuario se toma de la URL')
     email = serializers.CharField(required=False)
     first_name = serializers.CharField(required=False)
@@ -40,7 +42,7 @@ class UpdateUserSerializer(serializers.Serializer):
         return attrs
 
 
-class RoleChangeSerializer(serializers.Serializer):
+class RoleChangeSerializer(StrictSerializer):
     is_superuser = serializers.BooleanField()
 
 

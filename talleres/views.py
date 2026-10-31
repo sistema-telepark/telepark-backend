@@ -5,6 +5,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from core.exceptions import ValidationError
 from core.mixins import CascadeFilterMixin, ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 from core.schema import error_response
 
@@ -168,6 +169,7 @@ class AsistenciaTallerViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelVi
     tags=['talleres'],
     responses={
         200: RosterAsistenciaSerializer(many=True),
+        400: error_response(400, 'Identificador de encuentro no numérico'),
         404: error_response(404, 'Encuentro no encontrado'),
     },
 )
@@ -177,7 +179,11 @@ class RosterEncuentroAsistenciasView(NoPaginationMixin, GenericAPIView):
     queryset = AsistenciaTaller.objects.none()
 
     def get(self, request, encuentro_pk):
-        encuentro = Encuentro.objects.filter(pk=encuentro_pk).first()
+        try:
+            encuentro_id = int(encuentro_pk)
+        except TypeError, ValueError:
+            raise ValidationError('El identificador del encuentro debe ser numérico') from None
+        encuentro = Encuentro.objects.filter(pk=encuentro_id).first()
         if encuentro is None:
             raise NotFound('No encontrado')
         return Response(self.get_serializer(AsistenciaTaller.objects.listar_roster(encuentro), many=True).data)

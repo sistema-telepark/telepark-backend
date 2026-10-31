@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from core.fields import StrictBooleanField
+from core.serializers import StrictModelSerializer
 
 from .models import (
     Diagnostico,
@@ -11,19 +10,19 @@ from .models import (
 )
 
 
-class EvolucionSerializer(serializers.ModelSerializer):
+class EvolucionSerializer(StrictModelSerializer):
     class Meta:
         model = Evolucion
         fields = ('id_evolucion', 'escala_evolucion', 'fecha', 'persona_ep')
 
 
-class EnfermedadSerializer(serializers.ModelSerializer):
+class EnfermedadSerializer(StrictModelSerializer):
     class Meta:
         model = Enfermedad
         fields = ('id_enfermedad', 'nombre')
 
 
-class DiagnosticoSerializer(serializers.ModelSerializer):
+class DiagnosticoSerializer(StrictModelSerializer):
     class Meta:
         model = Diagnostico
         fields = ('id_diagnostico', 'fecha', 'persona_ep', 'enfermedad')
@@ -36,7 +35,7 @@ class DiagnosticoEPSerializer(DiagnosticoSerializer):
         pass
 
 
-class MedicamentoSerializer(serializers.ModelSerializer):
+class MedicamentoSerializer(StrictModelSerializer):
     es_antiparkinsoniano = StrictBooleanField(required=False, default=False)
     es_levodopa = StrictBooleanField(required=False, default=False)
 
@@ -45,7 +44,7 @@ class MedicamentoSerializer(serializers.ModelSerializer):
         fields = ('id_medicamento', 'nombre', 'es_antiparkinsoniano', 'es_levodopa')
 
 
-class IndicacionSerializer(serializers.ModelSerializer):
+class IndicacionSerializer(StrictModelSerializer):
     esta_vigente = StrictBooleanField(required=False, default=False)
 
     class Meta:

@@ -41,7 +41,7 @@ urlpatterns = [
         name='personas-ep-coberturas',
     ),
     path(
-        'api/v1/encuentros/<int:encuentro_pk>/asistencias',
+        'api/v1/encuentros/<str:encuentro_pk>/asistencias',
         RosterEncuentroAsistenciasView.as_view(),
         name='encuentros-asistencias',
     ),
