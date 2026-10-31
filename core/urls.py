@@ -21,22 +21,22 @@ urlpatterns = [
     path('', include('obra_social.urls')),
     path('', include('talleres.urls')),
     path(
-        'api/v1/personas-ep/<int:persona_ep_pk>/diagnosticos',
+        'api/v1/personas-ep/<str:persona_ep_pk>/diagnosticos',
         DiagnosticoPorPersonaEPView.as_view(),
         name='personas-ep-diagnosticos',
     ),
     path(
-        'api/v1/personas-ep/<int:persona_ep_pk>/evoluciones',
+        'api/v1/personas-ep/<str:persona_ep_pk>/evoluciones',
         EvolucionPorPersonaEPView.as_view(),
         name='personas-ep-evoluciones',
     ),
     path(
-        'api/v1/personas-ep/<int:persona_ep_pk>/indicaciones',
+        'api/v1/personas-ep/<str:persona_ep_pk>/indicaciones',
         IndicacionPorPersonaEPView.as_view(),
         name='personas-ep-indicaciones',
     ),
     path(
-        'api/v1/personas-ep/<int:persona_ep_pk>/coberturas',
+        'api/v1/personas-ep/<str:persona_ep_pk>/coberturas',
         CoberturaPorPersonaEPView.as_view(),
         name='personas-ep-coberturas',
     ),

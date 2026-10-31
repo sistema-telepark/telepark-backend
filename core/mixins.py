@@ -4,6 +4,8 @@ from django.apps import apps
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.exceptions import NotFound, ValidationError
 
+from core.exceptions import ValidationError as DomainValidationError
+
 _NUMERIC_RE = re.compile(r'^-?\d+$')
 
 
@@ -32,9 +34,13 @@ class PersonaEPSubresourceMixin:
     """Valida la existencia del PersonaEP antes de filtrar sub-recursos."""
 
     def validar_persona_ep(self, persona_ep_pk):
+        try:
+            persona_id = int(persona_ep_pk)
+        except TypeError, ValueError:
+            raise DomainValidationError('El identificador de la persona debe ser numérico') from None
         # `apps.get_model` evita el import circular core → personas.
         PersonaEP = apps.get_model('personas', 'PersonaEP')
-        if not PersonaEP.objects.filter(pk=persona_ep_pk).exists():
+        if not PersonaEP.objects.filter(pk=persona_id).exists():
             raise NotFound('No encontrado')
 
 
