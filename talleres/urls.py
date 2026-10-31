@@ -5,6 +5,7 @@ from .views import (
     AsistenciaTallerViewSet,
     EncuentroActividadViewSet,
     EncuentroFactorGlobalViewSet,
+    EncuentroTallerViewSet,
     EncuentroViewSet,
     FactorGlobalViewSet,
     TallerViewSet,
@@ -17,6 +18,7 @@ router = SimpleRouter(trailing_slash=False)
 
 router.register(r'api/v1/talleres', TallerViewSet, basename='talleres')
 router.register(r'api/v1/encuentros', EncuentroViewSet, basename='encuentros')
+router.register(r'api/v1/encuentros-talleres', EncuentroTallerViewSet, basename='encuentros-talleres')
 router.register(r'api/v1/actividades', ActividadViewSet, basename='actividades')
 router.register(r'api/v1/encuentros-actividades', EncuentroActividadViewSet, basename='encuentros-actividades')
 router.register(r'api/v1/asistencias-taller', AsistenciaTallerViewSet, basename='asistencias-taller')

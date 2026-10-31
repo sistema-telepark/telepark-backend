@@ -9,6 +9,7 @@ from .models import (
     Encuentro,
     EncuentroActividad,
     EncuentroFactorGlobal,
+    EncuentroTaller,
     FactorGlobal,
     Taller,
     UnidadObservacion,
@@ -23,12 +24,19 @@ class TallerSerializer(serializers.ModelSerializer):
         fields = ('id_taller', 'tipo_taller')
 
 
+class EncuentroTallerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EncuentroTaller
+        fields = ('id_encuentro_taller', 'encuentro', 'taller')
+
+
 class EncuentroSerializer(serializers.ModelSerializer):
     virtual = StrictBooleanField(required=False, default=False)
+    talleres = EncuentroTallerSerializer(many=True, read_only=True)
 
     class Meta:
         model = Encuentro
-        fields = ('id_encuentro', 'fecha', 'virtual', 'taller')
+        fields = ('id_encuentro', 'fecha', 'virtual', 'talleres')
 
 
 class ActividadSerializer(serializers.ModelSerializer):

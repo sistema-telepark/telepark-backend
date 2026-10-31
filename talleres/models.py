@@ -53,7 +53,7 @@ class Taller(models.Model):
     objects = OrdenadoManager()
 
     def validar_borrado(self):
-        if self.encuentro_set.exists() or self.actividad_set.exists():
+        if self.encuentros_talleres.exists() or self.actividad_set.exists():
             raise ConflictError('No se puede eliminar un taller con encuentros o actividades asociados')
 
     class Meta:
@@ -64,12 +64,25 @@ class Encuentro(models.Model):
     id_encuentro = models.AutoField(primary_key=True)
     fecha = models.DateField()
     virtual = models.BooleanField(default=False)
-    taller = models.ForeignKey(Taller, models.PROTECT)
 
     objects = OrdenadoManager()
 
     class Meta:
         db_table = 'talleres_encuentro'
+
+
+class EncuentroTaller(models.Model):
+    id_encuentro_taller = models.AutoField(primary_key=True)
+    encuentro = models.ForeignKey(Encuentro, models.CASCADE, related_name='talleres')
+    taller = models.ForeignKey(Taller, models.PROTECT, related_name='encuentros_talleres')
+
+    objects = OrdenadoManager()
+
+    class Meta:
+        db_table = 'talleres_encuentro_taller'
+        constraints = [
+            models.UniqueConstraint(fields=('encuentro', 'taller'), name='unique_encuentro_taller_pair'),
+        ]
 
 
 class Actividad(models.Model):

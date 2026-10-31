@@ -14,6 +14,7 @@ from .models import (
     Encuentro,
     EncuentroActividad,
     EncuentroFactorGlobal,
+    EncuentroTaller,
     FactorGlobal,
     Taller,
     UnidadObservacion,
@@ -26,6 +27,7 @@ from .serializers import (
     EncuentroActividadSerializer,
     EncuentroFactorGlobalSerializer,
     EncuentroSerializer,
+    EncuentroTallerSerializer,
     FactorGlobalSerializer,
     RosterAsistenciaSerializer,
     TallerSerializer,
@@ -60,6 +62,14 @@ class EncuentroViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = Encuentro.objects
     serializer_class = EncuentroSerializer
+    permission_classes = [IsAuthenticated]
+
+
+@auto_tag_schema_view
+class EncuentroTallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
+    app_tag = 'talleres'
+    manager = EncuentroTaller.objects
+    serializer_class = EncuentroTallerSerializer
     permission_classes = [IsAuthenticated]
 
 
