@@ -183,6 +183,7 @@ SPECTACULAR_SETTINGS = {
     'POSTPROCESSING_HOOKS': [
         'drf_spectacular.hooks.postprocess_schema_enums',
         'core.schema.agregar_respuestas_autenticacion',
+        'core.schema.agregar_respuesta_validacion',
     ],
 }
 

@@ -168,6 +168,7 @@ RUTAS_PUBLICAS = frozenset(
 )
 
 _METODOS_HTTP = ('get', 'post', 'put', 'patch', 'delete', 'options', 'head')
+_METODOS_CON_CUERPO = ('post', 'put', 'patch')
 
 
 def _respuesta_error(schema, description):
@@ -188,4 +189,16 @@ def agregar_respuestas_autenticacion(result, generator, request, public):
             respuestas = operacion.setdefault('responses', {})
             respuestas.setdefault('401', _respuesta_error(ERROR_401_SCHEMA, 'No autenticado'))
             respuestas.setdefault('403', _respuesta_error(ERROR_403_SCHEMA, 'Permiso denegado'))
+    return result
+
+
+def agregar_respuesta_validacion(result, generator, request, public):
+    """Agrega 400 a las operaciones de escritura con requestBody."""
+    for operaciones in result.get('paths', {}).values():
+        for metodo in _METODOS_CON_CUERPO:
+            operacion = operaciones.get(metodo)
+            if operacion is None or 'requestBody' not in operacion:
+                continue
+            respuestas = operacion.setdefault('responses', {})
+            respuestas.setdefault('400', _respuesta_error(ERROR_400_SCHEMA, 'Datos inválidos'))
     return result

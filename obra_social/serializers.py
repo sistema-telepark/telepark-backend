@@ -1,11 +1,10 @@
-from rest_framework import serializers
-
 from core.fields import StrictBooleanField
+from core.serializers import StrictModelSerializer
 
 from .models import Cobertura, ObraSocial
 
 
-class ObraSocialSerializer(serializers.ModelSerializer):
+class ObraSocialSerializer(StrictModelSerializer):
     es_estatal = StrictBooleanField(required=False, default=False)
 
     class Meta:
@@ -13,7 +12,7 @@ class ObraSocialSerializer(serializers.ModelSerializer):
         fields = ('id_obra_social', 'nombre', 'es_estatal')
 
 
-class CoberturaSerializer(serializers.ModelSerializer):
+class CoberturaSerializer(StrictModelSerializer):
     class Meta:
         model = Cobertura
         fields = ('id_cobertura', 'persona_ep', 'obra_social')

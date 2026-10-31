@@ -1,11 +1,10 @@
-from rest_framework import serializers
-
 from core.fields import StrictBooleanField
+from core.serializers import StrictModelSerializer
 
 from .models import Evento, TipoEvento
 
 
-class TipoEventoSerializer(serializers.ModelSerializer):
+class TipoEventoSerializer(StrictModelSerializer):
     desactiva_taller = StrictBooleanField(required=False, default=False)
 
     class Meta:
@@ -13,7 +12,7 @@ class TipoEventoSerializer(serializers.ModelSerializer):
         fields = ('id_tipo_evento', 'nombre', 'desactiva_taller')
 
 
-class EventoSerializer(serializers.ModelSerializer):
+class EventoSerializer(StrictModelSerializer):
     tipo_evento_detalle = TipoEventoSerializer(many=False, read_only=True, source='tipo_evento')
 
     class Meta:
