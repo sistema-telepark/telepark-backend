@@ -75,7 +75,7 @@ class PersonaEPSerializer(StrictModelSerializer):
             'fecha_nacimiento',
             'activa_taller',
             'escolaridad_completa',
-            'fecha_inicio',
+            'fecha_ingreso',
             'maxima_escolaridad_alcanzada',
             'tiene_acompanante',
             'tiene_cuidador',
@@ -89,6 +89,7 @@ class PersonaEPSerializer(StrictModelSerializer):
         extra_kwargs = {
             'sexo': {'required': False, 'allow_null': True},
             'fecha_nacimiento': {'required': False, 'allow_null': True},
+            'fecha_ingreso': {'required': False},
         }
 
     def create(self, validated_data):
