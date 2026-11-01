@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from core.managers import OrdenadoManager
 
@@ -27,7 +28,7 @@ class PersonaEP(Persona):
     )
     activa_taller = models.BooleanField(default=False)
     escolaridad_completa = models.BooleanField(default=False)
-    fecha_inicio = models.DateTimeField()
+    fecha_ingreso = models.DateField(default=timezone.localdate)
     maxima_escolaridad_alcanzada = models.CharField(max_length=45, blank=True, null=True)
     tiene_acompanante = models.BooleanField(default=False)
     tiene_cuidador = models.BooleanField(default=False)
