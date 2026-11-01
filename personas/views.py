@@ -11,6 +11,7 @@ from core.mixins import (
 )
 from core.permission import AdminOnlyForDelete
 
+from .managers import CAMPOS_ORDEN_PERSONA
 from .models import (
     Departamento,
     Direccion,
@@ -53,6 +54,9 @@ def _resolver_localidades_por_departamento(valor):
 
 VALORES_ACTIVO = ('true', 'false')
 
+VALORES_ORDERING = {campo: (campo, False) for campo in CAMPOS_ORDEN_PERSONA}
+VALORES_ORDERING |= {f'-{campo}': (campo, True) for campo in CAMPOS_ORDEN_PERSONA}
+
 
 def _valor_activo(request):
     """Traduce `?activo` a bool; `None` si el parámetro está ausente o no hay request."""
@@ -64,15 +68,32 @@ def _valor_activo(request):
     return valor == 'true'
 
 
+def _valor_ordering(request):
+    """Traduce `?ordering` a (campo, descendente); `None` si está ausente o no hay request."""
+    if request is None or 'ordering' not in request.query_params:
+        return None
+    valor = request.query_params.get('ordering')
+    orden = VALORES_ORDERING.get(valor)
+    if orden is None:
+        opciones = ', '.join(VALORES_ORDERING)
+        raise ValidationError({'detail': f'El parámetro "ordering" debe ser uno de: {opciones} (recibido: "{valor}").'})
+    return orden
+
+
 class ActivoFilterMixin:
-    """Filtra por `?activo` con whitelist exacta y desactiva la paginación cuando filtra."""
+    """Filtra por `?activo`, ordena por `?ordering` y desactiva la paginación cuando filtra."""
 
     def get_queryset(self):
+        request = getattr(self, 'request', None)
         qs = super().get_queryset()
-        valor = _valor_activo(getattr(self, 'request', None))
-        if valor is None:
-            return qs
-        return self.manager.filtrar_por_activo(valor)
+        valor = _valor_activo(request)
+        if valor is not None:
+            qs = self.manager.filtrar_por_activo(valor)
+        orden = _valor_ordering(request)
+        if orden is not None:
+            campo, descendente = orden
+            qs = self.manager.ordenar_por(campo, descendente, qs)
+        return qs
 
     def paginate_queryset(self, queryset):
         if _valor_activo(getattr(self, 'request', None)) is not None:
@@ -93,6 +114,17 @@ class ActivoFilterMixin:
                 description=(
                     'Filtra personas por estado activo (true/false exactos). Con filtro válido la respuesta es un array '
                     'plano completo (sin paginar); sin el parámetro se conserva el envelope paginado global.'
+                ),
+            ),
+            OpenApiParameter(
+                name='ordering',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                enum=list(VALORES_ORDERING),
+                description=(
+                    'Ordena personas por apellido o nombre; el prefijo "-" invierte la dirección. Aplica tanto al '
+                    'envelope paginado como al array plano con "activo". Sin el parámetro se conserva el orden por PK.'
                 ),
             ),
         ],
@@ -117,6 +149,17 @@ class PersonaViewSet(ActivoFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
                 description=(
                     'Filtra personas EP por estado activo (true/false exactos). Con filtro válido la respuesta es un '
                     'array plano completo (sin paginar); sin el parámetro se conserva el envelope paginado global.'
+                ),
+            ),
+            OpenApiParameter(
+                name='ordering',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                enum=list(VALORES_ORDERING),
+                description=(
+                    'Ordena personas EP por apellido o nombre; el prefijo "-" invierte la dirección. Aplica tanto al '
+                    'envelope paginado como al array plano con "activo". Sin el parámetro se conserva el orden por PK.'
                 ),
             ),
         ],
