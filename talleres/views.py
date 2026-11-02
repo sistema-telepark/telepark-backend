@@ -9,6 +9,7 @@ from core.exceptions import ValidationError
 from core.mixins import CascadeFilterMixin, ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 from core.schema import error_response
 
+from .managers import CAMPOS_ORDEN_ENCUENTRO
 from .models import (
     Actividad,
     AsistenciaTaller,
@@ -37,6 +38,21 @@ from .serializers import (
     VariableUOSerializer,
 )
 
+VALORES_ORDERING = {campo: (campo, False) for campo in CAMPOS_ORDEN_ENCUENTRO}
+VALORES_ORDERING |= {f'-{campo}': (campo, True) for campo in CAMPOS_ORDEN_ENCUENTRO}
+
+
+def _valor_ordering(request):
+    """Traduce `?ordering` a (campo, descendente); `None` si está ausente o no hay request."""
+    if request is None or 'ordering' not in request.query_params:
+        return None
+    valor = request.query_params.get('ordering')
+    orden = VALORES_ORDERING.get(valor)
+    if orden is None:
+        opciones = ', '.join(VALORES_ORDERING)
+        raise ValidationError({'detail': f'El parámetro "ordering" debe ser uno de: {opciones} (recibido: "{valor}").'})
+    return orden
+
 
 @auto_tag_schema_view
 class TallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
@@ -59,6 +75,23 @@ class TallerViewSet(ModelPKMixin, viewsets.ModelViewSet):
 
 
 @auto_tag_schema_view
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='ordering',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                enum=list(VALORES_ORDERING),
+                description=(
+                    'Ordena encuentros por fecha; el prefijo "-" invierte la dirección. '
+                    'Desempata por PK ascendente. Sin el parámetro se conserva el orden por PK.'
+                ),
+            ),
+        ],
+    ),
+)
 class EncuentroViewSet(ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
     manager = Encuentro.objects
@@ -66,7 +99,12 @@ class EncuentroViewSet(ModelPKMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related('talleres')
+        qs = super().get_queryset()
+        orden = _valor_ordering(getattr(self, 'request', None))
+        if orden is not None:
+            campo, descendente = orden
+            qs = self.manager.ordenar_por(campo, descendente, qs)
+        return qs.prefetch_related('talleres')
 
 
 @auto_tag_schema_view
