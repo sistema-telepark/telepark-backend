@@ -4,6 +4,8 @@ from django.db import IntegrityError, models, transaction
 from core.exceptions import ConflictError, ValidationError
 from core.managers import OrdenadoManager
 
+from .managers import EncuentroManager
+
 ESTADOS_ASISTENCIA = (
     ('Presente', 'Presente'),
     ('Ausente', 'Ausente'),
@@ -65,7 +67,7 @@ class Encuentro(models.Model):
     fecha = models.DateField()
     virtual = models.BooleanField(default=False)
 
-    objects = OrdenadoManager()
+    objects = EncuentroManager()
 
     class Meta:
         db_table = 'talleres_encuentro'
