@@ -28,13 +28,23 @@ Monolito modular (**modulith**) con 7 apps organizadas en dos capas:
 - `obra_social` — obras sociales y coberturas
 - `talleres` — talleres, clases, actividades, asistencia, observaciones
 
-Las dependencias entre módulos forman un **DAG acíclico** donde todas las FKs cruzadas apuntan exclusivamente a `personas`.
+El grafo de **FKs de dominio** apunta a `personas`. Existe además una dependencia funcional de código `talleres → eventos` (justificación de ausencias), sin dependencia inversa. El grafo total de dependencias debe permanecer acíclico.
 
-Cada módulo sigue un patrón de **3 niveles**: Views/Serializers → Managers → Models.
+La arquitectura separa las responsabilidades en estas capas; los Services son selectivos y no se usan para CRUD sencillo:
 
-- **Views/Serializers:** solo ciclo HTTP, ruteo y validación — **prohibida la lógica de negocio**.
-- **Managers:** consultas y orden vía `OrdenadoManager` (`core/managers.py`) con overrides por dominio (p. ej. `NombreOrderedManager`, `PersonaManager`, `EncuentroManager`).
-- **Models:** lógica de negocio y datos.
+```text
+HTTP → URLs → Views/ViewSets → Serializers
+                    ├─ CRUD sencillo → Managers/QuerySets → Models
+                    └─ caso de uso coordinado → Services → Managers/QuerySets → Models
+```
+
+- **Views/ViewSets:** ciclo HTTP, ruteo y adaptación de la respuesta; sin reglas de negocio ni coordinación de escrituras.
+- **Serializers:** validan los datos de entrada y representan la salida. Pueden implementar `create()`/`update()` y escrituras anidadas acotadas.
+- **Services:** coordinan casos de uso con varios pasos, transacciones o dominios. Son código Python sin dependencia de HTTP/DRF; aceptan datos ya validados y propagan excepciones de dominio. No deben ser wrappers passthrough.
+- **Managers/QuerySets:** consultas y operaciones sobre colecciones, por ejemplo filtros y orden vía `OrdenadoManager` (`core/managers.py`) y overrides por dominio (`NombreOrderedManager`, `PersonaManager`, `EncuentroManager`). Siguen siendo la capa de acceso a datos y no se reemplazan por Services.
+- **Models:** invariantes y comportamiento asociados a una instancia.
+
+La adopción de Services es gradual: se introducen para casos de uso coordinados cuando se desarrollan o refactorizan, sin reescribir de una vez los CRUD existentes.
 
 ## Inicio rápido (Docker)
 

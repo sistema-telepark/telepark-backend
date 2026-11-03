@@ -9,6 +9,7 @@ from core.exceptions import ValidationError
 from core.mixins import CascadeFilterMixin, ModelPKMixin, NoPaginationMixin, auto_tag_schema_view
 from core.schema import error_response
 
+from . import services
 from .managers import CAMPOS_ORDEN_ENCUENTRO
 from .models import (
     Actividad,
@@ -260,7 +261,7 @@ class RosterEncuentroAsistenciasView(NoPaginationMixin, GenericAPIView):
         encuentro = Encuentro.objects.filter(pk=encuentro_id).first()
         if encuentro is None:
             raise NotFound('No encontrado')
-        return Response(self.get_serializer(AsistenciaTaller.objects.listar_roster(encuentro), many=True).data)
+        return Response(self.get_serializer(services.listar_roster(encuentro), many=True).data)
 
 
 @extend_schema(
@@ -281,7 +282,7 @@ class ReporteFaltasConsecutivasView(NoPaginationMixin, GenericAPIView):
     queryset = AsistenciaTaller.objects.none()
 
     def get(self, request):
-        datos = AsistenciaTaller.objects.listar_faltas_consecutivas()
+        datos = services.listar_faltas_consecutivas()
         return Response(self.get_serializer(datos, many=True).data)
 
 
