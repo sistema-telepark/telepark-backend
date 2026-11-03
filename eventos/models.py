@@ -2,24 +2,7 @@ from django.db import models
 
 from core.managers import OrdenadoManager
 
-
-class EventoManager(OrdenadoManager):
-    """Manager para Evento con select_related + orden compuesto."""
-
-    def listar_ordenado(self):
-        return self.all().select_related('tipo_evento').order_by('persona_ep', 'id_evento')
-
-    def justifica_fecha(self, persona_ep, fecha):
-        """Indica si algún evento de la persona cubre `fecha` (puntas nulas abiertas)."""
-        if fecha is None:
-            return False
-        return (
-            self.filter(persona_ep=persona_ep)
-            .filter(models.Q(fecha_desde__isnull=True) | models.Q(fecha_desde__lte=fecha))
-            .filter(models.Q(fecha_hasta__isnull=True) | models.Q(fecha_hasta__gte=fecha))
-            .exclude(fecha_desde__isnull=True, fecha_hasta__isnull=True)
-            .exists()
-        )
+from .managers import EventoManager
 
 
 class TipoEvento(models.Model):
