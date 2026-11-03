@@ -30,7 +30,11 @@ Monolito modular (**modulith**) con 7 apps organizadas en dos capas:
 
 Las dependencias entre módulos forman un **DAG acíclico** donde todas las FKs cruzadas apuntan exclusivamente a `personas`.
 
-Cada módulo sigue una **capa de 3 niveles**: Views/Serializers → Services → Models. La lógica de negocio está prohibida en Views y Serializers.
+Cada módulo sigue un patrón de **3 niveles**: Views/Serializers → Managers → Models.
+
+- **Views/Serializers:** solo ciclo HTTP, ruteo y validación — **prohibida la lógica de negocio**.
+- **Managers:** consultas y orden vía `OrdenadoManager` (`core/managers.py`) con overrides por dominio (p. ej. `NombreOrderedManager`, `PersonaManager`, `EncuentroManager`).
+- **Models:** lógica de negocio y datos.
 
 ## Inicio rápido (Docker)
 
@@ -108,7 +112,7 @@ python manage.py migrate                     # Aplicar migrations
 telepark-backend/
 ├── core/                  # Infraestructura compartida
 ├── autenticacion/         # Autenticación y usuarios
-├── personas/              # Módulo raíz del dominio (6 modelos)
+├── personas/              # Módulo raíz del dominio (8 modelos)
 ├── salud/                 # Módulo salud (5 modelos)
 ├── eventos/               # Módulo eventos (2 modelos)
 ├── obra_social/           # Módulo obra social (2 modelos)
