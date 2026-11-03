@@ -22,11 +22,53 @@ class AsistenciaTallerManager(OrdenadoManager):
     def listar_roster(self, encuentro):
         """Filas del roster del encuentro, una por PersonaEP activa ordenada por PK."""
         PersonaEP = apps.get_model('personas', 'PersonaEP')
+        Evento = apps.get_model('eventos', 'Evento')
         estados = dict(self.filter(encuentro=encuentro).values_list('persona_ep_id', 'estado'))
         personas = PersonaEP.objects.filtrar_por_activo(True).values_list('pk', flat=True)
+        filas = []
+        for persona_ep in personas:
+            estado = estados.get(persona_ep, ESTADO_ASISTENCIA_DEFAULT)
+            justificada = estado == ESTADO_ASISTENCIA_DEFAULT and Evento.objects.justifica_fecha(
+                persona_ep, encuentro.fecha
+            )
+            filas.append({'persona_ep': persona_ep, 'estado': estado, 'justificada': justificada})
+        return filas
+
+    def ventana_encuentros_con_asistencias(self):
+        """Últimos tres encuentros con al menos una asistencia, por fecha DESC y PK ASC."""
+        Encuentro = apps.get_model('talleres', 'Encuentro')
+        return Encuentro.objects.filter(asistenciataller__isnull=False).distinct().order_by('-fecha', 'pk')[:3]
+
+    def listar_faltas_consecutivas(self):
+        """PersonaEP activas con ausencia injustificada en los tres encuentros de la ventana."""
+        encuentros = list(self.ventana_encuentros_con_asistencias())
+        if len(encuentros) < 3:
+            return []
+        PersonaEP = apps.get_model('personas', 'PersonaEP')
+        Evento = apps.get_model('eventos', 'Evento')
+        candidatos = set(PersonaEP.objects.filtrar_por_activo(True).values_list('pk', flat=True))
+        for encuentro in encuentros:
+            ausentes = self.filter(encuentro=encuentro, estado=ESTADO_ASISTENCIA_DEFAULT)
+            candidatos &= set(ausentes.values_list('persona_ep_id', flat=True))
+        elegibles = [
+            persona_ep
+            for persona_ep in sorted(candidatos)
+            if all(not Evento.objects.justifica_fecha(persona_ep, encuentro.fecha) for encuentro in encuentros)
+        ]
         return [
-            {'persona_ep': persona_ep, 'estado': estados.get(persona_ep, ESTADO_ASISTENCIA_DEFAULT)}
-            for persona_ep in personas
+            {
+                'persona_ep': persona_ep,
+                'encuentros': [
+                    {
+                        'encuentro': encuentro.pk,
+                        'fecha': encuentro.fecha,
+                        'estado': ESTADO_ASISTENCIA_DEFAULT,
+                        'justificada': False,
+                    }
+                    for encuentro in encuentros
+                ],
+            }
+            for persona_ep in elegibles
         ]
 
     def registrar_asistencia(self, persona_ep, encuentro, estado):

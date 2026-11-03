@@ -64,6 +64,21 @@ class AsistenciaTallerSerializer(StrictModelSerializer):
 class RosterAsistenciaSerializer(serializers.Serializer):
     persona_ep = serializers.IntegerField()
     estado = serializers.CharField()
+    justificada = serializers.BooleanField(
+        help_text='True solo cuando el estado es "Ausente" y un evento de la persona cubre la fecha del encuentro.'
+    )
+
+
+class ReporteEncuentroSerializer(serializers.Serializer):
+    encuentro = serializers.IntegerField()
+    fecha = serializers.DateField()
+    estado = serializers.CharField()
+    justificada = serializers.BooleanField()
+
+
+class ReporteFaltasConsecutivasSerializer(serializers.Serializer):
+    persona_ep = serializers.IntegerField()
+    encuentros = ReporteEncuentroSerializer(many=True)
 
 
 class EncuentroFactorGlobalSerializer(StrictModelSerializer):

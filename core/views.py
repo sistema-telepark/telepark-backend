@@ -171,6 +171,11 @@ def api_root(request, format=None):
                     'valores_variable_uo': _safe_reverse('valores-variable-uo-list', request, format),
                 }
             ),
+            'reportes': _clean_dict(
+                {
+                    'faltas_consecutivas': _safe_reverse('reportes-faltas-consecutivas', request, format),
+                }
+            ),
             'system': _clean_dict(
                 {
                     'health': _safe_reverse('health-check', request, format),

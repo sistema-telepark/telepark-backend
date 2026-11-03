@@ -31,6 +31,7 @@ from .serializers import (
     EncuentroSerializer,
     EncuentroTallerSerializer,
     FactorGlobalSerializer,
+    ReporteFaltasConsecutivasSerializer,
     RosterAsistenciaSerializer,
     TallerSerializer,
     UnidadObservacionSerializer,
@@ -236,6 +237,10 @@ class AsistenciaTallerViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelVi
 
 @extend_schema(
     tags=['talleres'],
+    description=(
+        'Roster del encuentro con una fila por persona activa. `justificada` es true solo para el estado '
+        '"Ausente" cuando un evento de la persona cubre la fecha del encuentro.'
+    ),
     responses={
         200: RosterAsistenciaSerializer(many=True),
         400: error_response(400, 'Identificador de encuentro no numérico'),
@@ -256,6 +261,28 @@ class RosterEncuentroAsistenciasView(NoPaginationMixin, GenericAPIView):
         if encuentro is None:
             raise NotFound('No encontrado')
         return Response(self.get_serializer(AsistenciaTaller.objects.listar_roster(encuentro), many=True).data)
+
+
+@extend_schema(
+    tags=['talleres'],
+    description=(
+        'Pacientes activos con ausencia injustificada en los últimos tres encuentros que registran asistencias. '
+        'Devuelve un array plano con el detalle de los tres encuentros evaluados.'
+    ),
+    responses={
+        200: ReporteFaltasConsecutivasSerializer(many=True),
+        401: error_response(401, 'No autenticado'),
+        403: error_response(403, 'Permiso denegado'),
+    },
+)
+class ReporteFaltasConsecutivasView(NoPaginationMixin, GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReporteFaltasConsecutivasSerializer
+    queryset = AsistenciaTaller.objects.none()
+
+    def get(self, request):
+        datos = AsistenciaTaller.objects.listar_faltas_consecutivas()
+        return Response(self.get_serializer(datos, many=True).data)
 
 
 @auto_tag_schema_view
