@@ -32,7 +32,10 @@ class PersonaSerializer(StrictModelSerializer):
             'sexo',
             'fecha_nacimiento',
         )
-        extra_kwargs = {'direccion': {'allow_null': True, 'required': False}}
+        extra_kwargs = {
+            'direccion': {'allow_null': True, 'required': False},
+            'email': {'required': False, 'allow_null': True, 'allow_blank': False},
+        }
 
 
 class DireccionSerializer(StrictModelSerializer):
@@ -55,6 +58,7 @@ class ReferenteSerializer(StrictModelSerializer):
         model = Persona
         fields = ('nombre', 'apellido', 'telefono', 'email', 'sexo', 'fecha_nacimiento', 'direccion')
         extra_kwargs = {
+            'email': {'required': False, 'allow_null': True, 'allow_blank': False},
             'sexo': {'required': False, 'allow_null': True},
             'fecha_nacimiento': {'required': False, 'allow_null': True},
         }
@@ -98,10 +102,18 @@ class PersonaEPSerializer(StrictModelSerializer):
             'referente',
         )
         extra_kwargs = {
+            'email': {'required': False, 'allow_null': True, 'allow_blank': False},
             'sexo': {'required': False, 'allow_null': True},
             'fecha_nacimiento': {'required': False, 'allow_null': True},
             'fecha_ingreso': {'required': False},
         }
+
+    def get_fields(self):
+        fields = super().get_fields()
+        if self.instance is not None:
+            # Permite al UniqueValidator excluir el referente actual en actualizaciones anidadas.
+            fields['referente'].instance = self.instance.referente
+        return fields
 
     def create(self, validated_data):
         with transaction.atomic():
