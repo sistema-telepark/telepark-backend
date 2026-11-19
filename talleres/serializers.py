@@ -22,7 +22,7 @@ from .models import (
 class TallerSerializer(StrictModelSerializer):
     class Meta:
         model = Taller
-        fields = ('id_taller', 'tipo_taller')
+        fields = ('id_taller', 'nombre')
 
 
 class EncuentroTallerSerializer(StrictModelSerializer):

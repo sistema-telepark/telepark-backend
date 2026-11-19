@@ -14,7 +14,7 @@ ESTADO_ASISTENCIA_DEFAULT = 'Ausente'
 
 class Taller(models.Model):
     id_taller = models.AutoField(primary_key=True)
-    tipo_taller = models.CharField(max_length=45)
+    nombre = models.CharField(max_length=45)
 
     objects = OrdenadoManager()
 
