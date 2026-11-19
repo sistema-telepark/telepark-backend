@@ -110,7 +110,7 @@ class PersonaEPSerializer(StrictModelSerializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        if self.instance is not None:
+        if isinstance(self.instance, PersonaEP):
             # Permite al UniqueValidator excluir el referente actual en actualizaciones anidadas.
             fields['referente'].instance = self.instance.referente
         return fields

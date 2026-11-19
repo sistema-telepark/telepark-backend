@@ -10,7 +10,7 @@ class LoginSerializer(StrictSerializer):
 
 class CreateUserSerializer(StrictSerializer):
     user = serializers.CharField(required=True)
-    email = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True, required=True)
@@ -27,7 +27,7 @@ class CreateUserSerializer(StrictSerializer):
 
 class UpdateUserSerializer(StrictSerializer):
     user = serializers.CharField(required=False, help_text='Obsoleto — el ID del usuario se toma de la URL')
-    email = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
     password = serializers.CharField(write_only=True, required=False)
