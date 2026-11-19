@@ -21,7 +21,17 @@ class PersonaSerializer(StrictModelSerializer):
 
     class Meta:
         model = Persona
-        fields = ('id_persona', 'nombre', 'apellido', 'telefono', 'direccion', 'activo', 'sexo', 'fecha_nacimiento')
+        fields = (
+            'id_persona',
+            'nombre',
+            'apellido',
+            'telefono',
+            'email',
+            'direccion',
+            'activo',
+            'sexo',
+            'fecha_nacimiento',
+        )
         extra_kwargs = {'direccion': {'allow_null': True, 'required': False}}
 
 
@@ -43,7 +53,7 @@ class ReferenteSerializer(StrictModelSerializer):
 
     class Meta:
         model = Persona
-        fields = ('nombre', 'apellido', 'telefono', 'sexo', 'fecha_nacimiento', 'direccion')
+        fields = ('nombre', 'apellido', 'telefono', 'email', 'sexo', 'fecha_nacimiento', 'direccion')
         extra_kwargs = {
             'sexo': {'required': False, 'allow_null': True},
             'fecha_nacimiento': {'required': False, 'allow_null': True},
@@ -69,6 +79,7 @@ class PersonaEPSerializer(StrictModelSerializer):
             'nombre',
             'apellido',
             'telefono',
+            'email',
             'direccion_id',
             'activo',
             'sexo',

@@ -11,6 +11,7 @@ class Persona(models.Model):
     nombre = models.CharField(max_length=45)
     apellido = models.CharField(max_length=45)
     telefono = models.CharField(max_length=35)
+    email = models.EmailField(blank=True, null=True)
     direccion = models.ForeignKey('Direccion', models.PROTECT, blank=True, null=True)
     activo = models.BooleanField(default=True)
     sexo = models.CharField(max_length=45, blank=True, null=True)
