@@ -109,7 +109,7 @@ class Vinculo(models.Model):
     persona = models.ForeignKey(Persona, models.PROTECT)
     persona_ep = models.ForeignKey(PersonaEP, models.PROTECT, related_name='vinculos')
     tipo_vinculo = models.ForeignKey(TipoVinculo, models.PROTECT)
-    orden_llamada = models.PositiveIntegerField(null=True, blank=True)
+    orden_contacto = models.PositiveIntegerField(null=True, blank=True)
 
     objects = VinculoManager()
 
@@ -117,5 +117,8 @@ class Vinculo(models.Model):
         db_table = 'personas_vinculo'
         constraints = [
             models.UniqueConstraint(fields=('persona', 'persona_ep'), name='unique_vinculo_persona_persona_ep'),
-            models.UniqueConstraint(fields=('persona_ep', 'orden_llamada'), name='unique_vinculo_persona_ep_orden'),
+            models.UniqueConstraint(
+                fields=('persona_ep', 'orden_contacto'),
+                name='unique_vinculo_persona_ep_orden_contacto',
+            ),
         ]

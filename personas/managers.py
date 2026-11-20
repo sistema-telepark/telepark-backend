@@ -26,11 +26,11 @@ class PersonaManager(OrdenadoManager):
 
 
 class VinculoManager(OrdenadoManager):
-    """Manager de Vinculo con la secuencia de llamada efectiva."""
+    """Manager de Vinculo con la secuencia de contacto efectiva."""
 
-    def listar_orden_llamada(self, persona_ep_pk=None):
-        """Vínculos de contactos activos ordenados por posición de llamada (NULL al final)."""
+    def listar_por_orden_contacto(self, persona_ep_pk=None):
+        """Vínculos de contactos activos ordenados por posición (NULL al final)."""
         qs = self.filter(persona__activo=True)
         if persona_ep_pk is not None:
             qs = qs.filter(persona_ep=persona_ep_pk)
-        return qs.order_by(F('orden_llamada').asc(nulls_last=True), self.model._meta.pk.name)
+        return qs.order_by(F('orden_contacto').asc(nulls_last=True), self.model._meta.pk.name)
