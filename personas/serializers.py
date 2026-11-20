@@ -68,8 +68,8 @@ class ReferenteSerializer(StrictModelSerializer):
 class VinculoAnidadoSerializer(StrictModelSerializer):
     class Meta:
         model = Vinculo
-        fields = ('id_vinculo', 'persona', 'tipo_vinculo', 'orden_llamada')
-        extra_kwargs = {'orden_llamada': {'read_only': True}}
+        fields = ('id_vinculo', 'persona', 'tipo_vinculo', 'orden_contacto')
+        extra_kwargs = {'orden_contacto': {'read_only': True}}
 
 
 class VinculoOrdenSerializer(StrictSerializer):
@@ -138,7 +138,7 @@ class PersonaEPSerializer(StrictModelSerializer):
     def get_vinculos(self, obj):
         vinculos = getattr(obj, 'vinculos_ordenados', None)
         if vinculos is None:
-            vinculos = Vinculo.objects.listar_orden_llamada(obj.pk)
+            vinculos = Vinculo.objects.listar_por_orden_contacto(obj.pk)
         return VinculoAnidadoSerializer(vinculos, many=True).data
 
     def create(self, validated_data):
@@ -223,8 +223,8 @@ class TipoVinculoSerializer(StrictModelSerializer):
 class VinculoSerializer(StrictModelSerializer):
     class Meta:
         model = Vinculo
-        fields = ('id_vinculo', 'persona', 'persona_ep', 'tipo_vinculo', 'orden_llamada')
+        fields = ('id_vinculo', 'persona', 'persona_ep', 'tipo_vinculo', 'orden_contacto')
         extra_kwargs = {
             'tipo_vinculo': {'allow_null': False, 'required': True},
-            'orden_llamada': {'read_only': True},
+            'orden_contacto': {'read_only': True},
         }

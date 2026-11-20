@@ -15,6 +15,6 @@ def reordenar_vinculos(persona_ep_pk, ids_vinculo):
             raise ValidationError(
                 {'vinculos': [f'La secuencia debe incluir exactamente los {len(ids_paciente)} vínculos del paciente.']}
             )
-        Vinculo.objects.filter(pk__in=ids_paciente).update(orden_llamada=None)
+        Vinculo.objects.filter(pk__in=ids_paciente).update(orden_contacto=None)
         for posicion, id_vinculo in enumerate(ids_vinculo, start=1):
-            Vinculo.objects.filter(pk=id_vinculo).update(orden_llamada=posicion)
+            Vinculo.objects.filter(pk=id_vinculo).update(orden_contacto=posicion)

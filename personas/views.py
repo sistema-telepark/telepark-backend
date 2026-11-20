@@ -185,7 +185,7 @@ class PersonaEPViewSet(ActivoFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.prefetch_related(
-            Prefetch('vinculos', queryset=Vinculo.objects.listar_orden_llamada(), to_attr='vinculos_ordenados')
+            Prefetch('vinculos', queryset=Vinculo.objects.listar_por_orden_contacto(), to_attr='vinculos_ordenados')
         )
 
     def perform_destroy(self, instance):
@@ -278,12 +278,12 @@ class VinculoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
 @extend_schema(
     tags=['personas'],
     description=(
-        'Reemplaza el orden de llamada de los vínculos del paciente. El body debe incluir exactamente los '
-        'vínculos del paciente en el orden de llamada deseado (posiciones 1..N).'
+        'Reemplaza el orden de contacto de los vínculos del paciente. El body debe incluir exactamente los '
+        'vínculos del paciente en el orden deseado (posiciones 1..N).'
     ),
     request=VinculoOrdenSerializer,
     responses={
-        204: OpenApiResponse(description='Orden de llamada actualizado'),
+        204: OpenApiResponse(description='Orden de contacto actualizado'),
         400: error_response(400, 'Payload inválido o identificador de persona no numérico'),
         401: error_response(401, 'No autenticado'),
         404: error_response(404, 'PersonaEP no encontrada'),
