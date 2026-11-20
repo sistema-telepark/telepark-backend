@@ -8,9 +8,9 @@ from .models import (
     Actividad,
     AsistenciaTaller,
     Encuentro,
-    EncuentroActividad,
     EncuentroFactorGlobal,
     EncuentroTaller,
+    EncuentroTallerActividad,
     FactorGlobal,
     Taller,
     UnidadObservacion,
@@ -25,10 +25,31 @@ class TallerSerializer(StrictModelSerializer):
         fields = ('id_taller', 'nombre')
 
 
+class ActividadSerializer(StrictModelSerializer):
+    class Meta:
+        model = Actividad
+        fields = ('id_actividad', 'nombre', 'taller')
+
+
+class EncuentroTallerActividadSerializer(StrictModelSerializer):
+    class Meta:
+        model = EncuentroTallerActividad
+        fields = ('id_encuentro_taller_actividad', 'encuentro_taller', 'actividad')
+
+    def validate(self, attrs):
+        actividad = attrs.get('actividad', getattr(self.instance, 'actividad', None))
+        encuentro_taller = attrs.get('encuentro_taller', getattr(self.instance, 'encuentro_taller', None))
+        if actividad is not None and encuentro_taller is not None:
+            EncuentroTallerActividad.validar_actividad(actividad, encuentro_taller)
+        return attrs
+
+
 class EncuentroTallerSerializer(StrictModelSerializer):
+    actividades_realizadas = EncuentroTallerActividadSerializer(many=True, read_only=True)
+
     class Meta:
         model = EncuentroTaller
-        fields = ('id_encuentro_taller', 'encuentro', 'taller')
+        fields = ('id_encuentro_taller', 'encuentro', 'taller', 'actividades_realizadas')
 
 
 class EncuentroSerializer(StrictModelSerializer):
@@ -38,18 +59,6 @@ class EncuentroSerializer(StrictModelSerializer):
     class Meta:
         model = Encuentro
         fields = ('id_encuentro', 'fecha', 'virtual', 'talleres')
-
-
-class ActividadSerializer(StrictModelSerializer):
-    class Meta:
-        model = Actividad
-        fields = ('id_actividad', 'nombre', 'taller')
-
-
-class EncuentroActividadSerializer(StrictModelSerializer):
-    class Meta:
-        model = EncuentroActividad
-        fields = ('id_encuentro_actividad', 'actividad', 'encuentro')
 
 
 class AsistenciaTallerSerializer(StrictModelSerializer):
@@ -108,8 +117,14 @@ class VariableUOSerializer(StrictModelSerializer):
 class ValorVariableUOSerializer(StrictModelSerializer):
     class Meta:
         model = ValorVariableUO
-        fields = ('id_valor_variable_uo', 'valor', 'variable_uo', 'asistencia_taller', 'encuentro_actividad')
+        fields = (
+            'id_valor_variable_uo',
+            'valor',
+            'variable_uo',
+            'asistencia_taller',
+            'encuentro_taller_actividad',
+        )
         extra_kwargs = {
             'asistencia_taller': {'allow_null': True, 'required': False},
-            'encuentro_actividad': {'allow_null': True, 'required': False},
+            'encuentro_taller_actividad': {'allow_null': True, 'required': False},
         }

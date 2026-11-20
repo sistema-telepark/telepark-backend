@@ -15,9 +15,9 @@ from .models import (
     Actividad,
     AsistenciaTaller,
     Encuentro,
-    EncuentroActividad,
     EncuentroFactorGlobal,
     EncuentroTaller,
+    EncuentroTallerActividad,
     FactorGlobal,
     Taller,
     UnidadObservacion,
@@ -27,9 +27,9 @@ from .models import (
 from .serializers import (
     ActividadSerializer,
     AsistenciaTallerSerializer,
-    EncuentroActividadSerializer,
     EncuentroFactorGlobalSerializer,
     EncuentroSerializer,
+    EncuentroTallerActividadSerializer,
     EncuentroTallerSerializer,
     FactorGlobalSerializer,
     ReporteFaltasConsecutivasSerializer,
@@ -106,7 +106,7 @@ class EncuentroViewSet(ModelPKMixin, viewsets.ModelViewSet):
         if orden is not None:
             campo, descendente = orden
             qs = self.manager.ordenar_por(campo, descendente, qs)
-        return qs.prefetch_related('talleres')
+        return qs.prefetch_related('talleres__actividades_realizadas')
 
 
 @auto_tag_schema_view
@@ -129,6 +129,9 @@ class EncuentroTallerViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelVie
     serializer_class = EncuentroTallerSerializer
     permission_classes = [IsAuthenticated]
     cascade_lookups = {'encuentro': 'encuentro'}
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('actividades_realizadas')
 
 
 @auto_tag_schema_view
@@ -160,17 +163,34 @@ class ActividadViewSet(ModelPKMixin, viewsets.ModelViewSet):
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description='Filtra encuentros-actividades por encuentro (FK encuentro). Con filtro activo la respuesta es array plano.',
+                description=(
+                    'Filtra encuentros-talleres-actividades por encuentro '
+                    '(FK encuentro_taller → encuentro). Con filtro activo la respuesta es array plano.'
+                ),
             ),
         ],
     ),
 )
-class EncuentroActividadViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
+class EncuentroTallerActividadViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
-    manager = EncuentroActividad.objects
-    serializer_class = EncuentroActividadSerializer
+    manager = EncuentroTallerActividad.objects
+    serializer_class = EncuentroTallerActividadSerializer
     permission_classes = [IsAuthenticated]
-    cascade_lookups = {'encuentro': 'encuentro'}
+    cascade_lookups = {'encuentro': 'encuentro_taller__encuentro'}
+
+    @extend_schema(
+        responses={
+            204: OpenApiResponse(description='Sin contenido'),
+            409: error_response(
+                409, 'No se puede eliminar una actividad realizada con valores de variable UO asociados'
+            ),
+        },
+    )
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.validar_borrado()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @auto_tag_schema_view
@@ -344,11 +364,11 @@ class VariableUOViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
                 description='Filtra valores de variable UO por asistencia de taller (FK asistencia_taller). Con filtro activo la respuesta es array plano.',
             ),
             OpenApiParameter(
-                name='encuentro_actividad',
+                name='encuentro_taller_actividad',
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description='Filtra valores de variable UO por encuentro-actividad (FK encuentro_actividad). Con filtro activo la respuesta es array plano.',
+                description='Filtra valores de variable UO por encuentro-taller-actividad (FK encuentro_taller_actividad). Con filtro activo la respuesta es array plano.',
             ),
         ],
     ),
@@ -358,4 +378,7 @@ class ValorVariableUOViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelVie
     manager = ValorVariableUO.objects
     serializer_class = ValorVariableUOSerializer
     permission_classes = [IsAuthenticated]
-    cascade_lookups = {'asistencia_taller': 'asistencia_taller', 'encuentro_actividad': 'encuentro_actividad'}
+    cascade_lookups = {
+        'asistencia_taller': 'asistencia_taller',
+        'encuentro_taller_actividad': 'encuentro_taller_actividad',
+    }

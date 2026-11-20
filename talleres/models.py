@@ -59,24 +59,36 @@ class Actividad(models.Model):
     objects = OrdenadoManager()
 
     def validar_borrado(self):
-        if self.encuentroactividad_set.exists():
+        if self.encuentrotalleractividad_set.exists():
             raise ConflictError('No se puede eliminar una actividad con registros de actividades realizadas')
 
     class Meta:
         db_table = 'talleres_actividad'
 
 
-class EncuentroActividad(models.Model):
-    id_encuentro_actividad = models.AutoField(primary_key=True)
+class EncuentroTallerActividad(models.Model):
+    id_encuentro_taller_actividad = models.AutoField(primary_key=True)
+    encuentro_taller = models.ForeignKey(EncuentroTaller, models.CASCADE, related_name='actividades_realizadas')
     actividad = models.ForeignKey(Actividad, models.PROTECT)
-    encuentro = models.ForeignKey(Encuentro, models.CASCADE)
 
     objects = OrdenadoManager()
 
+    @staticmethod
+    def validar_actividad(actividad, encuentro_taller):
+        """Rechaza una actividad que no pertenece al taller del encuentro-taller."""
+        if actividad.taller_id != encuentro_taller.taller_id:
+            raise ValidationError('La actividad debe pertenecer al mismo taller que el encuentro-taller')
+
+    def validar_borrado(self):
+        if self.valorvariableuo_set.exists():
+            raise ConflictError('No se puede eliminar una actividad realizada con valores de variable UO asociados')
+
     class Meta:
-        db_table = 'talleres_encuentro_actividad'
+        db_table = 'talleres_encuentro_taller_actividad'
         constraints = [
-            models.UniqueConstraint(fields=('encuentro', 'actividad'), name='unique_encuentro_actividad_pair'),
+            models.UniqueConstraint(
+                fields=('encuentro_taller', 'actividad'), name='unique_encuentro_taller_actividad_pair'
+            ),
         ]
 
 
@@ -157,7 +169,7 @@ class ValorVariableUO(models.Model):
     valor = models.CharField(max_length=45)
     variable_uo = models.ForeignKey(VariableUO, models.PROTECT)
     asistencia_taller = models.ForeignKey(AsistenciaTaller, models.CASCADE, blank=True, null=True)
-    encuentro_actividad = models.ForeignKey(EncuentroActividad, models.CASCADE, blank=True, null=True)
+    encuentro_taller_actividad = models.ForeignKey(EncuentroTallerActividad, models.PROTECT, blank=True, null=True)
 
     objects = OrdenadoManager()
 
