@@ -163,7 +163,9 @@ def api_root(request, format=None):
                     'encuentros': _safe_reverse('encuentros-list', request, format),
                     'encuentros_talleres': _safe_reverse('encuentros-talleres-list', request, format),
                     'actividades': _safe_reverse('actividades-list', request, format),
-                    'encuentros_actividades': _safe_reverse('encuentros-actividades-list', request, format),
+                    'encuentros_talleres_actividades': _safe_reverse(
+                        'encuentros-talleres-actividades-list', request, format
+                    ),
                     'asistencias_taller': _safe_reverse('asistencias-taller-list', request, format),
                     'encuentros_factores_globales': _safe_reverse('encuentros-factores-globales-list', request, format),
                     'factores_globales': _safe_reverse('factores-globales-list', request, format),
