@@ -1,8 +1,9 @@
 from django.db import transaction
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.fields import StrictBooleanField
-from core.serializers import StrictModelSerializer
+from core.serializers import StrictModelSerializer, StrictSerializer
 
 from .models import Departamento, Direccion, Localidad, Persona, PersonaEP, Provincia, TipoVinculo, Vinculo
 
@@ -64,9 +65,26 @@ class ReferenteSerializer(StrictModelSerializer):
         }
 
 
+class VinculoAnidadoSerializer(StrictModelSerializer):
+    class Meta:
+        model = Vinculo
+        fields = ('id_vinculo', 'persona', 'tipo_vinculo', 'orden_llamada')
+        extra_kwargs = {'orden_llamada': {'read_only': True}}
+
+
+class VinculoOrdenSerializer(StrictSerializer):
+    vinculos = serializers.ListField(child=serializers.IntegerField(min_value=1), allow_empty=True)
+
+    def validate_vinculos(self, value):
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError('La secuencia no puede repetir vínculos.')
+        return value
+
+
 class PersonaEPSerializer(StrictModelSerializer):
     direccion = DireccionSerializer(write_only=True, required=False, allow_null=True)
     referente = ReferenteSerializer(write_only=True)
+    vinculos = serializers.SerializerMethodField()
     direccion_id = serializers.IntegerField(read_only=True)
     referente_id = serializers.IntegerField(read_only=True)
     activo = StrictBooleanField(required=False)
@@ -100,6 +118,7 @@ class PersonaEPSerializer(StrictModelSerializer):
             'referente_id',
             'direccion',
             'referente',
+            'vinculos',
         )
         extra_kwargs = {
             'email': {'required': False, 'allow_null': True, 'allow_blank': False},
@@ -114,6 +133,13 @@ class PersonaEPSerializer(StrictModelSerializer):
             # Permite al UniqueValidator excluir el referente actual en actualizaciones anidadas.
             fields['referente'].instance = self.instance.referente
         return fields
+
+    @extend_schema_field(VinculoAnidadoSerializer(many=True))
+    def get_vinculos(self, obj):
+        vinculos = getattr(obj, 'vinculos_ordenados', None)
+        if vinculos is None:
+            vinculos = Vinculo.objects.listar_orden_llamada(obj.pk)
+        return VinculoAnidadoSerializer(vinculos, many=True).data
 
     def create(self, validated_data):
         with transaction.atomic():
@@ -197,5 +223,8 @@ class TipoVinculoSerializer(StrictModelSerializer):
 class VinculoSerializer(StrictModelSerializer):
     class Meta:
         model = Vinculo
-        fields = ('id_vinculo', 'persona', 'persona_ep', 'tipo_vinculo')
-        extra_kwargs = {'tipo_vinculo': {'allow_null': False, 'required': True}}
+        fields = ('id_vinculo', 'persona', 'persona_ep', 'tipo_vinculo', 'orden_llamada')
+        extra_kwargs = {
+            'tipo_vinculo': {'allow_null': False, 'required': True},
+            'orden_llamada': {'read_only': True},
+        }

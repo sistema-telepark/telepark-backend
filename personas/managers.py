@@ -1,3 +1,5 @@
+from django.db.models import F
+
 from core.managers import OrdenadoManager
 
 CAMPOS_ORDEN_PERSONA = ('apellido', 'nombre')
@@ -21,3 +23,14 @@ class PersonaManager(OrdenadoManager):
         base = self.listar_ordenado() if queryset is None else queryset
         prefijo = '-' if descendente else ''
         return base.order_by(f'{prefijo}{campo}', self.model._meta.pk.name)
+
+
+class VinculoManager(OrdenadoManager):
+    """Manager de Vinculo con la secuencia de llamada efectiva."""
+
+    def listar_orden_llamada(self, persona_ep_pk=None):
+        """Vínculos de contactos activos ordenados por posición de llamada (NULL al final)."""
+        qs = self.filter(persona__activo=True)
+        if persona_ep_pk is not None:
+            qs = qs.filter(persona_ep=persona_ep_pk)
+        return qs.order_by(F('orden_llamada').asc(nulls_last=True), self.model._meta.pk.name)
