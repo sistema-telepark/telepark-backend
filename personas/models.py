@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from core.managers import OrdenadoManager
 
-from .managers import NombreOrderedManager, PersonaManager
+from .managers import NombreOrderedManager, PersonaManager, VinculoManager
 
 
 class Persona(models.Model):
@@ -107,13 +107,15 @@ class TipoVinculo(models.Model):
 class Vinculo(models.Model):
     id_vinculo = models.AutoField(primary_key=True)
     persona = models.ForeignKey(Persona, models.PROTECT)
-    persona_ep = models.ForeignKey(PersonaEP, models.PROTECT, related_name='+')
+    persona_ep = models.ForeignKey(PersonaEP, models.PROTECT, related_name='vinculos')
     tipo_vinculo = models.ForeignKey(TipoVinculo, models.PROTECT)
+    orden_llamada = models.PositiveIntegerField(null=True, blank=True)
 
-    objects = OrdenadoManager()
+    objects = VinculoManager()
 
     class Meta:
         db_table = 'personas_vinculo'
         constraints = [
             models.UniqueConstraint(fields=('persona', 'persona_ep'), name='unique_vinculo_persona_persona_ep'),
+            models.UniqueConstraint(fields=('persona_ep', 'orden_llamada'), name='unique_vinculo_persona_ep_orden'),
         ]

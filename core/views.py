@@ -133,6 +133,7 @@ def api_root(request, format=None):
                     'evoluciones_por_persona_ep': _safe_reverse('personas-ep-evoluciones', request, format),
                     'indicaciones_por_persona_ep': _safe_reverse('personas-ep-indicaciones', request, format),
                     'coberturas_por_persona_ep': _safe_reverse('personas-ep-coberturas', request, format),
+                    'vinculos_orden': _safe_reverse('personas-ep-vinculos-orden', request, format),
                 }
             ),
             'salud': _clean_dict(

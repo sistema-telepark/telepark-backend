@@ -4,6 +4,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 
 from core.views import api_root, health_check
 from obra_social.views import CoberturaPorPersonaEPView
+from personas.views import PersonaEPVinculosOrdenView
 from salud.views import DiagnosticoPorPersonaEPView, EvolucionPorPersonaEPView, IndicacionPorPersonaEPView
 from talleres.views import ReporteFaltasConsecutivasView, RosterEncuentroAsistenciasView
 
@@ -39,6 +40,11 @@ urlpatterns = [
         'api/v1/personas-ep/<str:persona_ep_pk>/coberturas',
         CoberturaPorPersonaEPView.as_view(),
         name='personas-ep-coberturas',
+    ),
+    path(
+        'api/v1/personas-ep/<str:persona_ep_pk>/vinculos/orden',
+        PersonaEPVinculosOrdenView.as_view(),
+        name='personas-ep-vinculos-orden',
     ),
     path(
         'api/v1/encuentros/<str:encuentro_pk>/asistencias',

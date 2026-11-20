@@ -1,15 +1,22 @@
-from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework import viewsets
+import re
+
+from django.db.models import Prefetch
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
+from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from core.mixins import (
     CascadeFilterMixin,
     ModelPKMixin,
     NoPaginationMixin,
+    PersonaEPSubresourceMixin,
     auto_tag_schema_view,
 )
 from core.permission import AdminOnlyForDelete
+from core.schema import error_response
 
 from .managers import CAMPOS_ORDEN_PERSONA
 from .models import (
@@ -30,8 +37,12 @@ from .serializers import (
     PersonaSerializer,
     ProvinciaSerializer,
     TipoVinculoSerializer,
+    VinculoOrdenSerializer,
     VinculoSerializer,
 )
+from .services import reordenar_vinculos
+
+_NUMERIC_RE = re.compile(r'^-?\d+$')
 
 
 def _resolver_localidades_por_provincia(valor):
@@ -171,6 +182,12 @@ class PersonaEPViewSet(ActivoFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     serializer_class = PersonaEPSerializer
     permission_classes = [AdminOnlyForDelete]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.prefetch_related(
+            Prefetch('vinculos', queryset=Vinculo.objects.listar_orden_llamada(), to_attr='vinculos_ordenados')
+        )
+
     def perform_destroy(self, instance):
         instance.persona_ptr.delete()
 
@@ -224,11 +241,65 @@ class TipoVinculoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet)
 
 
 @auto_tag_schema_view
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='persona_ep',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra vínculos por persona EP. La respuesta es siempre un array plano.',
+            ),
+        ],
+    ),
+)
 class VinculoViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'personas'
     manager = Vinculo.objects
     serializer_class = VinculoSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        request = getattr(self, 'request', None)
+        if request is None:
+            return qs
+        valor = request.query_params.get('persona_ep')
+        if valor is None or valor == '':
+            return qs
+        if _NUMERIC_RE.match(valor) is None:
+            raise ValidationError(
+                {'detail': f'El parámetro "persona_ep" debe ser un ID numérico (recibido: "{valor}").'}
+            )
+        return qs.filter(persona_ep=valor)
+
+
+@extend_schema(
+    tags=['personas'],
+    description=(
+        'Reemplaza el orden de llamada de los vínculos del paciente. El body debe incluir exactamente los '
+        'vínculos del paciente en el orden de llamada deseado (posiciones 1..N).'
+    ),
+    request=VinculoOrdenSerializer,
+    responses={
+        204: OpenApiResponse(description='Orden de llamada actualizado'),
+        400: error_response(400, 'Payload inválido o identificador de persona no numérico'),
+        401: error_response(401, 'No autenticado'),
+        404: error_response(404, 'PersonaEP no encontrada'),
+    },
+)
+class PersonaEPVinculosOrdenView(PersonaEPSubresourceMixin, GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = VinculoOrdenSerializer
+    queryset = Vinculo.objects.none()
+
+    def put(self, request, persona_ep_pk):
+        self.validar_persona_ep(persona_ep_pk)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        reordenar_vinculos(int(persona_ep_pk), serializer.validated_data['vinculos'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @auto_tag_schema_view
