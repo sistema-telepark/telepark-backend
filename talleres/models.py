@@ -3,7 +3,7 @@ from django.db import models
 from core.exceptions import ConflictError, ValidationError
 from core.managers import OrdenadoManager
 
-from .managers import AsistenciaTallerManager, EncuentroManager
+from .managers import AsistenciaEncuentroManager, EncuentroManager
 
 ESTADOS_ASISTENCIA = (
     ('Presente', 'Presente'),
@@ -92,13 +92,13 @@ class EncuentroTallerActividad(models.Model):
         ]
 
 
-class AsistenciaTaller(models.Model):
-    id_asistencia_taller = models.AutoField(primary_key=True)
+class AsistenciaEncuentro(models.Model):
+    id_asistencia_encuentro = models.AutoField(primary_key=True)
     estado = models.CharField(max_length=45, choices=ESTADOS_ASISTENCIA)
     persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)
     encuentro = models.ForeignKey(Encuentro, models.PROTECT)
 
-    objects = AsistenciaTallerManager()
+    objects = AsistenciaEncuentroManager()
 
     @staticmethod
     def validar_estado(estado):
@@ -107,14 +107,14 @@ class AsistenciaTaller(models.Model):
 
     def validar_disponibilidad(self, persona_ep, encuentro):
         """Rechaza el par persona_ep + encuentro si otra fila ya lo ocupa."""
-        if AsistenciaTaller.objects.filter(persona_ep=persona_ep, encuentro=encuentro).exclude(pk=self.pk).exists():
+        if AsistenciaEncuentro.objects.filter(persona_ep=persona_ep, encuentro=encuentro).exclude(pk=self.pk).exists():
             raise ConflictError('Ya existe una asistencia para esa persona en el encuentro indicado')
 
     class Meta:
-        db_table = 'talleres_asistencia_taller'
+        db_table = 'talleres_asistencia_encuentro'
         constraints = [
             models.UniqueConstraint(
-                fields=('persona_ep', 'encuentro'), name='unique_asistencia_taller_persona_ep_encuentro'
+                fields=('persona_ep', 'encuentro'), name='unique_asistencia_encuentro_persona_ep_encuentro'
             ),
         ]
 
@@ -168,7 +168,7 @@ class ValorVariableUO(models.Model):
     id_valor_variable_uo = models.AutoField(primary_key=True)
     valor = models.CharField(max_length=45)
     variable_uo = models.ForeignKey(VariableUO, models.PROTECT)
-    asistencia_taller = models.ForeignKey(AsistenciaTaller, models.CASCADE, blank=True, null=True)
+    asistencia_encuentro = models.ForeignKey(AsistenciaEncuentro, models.CASCADE, blank=True, null=True)
     encuentro_taller_actividad = models.ForeignKey(EncuentroTallerActividad, models.PROTECT, blank=True, null=True)
 
     objects = OrdenadoManager()

@@ -2,7 +2,7 @@ from rest_framework.routers import SimpleRouter
 
 from .views import (
     ActividadViewSet,
-    AsistenciaTallerViewSet,
+    AsistenciaEncuentroViewSet,
     EncuentroFactorGlobalViewSet,
     EncuentroTallerActividadViewSet,
     EncuentroTallerViewSet,
@@ -25,7 +25,7 @@ router.register(
     EncuentroTallerActividadViewSet,
     basename='encuentros-talleres-actividades',
 )
-router.register(r'api/v1/asistencias-taller', AsistenciaTallerViewSet, basename='asistencias-taller')
+router.register(r'api/v1/asistencias-encuentro', AsistenciaEncuentroViewSet, basename='asistencias-encuentro')
 router.register(
     r'api/v1/encuentros-factores-globales', EncuentroFactorGlobalViewSet, basename='encuentros-factores-globales'
 )

@@ -1,14 +1,14 @@
 from eventos.models import Evento
 from personas.models import PersonaEP
 
-from .models import ESTADO_ASISTENCIA_DEFAULT, AsistenciaTaller, Encuentro
+from .models import ESTADO_ASISTENCIA_DEFAULT, AsistenciaEncuentro, Encuentro
 
 CANTIDAD_ENCUENTROS_FALTAS = 3
 
 
 def listar_roster(encuentro):
     """Roster del encuentro: una fila por PersonaEP activa con estado y justificación."""
-    estados = AsistenciaTaller.objects.estados_por_encuentro(encuentro)
+    estados = AsistenciaEncuentro.objects.estados_por_encuentro(encuentro)
     personas = list(PersonaEP.objects.filtrar_por_activo(True).values_list('pk', flat=True))
     justificadas = Evento.objects.justificaciones_en_lote(personas, [encuentro.fecha])
     filas = []
@@ -26,7 +26,7 @@ def listar_faltas_consecutivas():
         return []
     candidatos = set(PersonaEP.objects.filtrar_por_activo(True).values_list('pk', flat=True))
     for encuentro in encuentros:
-        candidatos &= set(AsistenciaTaller.objects.ausentes_por_encuentro(encuentro, ESTADO_ASISTENCIA_DEFAULT))
+        candidatos &= set(AsistenciaEncuentro.objects.ausentes_por_encuentro(encuentro, ESTADO_ASISTENCIA_DEFAULT))
     fechas = [encuentro.fecha for encuentro in encuentros]
     justificadas = Evento.objects.justificaciones_en_lote(candidatos, fechas)
     elegibles = [

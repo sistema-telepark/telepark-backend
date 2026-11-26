@@ -13,7 +13,7 @@ from . import services
 from .managers import CAMPOS_ORDEN_ENCUENTRO
 from .models import (
     Actividad,
-    AsistenciaTaller,
+    AsistenciaEncuentro,
     Encuentro,
     EncuentroFactorGlobal,
     EncuentroTaller,
@@ -26,7 +26,7 @@ from .models import (
 )
 from .serializers import (
     ActividadSerializer,
-    AsistenciaTallerSerializer,
+    AsistenciaEncuentroSerializer,
     EncuentroFactorGlobalSerializer,
     EncuentroSerializer,
     EncuentroTallerActividadSerializer,
@@ -202,39 +202,39 @@ class EncuentroTallerActividadViewSet(CascadeFilterMixin, ModelPKMixin, viewsets
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description='Filtra asistencias de taller por encuentro (FK encuentro). Con filtro activo la respuesta es array plano.',
+                description='Filtra asistencias de encuentro por encuentro (FK encuentro). Con filtro activo la respuesta es array plano.',
             ),
         ],
     ),
     update=extend_schema(
         responses={
-            200: AsistenciaTallerSerializer,
+            200: AsistenciaEncuentroSerializer,
             409: error_response(409, 'El par persona_ep + encuentro ya está ocupado por otra asistencia'),
         },
     ),
     partial_update=extend_schema(
         responses={
-            200: AsistenciaTallerSerializer,
+            200: AsistenciaEncuentroSerializer,
             409: error_response(409, 'El par persona_ep + encuentro ya está ocupado por otra asistencia'),
         },
     ),
 )
-class AsistenciaTallerViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
+class AsistenciaEncuentroViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelViewSet):
     app_tag = 'talleres'
-    manager = AsistenciaTaller.objects
-    serializer_class = AsistenciaTallerSerializer
+    manager = AsistenciaEncuentro.objects
+    serializer_class = AsistenciaEncuentroSerializer
     permission_classes = [IsAuthenticated]
     cascade_lookups = {'encuentro': 'encuentro'}
 
     @extend_schema(
-        summary='Registrar asistencia de taller',
+        summary='Registrar asistencia de encuentro',
         description=(
             'Upsert sobre el par `persona_ep` + `encuentro`: si no existe la asistencia se crea (201); '
             'si ya existe se actualiza únicamente `estado`, se conserva la fila y se responde 200.'
         ),
         responses={
-            201: AsistenciaTallerSerializer,
-            200: AsistenciaTallerSerializer,
+            201: AsistenciaEncuentroSerializer,
+            200: AsistenciaEncuentroSerializer,
             400: error_response(400, 'Datos inválidos'),
         },
     )
@@ -271,7 +271,7 @@ class AsistenciaTallerViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelVi
 class RosterEncuentroAsistenciasView(NoPaginationMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RosterAsistenciaSerializer
-    queryset = AsistenciaTaller.objects.none()
+    queryset = AsistenciaEncuentro.objects.none()
 
     def get(self, request, encuentro_pk):
         try:
@@ -299,7 +299,7 @@ class RosterEncuentroAsistenciasView(NoPaginationMixin, GenericAPIView):
 class ReporteFaltasConsecutivasView(NoPaginationMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ReporteFaltasConsecutivasSerializer
-    queryset = AsistenciaTaller.objects.none()
+    queryset = AsistenciaEncuentro.objects.none()
 
     def get(self, request):
         datos = services.listar_faltas_consecutivas()
@@ -357,11 +357,11 @@ class VariableUOViewSet(NoPaginationMixin, ModelPKMixin, viewsets.ModelViewSet):
     list=extend_schema(
         parameters=[
             OpenApiParameter(
-                name='asistencia_taller',
+                name='asistencia_encuentro',
                 type=int,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description='Filtra valores de variable UO por asistencia de taller (FK asistencia_taller). Con filtro activo la respuesta es array plano.',
+                description='Filtra valores de variable UO por asistencia de encuentro (FK asistencia_encuentro). Con filtro activo la respuesta es array plano.',
             ),
             OpenApiParameter(
                 name='encuentro_taller_actividad',
@@ -379,6 +379,6 @@ class ValorVariableUOViewSet(CascadeFilterMixin, ModelPKMixin, viewsets.ModelVie
     serializer_class = ValorVariableUOSerializer
     permission_classes = [IsAuthenticated]
     cascade_lookups = {
-        'asistencia_taller': 'asistencia_taller',
+        'asistencia_encuentro': 'asistencia_encuentro',
         'encuentro_taller_actividad': 'encuentro_taller_actividad',
     }

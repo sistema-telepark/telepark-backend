@@ -6,7 +6,7 @@ from core.serializers import StrictModelSerializer
 from .models import (
     ESTADOS_ASISTENCIA,
     Actividad,
-    AsistenciaTaller,
+    AsistenciaEncuentro,
     Encuentro,
     EncuentroFactorGlobal,
     EncuentroTaller,
@@ -61,12 +61,12 @@ class EncuentroSerializer(StrictModelSerializer):
         fields = ('id_encuentro', 'fecha', 'virtual', 'talleres')
 
 
-class AsistenciaTallerSerializer(StrictModelSerializer):
+class AsistenciaEncuentroSerializer(StrictModelSerializer):
     estado = serializers.ChoiceField(choices=ESTADOS_ASISTENCIA, required=True)
 
     class Meta:
-        model = AsistenciaTaller
-        fields = ('id_asistencia_taller', 'estado', 'persona_ep', 'encuentro')
+        model = AsistenciaEncuentro
+        fields = ('id_asistencia_encuentro', 'estado', 'persona_ep', 'encuentro')
         validators = []
 
 
@@ -121,10 +121,10 @@ class ValorVariableUOSerializer(StrictModelSerializer):
             'id_valor_variable_uo',
             'valor',
             'variable_uo',
-            'asistencia_taller',
+            'asistencia_encuentro',
             'encuentro_taller_actividad',
         )
         extra_kwargs = {
-            'asistencia_taller': {'allow_null': True, 'required': False},
+            'asistencia_encuentro': {'allow_null': True, 'required': False},
             'encuentro_taller_actividad': {'allow_null': True, 'required': False},
         }

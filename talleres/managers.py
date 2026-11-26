@@ -16,14 +16,14 @@ class EncuentroManager(OrdenadoManager):
 
     def ultimos_con_asistencias(self, limite=3):
         """Últimos encuentros con al menos una asistencia, por fecha DESC y PK ASC."""
-        return self.filter(asistenciataller__isnull=False).distinct().order_by('-fecha', 'pk')[:limite]
+        return self.filter(asistenciaencuentro__isnull=False).distinct().order_by('-fecha', 'pk')[:limite]
 
 
-class AsistenciaTallerManager(OrdenadoManager):
-    """Manager para AsistenciaTaller con orden compuesto."""
+class AsistenciaEncuentroManager(OrdenadoManager):
+    """Manager para AsistenciaEncuentro con orden compuesto."""
 
     def listar_ordenado(self):
-        return self.all().order_by('persona_ep', 'id_asistencia_taller')
+        return self.all().order_by('persona_ep', 'id_asistencia_encuentro')
 
     def estados_por_encuentro(self, encuentro):
         """Mapa persona_ep_id → estado persistido para el encuentro."""
