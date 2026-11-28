@@ -18,7 +18,7 @@ class TipoEvento(models.Model):
 
 class Evento(models.Model):
     id_evento = models.AutoField(primary_key=True)
-    fecha_desde = models.DateField(blank=True, null=True)
+    fecha_desde = models.DateField()
     fecha_hasta = models.DateField(blank=True, null=True)
     motivo = models.CharField(max_length=256, blank=True, null=True)
     persona_ep = models.ForeignKey('personas.PersonaEP', models.PROTECT)

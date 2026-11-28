@@ -19,14 +19,13 @@ class EventoManager(OrdenadoManager):
         fecha_max = max(objetivo)
         eventos = (
             self.filter(persona_ep_id__in=personas)
-            .filter(models.Q(fecha_desde__isnull=True) | models.Q(fecha_desde__lte=fecha_max))
+            .filter(fecha_desde__lte=fecha_max)
             .filter(models.Q(fecha_hasta__isnull=True) | models.Q(fecha_hasta__gte=fecha_min))
-            .exclude(fecha_desde__isnull=True, fecha_hasta__isnull=True)
             .values_list('persona_ep_id', 'fecha_desde', 'fecha_hasta')
         )
         justificadas = set()
         for persona_ep_id, desde, hasta in eventos:
             for fecha in objetivo:
-                if (desde is None or desde <= fecha) and (hasta is None or hasta >= fecha):
+                if desde <= fecha and (hasta is None or hasta >= fecha):
                     justificadas.add((persona_ep_id, fecha))
         return justificadas
